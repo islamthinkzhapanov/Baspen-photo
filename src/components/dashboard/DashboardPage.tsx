@@ -16,9 +16,6 @@ import {
 } from "@remixicon/react";
 import {
   Card,
-  LineChart,
-  BarChart,
-  DonutChart,
   Table,
   TableHead,
   TableRow,
@@ -28,6 +25,7 @@ import {
   Badge,
   Button,
 } from "@tremor/react";
+import { LineChart, BarChart, DonutChart } from "@/components/charts";
 
 // --- Demo data ---
 
@@ -202,7 +200,7 @@ export function DashboardPage() {
             index="date"
             categories={["revenue"]}
             colors={["blue"]}
-            valueFormatter={(value) => `${Number(value).toLocaleString()} ₸`}
+            valueFormatter={(value) => `${Number(value).toLocaleString("ru-RU")} ₸`}
             className="h-64"
             showLegend={false}
           />
@@ -268,10 +266,10 @@ export function DashboardPage() {
                       <p className="text-xs text-text-secondary">{event.date}</p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{event.photos.toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums">{event.searches.toLocaleString()}</TableCell>
+                  <TableCell className="text-right tabular-nums">{event.photos.toLocaleString("ru-RU")}</TableCell>
+                  <TableCell className="text-right tabular-nums">{event.searches.toLocaleString("ru-RU")}</TableCell>
                   <TableCell className="text-right tabular-nums font-medium">
-                    {event.revenue.toLocaleString()} ₸
+                    {event.revenue.toLocaleString("ru-RU")} ₸
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge color={event.status === "active" ? "green" : "gray"} size="xs">

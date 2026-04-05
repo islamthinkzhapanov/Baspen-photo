@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Scan Tremor's compiled files so Tailwind v4 generates its internal utility classes */
+@source "../../node_modules/@tremor/react/dist";
+
+/* HeadlessUI variants (ui-open:, ui-selected:, etc.) used by Tremor internals */
+@plugin "@headlessui/tailwindcss";
+
 /* Shine Border */
 .shine-border-wrapper {
   position: relative;
@@ -313,8 +319,77 @@
 
   --color-white: #ffffff;
   --color-black: #000000;
+
+  /* ── Tremor theme tokens ──────────────────────────────────────────── */
+  /* Brand */
   --color-tremor-brand: #005FF9;
+  --color-tremor-brand-emphasis: #0050d4;
   --color-tremor-brand-muted: #dbeafe;
+  --color-tremor-brand-inverted: #ffffff;
+  --color-tremor-brand-faint: #eff6ff;
+  --color-tremor-brand-subtle: #bfdbfe;
+
+  /* Background */
+  --color-tremor-background: #ffffff;
+  --color-tremor-background-muted: #f9fafb;
+  --color-tremor-background-subtle: #f3f4f6;
+  --color-tremor-background-emphasis: #374151;
+
+  /* Border */
+  --color-tremor-border: #e5e7eb;
+
+  /* Ring */
+  --color-tremor-ring: #e5e7eb;
+  --color-tremor-subtle: #e5e7eb;
+
+  /* Content (text colors) */
+  --color-tremor-content: #6b7280;
+  --color-tremor-content-default: #6b7280;
+  --color-tremor-content-subtle: #9ca3af;
+  --color-tremor-content-emphasis: #374151;
+  --color-tremor-content-strong: #111827;
+  --color-tremor-content-inverted: #ffffff;
+
+  /* Dark mode colors */
+  --color-dark-tremor-brand: #3b82f6;
+  --color-dark-tremor-brand-emphasis: #60a5fa;
+  --color-dark-tremor-brand-muted: #1e3a5f;
+  --color-dark-tremor-brand-inverted: #030712;
+  --color-dark-tremor-brand-faint: #0b1229;
+  --color-dark-tremor-brand-subtle: #1e40af;
+  --color-dark-tremor-background: #111827;
+  --color-dark-tremor-background-muted: #1f2937;
+  --color-dark-tremor-background-subtle: #374151;
+  --color-dark-tremor-background-emphasis: #d1d5db;
+  --color-dark-tremor-border: #374151;
+  --color-dark-tremor-ring: #374151;
+  --color-dark-tremor-subtle: #374151;
+  --color-dark-tremor-content: #9ca3af;
+  --color-dark-tremor-content-default: #9ca3af;
+  --color-dark-tremor-content-subtle: #6b7280;
+  --color-dark-tremor-content-emphasis: #e5e7eb;
+  --color-dark-tremor-content-strong: #f9fafb;
+  --color-dark-tremor-content-inverted: #030712;
+
+  /* Border radius */
+  --radius-tremor-default: 0.5rem;
+  --radius-tremor-small: 0.375rem;
+  --radius-tremor-full: 9999px;
+
+  /* Shadows */
+  --shadow-tremor: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-tremor-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-tremor-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-tremor-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-dark-tremor-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-dark-tremor-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-dark-tremor-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  /* Font sizes (for text-tremor-default, text-tremor-title, etc.) */
+  --font-size-tremor-default: 0.875rem;
+  --font-size-tremor-label: 0.75rem;
+  --font-size-tremor-title: 1.125rem;
+  --font-size-tremor-metric: 1.875rem;
 }
 
 body {
@@ -322,3 +397,128 @@ body {
   color: var(--color-text);
   font-family: "Inter", system-ui, sans-serif;
 }
+
+/* ── Tremor design-token bridge ────────────────────────────────────────
+   Tremor v3 components reference --tremor-* CSS variables internally.
+   Tailwind v4 doesn't define them, so we map them here.                */
+:root {
+  /* Brand */
+  --tremor-brand: #005FF9;
+  --tremor-brand-emphasis: #0050d4;
+  --tremor-brand-muted: #dbeafe;
+  --tremor-brand-inverted: #ffffff;
+  --tremor-brand-faint: #eff6ff;
+  --tremor-brand-subtle: #bfdbfe;
+
+  /* Background */
+  --tremor-background: #ffffff;
+  --tremor-background-muted: #f9fafb;
+  --tremor-background-subtle: #f3f4f6;
+  --tremor-background-emphasis: #374151;
+
+  /* Border */
+  --tremor-border-default: #e5e7eb;
+
+  /* Ring */
+  --tremor-ring: #e5e7eb;
+
+  /* Content (text) */
+  --tremor-content: #6b7280;
+  --tremor-content-subtle: #9ca3af;
+  --tremor-content-emphasis: #374151;
+  --tremor-content-strong: #111827;
+  --tremor-content-inverted: #ffffff;
+
+  /* Radius */
+  --tremor-radius: 0.5rem;
+
+  /* Shadows */
+  --tremor-shadow-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tremor-shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tremor-shadow-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* ── Tremor component overrides ────────────────────────────────────── */
+
+/* Switch — fix broken rendering in Tailwind v4 + Safari */
+button[role="switch"] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: #d1d5db;
+  padding: 0.125rem;
+  cursor: pointer;
+  transition: background-color 200ms ease-in-out;
+  border: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button[role="switch"][data-headlessui-state~="checked"],
+button[role="switch"][aria-checked="true"] {
+  background-color: var(--tremor-brand, #005FF9);
+}
+
+button[role="switch"] > span[aria-hidden="true"] {
+  display: block;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  transition: transform 200ms ease-in-out;
+  transform: translateX(0);
+}
+
+button[role="switch"][data-headlessui-state~="checked"] > span[aria-hidden="true"],
+button[role="switch"][aria-checked="true"] > span[aria-hidden="true"] {
+  transform: translateX(1.25rem);
+}
+
+/* Make Tremor Select wider by default */
+.tremor-SelectTrigger-root {
+  min-width: 10rem;
+}
+
+/* Tremor card border */
+.tremor-Card-root {
+  border: 1px solid var(--tremor-border-default);
+  border-radius: var(--tremor-radius);
+  box-shadow: var(--tremor-shadow-card);
+}
+
+/* Tremor input focus ring — apply to the wrapper so icon stays inside */
+.tremor-TextInput-root:focus-within {
+  box-shadow: 0 0 0 1px var(--tremor-brand);
+  border-radius: var(--tremor-radius);
+}
+
+.tremor-TextInput-root input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tremor-Select-root button:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--tremor-brand);
+}
+
+/* Badge — soft filled style, no outline */
+.tremor-Badge-root {
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+
+.tremor-Badge-root.bg-green-100 { background-color: rgba(34, 197, 94, 0.3) !important; }
+.tremor-Badge-root.bg-red-100 { background-color: rgba(239, 68, 68, 0.3) !important; }
+.tremor-Badge-root.bg-amber-100 { background-color: rgba(245, 158, 11, 0.3) !important; }
+.tremor-Badge-root.bg-blue-100 { background-color: rgba(59, 130, 246, 0.3) !important; }
+.tremor-Badge-root.bg-gray-100 { background-color: rgba(107, 114, 128, 0.3) !important; }
+.tremor-Badge-root.bg-yellow-100 { background-color: rgba(234, 179, 8, 0.3) !important; }
+.tremor-Badge-root.bg-emerald-100 { background-color: rgba(16, 185, 129, 0.3) !important; }
+.tremor-Badge-root.bg-violet-100 { background-color: rgba(139, 92, 246, 0.3) !important; }

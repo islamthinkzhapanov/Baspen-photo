@@ -51,9 +51,25 @@ export function SelfieCamera({ onCapture, onClose, isSearching }: Props) {
   useEffect(() => {
     // Use microtask to avoid synchronous setState within effect
     void startCamera();
+
+    // Listen for camera permission changes so we auto-restart after user grants access
+    let permissionStatus: PermissionStatus | null = null;
+    const handlePermissionChange = () => {
+      if (permissionStatus?.state === "granted") {
+        void startCamera();
+      }
+    };
+    navigator.permissions?.query({ name: "camera" as PermissionName }).then((status) => {
+      permissionStatus = status;
+      status.addEventListener("change", handlePermissionChange);
+    }).catch(() => { /* permissions API not supported */ });
+
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (permissionStatus) {
+        permissionStatus.removeEventListener("change", handlePermissionChange);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

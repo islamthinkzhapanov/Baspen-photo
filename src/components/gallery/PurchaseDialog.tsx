@@ -122,7 +122,7 @@ export function PurchaseDialog({
                 {selectedPhotoIds.length} {t("photos")}
               </div>
               <div className="font-semibold mt-1">
-                {(pricing.pricePerPhoto * selectedPhotoIds.length).toLocaleString()}{" "}
+                {(pricing.pricePerPhoto * selectedPhotoIds.length).toLocaleString("ru-RU")}{" "}
                 {t("currency_kzt")}
               </div>
             </button>
@@ -146,7 +146,7 @@ export function PurchaseDialog({
                 {allPhotoIds.length} {t("photos")}
               </div>
               <div className="font-semibold mt-1">
-                {packageTotal.toLocaleString()} {t("currency_kzt")}
+                {packageTotal.toLocaleString("ru-RU")} {t("currency_kzt")}
               </div>
             </button>
           </div>
@@ -154,7 +154,7 @@ export function PurchaseDialog({
           {/* Savings banner */}
           {mode === "package" && savings > 0 && (
             <div className="bg-success/10 text-success text-sm p-3 rounded-lg text-center font-medium">
-              {t("savings", { amount: savings.toLocaleString() })}
+              {t("savings", { amount: savings.toLocaleString("ru-RU") })}
             </div>
           )}
 
@@ -188,21 +188,21 @@ export function PurchaseDialog({
           <div className="border-t border-border pt-3">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-text-secondary">
-                {count} {t("photos")} x {pricing.pricePerPhoto.toLocaleString()}{" "}
+                {count} {t("photos")} x {pricing.pricePerPhoto.toLocaleString("ru-RU")}{" "}
                 {t("currency_kzt")}
               </span>
-              <span>{singleTotal.toLocaleString()} {t("currency_kzt")}</span>
+              <span>{singleTotal.toLocaleString("ru-RU")} {t("currency_kzt")}</span>
             </div>
             {mode === "package" && savings > 0 && (
               <div className="flex justify-between text-sm text-success mb-1">
                 <span>{t("discount")}</span>
-                <span>-{savings.toLocaleString()} {t("currency_kzt")}</span>
+                <span>-{savings.toLocaleString("ru-RU")} {t("currency_kzt")}</span>
               </div>
             )}
             <div className="flex justify-between font-semibold text-lg mt-2">
               <span>{t("total")}</span>
               <span>
-                {total.toLocaleString()} {t("currency_kzt")}
+                {total.toLocaleString("ru-RU")} {t("currency_kzt")}
               </span>
             </div>
           </div>
@@ -225,7 +225,7 @@ export function PurchaseDialog({
               ) : (
                 <>
                   <RiBankCardLine size={20} />
-                  {t("pay")} {total.toLocaleString()} {t("currency_kzt")}
+                  {t("pay")} {total.toLocaleString("ru-RU")} {t("currency_kzt")}
                 </>
               )}
             </span>

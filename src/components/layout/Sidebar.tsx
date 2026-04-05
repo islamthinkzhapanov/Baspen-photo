@@ -11,7 +11,10 @@ import {
   RiDashboardLine,
   RiStackLine,
   RiShieldLine,
+  RiSideBarLine,
 } from "@remixicon/react";
+import { useSidebar } from "./SidebarContext";
+
 const navItems: readonly { key: string; href: string; icon: typeof RiDashboardLine }[] = [
   { key: "dashboard", href: "/dashboard", icon: RiDashboardLine },
   { key: "events", href: "/events", icon: RiFolderOpenLine },
@@ -26,13 +29,31 @@ export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "super_admin";
+  const { collapsed, toggle } = useSidebar();
 
   return (
-    <aside className="hidden md:flex md:w-60 flex-col border-r border-border bg-bg-secondary min-h-screen">
-      <div className="p-6">
-        <Link href="/events">
-          <img src="/logo-baspen.svg" alt="Baspen" className="h-5 w-auto" />
-        </Link>
+    <aside
+      className={`hidden md:flex flex-col border-r border-border bg-bg-secondary min-h-screen transition-all duration-200 ${
+        collapsed ? "md:w-16" : "md:w-60"
+      }`}
+    >
+      <div className={`flex items-center ${collapsed ? "justify-center p-4" : "justify-between p-6"}`}>
+        {!collapsed && (
+          <Link href="/events">
+            <img
+              src="/logo-baspen.svg"
+              alt="Baspen"
+              className="h-5 w-auto brightness-0"
+            />
+          </Link>
+        )}
+        <button
+          onClick={toggle}
+          className="text-text-secondary hover:text-text transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <RiSideBarLine size={20} />
+        </button>
       </div>
 
       <nav className="flex-1 px-3 space-y-1">
@@ -46,10 +67,11 @@ export function Sidebar() {
                 active
                   ? "bg-primary/10 text-primary"
                   : "text-text-secondary hover:bg-bg hover:text-text"
-              }`}
+              } ${collapsed ? "justify-center" : ""}`}
+              title={collapsed ? t(key) : undefined}
             >
               <Icon size={20} />
-              {t(key)}
+              {!collapsed && t(key)}
             </Link>
           );
         })}
@@ -61,10 +83,11 @@ export function Sidebar() {
               pathname.startsWith("/admin")
                 ? "bg-primary/10 text-primary"
                 : "text-text-secondary hover:bg-bg hover:text-text"
-            }`}
+            } ${collapsed ? "justify-center" : ""}`}
+            title={collapsed ? t("admin") : undefined}
           >
             <RiShieldLine size={20} />
-            {t("admin")}
+            {!collapsed && t("admin")}
           </Link>
         )}
       </nav>

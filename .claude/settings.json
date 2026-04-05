@@ -87,7 +87,20 @@
       "Bash(npm ls:*)",
       "Bash(wc -l \"/Users/mobibrand/Documents/Baspen photo/src/components\"/*/*.tsx)",
       "Bash(grep -c \"use client\\\\|use server\" \"/Users/mobibrand/Documents/Baspen photo/src/components\"/*/*.tsx)",
-      "Read(//Users/mobibrand/.git/**)"
+      "Read(//Users/mobibrand/.git/**)",
+      "Bash(curl -s http://localhost:3000/ru/dashboard)",
+      "Bash(curl -s \"http://localhost:3000/_next/static/chunks/src_app_globals_0p2ml0n.css\")",
+      "Bash(grep -h \"^import.*from.*@tremor/react\" /Users/mobibrand/Documents/\"Baspen photo\"/src/components/**/*.tsx)",
+      "Bash(grep -h \"^} from.*@tremor/react\" /Users/mobibrand/Documents/\"Baspen photo\"/src/components/**/*.tsx)",
+      "Bash(ls -la /Users/mobibrand/Documents/\"Baspen photo\"/*.config.*)",
+      "Bash(git -C \"/Users/mobibrand/Documents/Baspen photo\" log --oneline --all)",
+      "Bash(git -C \"/Users/mobibrand/Documents/Baspen photo\" diff HEAD~1 -- \"src/app/globals.css\")",
+      "Bash(git -C \"/Users/mobibrand/Documents/Baspen photo\" status)",
+      "Bash(git -C \"/Users/mobibrand/Documents/Baspen photo\" diff --stat HEAD~1)",
+      "Bash(git -C \"/Users/mobibrand/Documents/Baspen photo\" diff src/app/globals.css)",
+      "Bash(node -e \"try { const m = require\\('@remixicon/react'\\); console.log\\('RiSideBarLine' in m ? 'exists' : 'not found'\\); } catch\\(e\\) { console.log\\(e.message\\); }\")",
+      "Bash(pnpm build:*)",
+      "Bash(npx tsc:*)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

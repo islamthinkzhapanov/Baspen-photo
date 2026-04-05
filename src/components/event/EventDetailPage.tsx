@@ -35,8 +35,8 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-  LineChart,
 } from "@tremor/react";
+import { LineChart } from "@/components/charts";
 
 // --- Demo data ---
 
@@ -225,7 +225,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     { key: "photos", label: t("photos"), value: event.photoCount, icon: statIcons.photos, color: "text-primary" },
     { key: "searches", label: ta("total_searches"), value: event.searches, icon: statIcons.searches, color: "text-amber-600" },
     { key: "downloads", label: ta("total_downloads"), value: event.downloads, icon: statIcons.downloads, color: "text-emerald-600" },
-    { key: "revenue", label: ta("total_revenue"), value: `${event.revenue.toLocaleString()} ₸`, icon: statIcons.revenue, color: "text-violet-600" },
+    { key: "revenue", label: ta("total_revenue"), value: `${event.revenue.toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600" },
   ];
 
   return (
@@ -288,7 +288,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 <span className="text-xs text-text-secondary">{stat.label}</span>
               </div>
               <p className="text-lg font-bold">
-                {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
+                {typeof stat.value === "number" ? stat.value.toLocaleString("ru-RU") : stat.value}
               </p>
             </Card>
           );
@@ -341,7 +341,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
               {event.photoCount > 12 && (
                 <p className="text-center text-xs text-text-secondary">
-                  Показано 12 из {event.photoCount.toLocaleString()} фото
+                  Показано 12 из {event.photoCount.toLocaleString("ru-RU")} фото
                 </p>
               )}
             </div>
@@ -425,7 +425,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   ].map((step, i) => (
                     <div key={step.label} className="flex items-center gap-4">
                       <div className="text-center">
-                        <p className="text-xl font-bold">{step.value.toLocaleString()}</p>
+                        <p className="text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
                         <p className="text-xs text-text-secondary">{step.label}</p>
                       </div>
                       {i < 2 && <span className="text-text-secondary">→</span>}

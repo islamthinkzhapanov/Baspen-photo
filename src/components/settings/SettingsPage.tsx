@@ -16,9 +16,9 @@ import {
   TextInput,
   Select,
   SelectItem,
-  Switch,
   Button,
 } from "@tremor/react";
+import { Switch } from "@/components/ui/switch";
 
 // --- Demo data ---
 
@@ -45,15 +45,32 @@ export function SettingsPage() {
     push_withdrawals: true,
   });
 
+  const notificationItems = [
+    { key: "email_purchases", label: t("settings.notif_purchases"), desc: t("settings.notif_purchases_desc") },
+    { key: "email_uploads", label: t("settings.notif_uploads"), desc: t("settings.notif_uploads_desc") },
+    { key: "push_searches", label: t("settings.notif_searches"), desc: t("settings.notif_searches_desc") },
+    { key: "push_withdrawals", label: t("settings.notif_withdrawals"), desc: t("settings.notif_withdrawals_desc") },
+  ];
+
+  const quickLinks = [
+    { icon: RiBankCardLine, label: t("settings.payment_data"), desc: t("settings.payment_data_desc") },
+    { icon: RiCameraLine, label: t("settings.camera_keys"), desc: t("settings.camera_keys_desc") },
+    { icon: RiShieldLine, label: t("settings.security"), desc: t("settings.security_desc") },
+  ];
+
   return (
     <div className="space-y-6 max-w-[700px]">
-      <h1 className="text-2xl font-bold font-display">{t("nav.settings")}</h1>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold font-display">{t("settings.title")}</h1>
+        <p className="text-sm text-text-secondary mt-1">{t("settings.subtitle")}</p>
+      </div>
 
       {/* Profile Section */}
       <Card className="p-5">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <RiUserLine size={16} className="text-text-secondary" />
-          Профиль
+          {t("settings.profile")}
         </h2>
 
         <div className="flex items-center gap-4 mb-5">
@@ -64,21 +81,21 @@ export function SettingsPage() {
             <p className="font-semibold">{profile.name}</p>
             <p className="text-sm text-text-secondary">{profile.email}</p>
             <p className="text-xs text-primary mt-0.5 capitalize">
-              {profile.role === "owner" ? "Организатор" : "Фотограф"}
+              {profile.role === "owner" ? t("settings.role_owner") : t("settings.role_photographer")}
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-text-secondary block mb-1">Имя</label>
+            <label className="text-xs text-text-secondary block mb-1">{t("settings.name")}</label>
             <TextInput
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
             />
           </div>
           <div>
-            <label className="text-xs text-text-secondary block mb-1">Email</label>
+            <label className="text-xs text-text-secondary block mb-1">{t("settings.email")}</label>
             <TextInput
               type="email"
               value={profile.email}
@@ -86,7 +103,7 @@ export function SettingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-text-secondary block mb-1">Телефон</label>
+            <label className="text-xs text-text-secondary block mb-1">{t("settings.phone")}</label>
             <TextInput
               value={profile.phone}
               onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
@@ -99,16 +116,11 @@ export function SettingsPage() {
       <Card className="p-5">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <RiNotification3Line size={16} className="text-text-secondary" />
-          Уведомления
+          {t("settings.notifications")}
         </h2>
 
         <div className="space-y-3">
-          {[
-            { key: "email_purchases", label: "Покупки фото", desc: "Email при каждой покупке" },
-            { key: "email_uploads", label: "Загрузки фото", desc: "Email при завершении обработки" },
-            { key: "push_searches", label: "Активность поиска", desc: "Когда участники ищут фото" },
-            { key: "push_withdrawals", label: "Выплаты", desc: "Статус вывода средств" },
-          ].map((item) => (
+          {notificationItems.map((item) => (
             <div key={item.key} className="flex items-center justify-between py-2">
               <div>
                 <p className="text-sm font-medium">{item.label}</p>
@@ -132,14 +144,13 @@ export function SettingsPage() {
       <Card className="p-5">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <RiGlobalLine size={16} className="text-text-secondary" />
-          Предпочтения
+          {t("settings.preferences")}
         </h2>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium">Язык интерфейса</p>
-              <p className="text-xs text-text-secondary">Русский</p>
+              <p className="text-sm font-medium">{t("settings.language")}</p>
             </div>
             <Select
               value={profile.language}
@@ -155,8 +166,7 @@ export function SettingsPage() {
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium">Часовой пояс</p>
-              <p className="text-xs text-text-secondary">{profile.timezone}</p>
+              <p className="text-sm font-medium">{t("settings.timezone")}</p>
             </div>
             <Select
               value={profile.timezone}
@@ -172,8 +182,8 @@ export function SettingsPage() {
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium">Тёмная тема</p>
-              <p className="text-xs text-text-secondary">Скоро</p>
+              <p className="text-sm font-medium">{t("settings.dark_mode")}</p>
+              <p className="text-xs text-text-secondary">{t("settings.dark_mode_soon")}</p>
             </div>
             <Switch
               checked={darkMode}
@@ -186,16 +196,12 @@ export function SettingsPage() {
 
       {/* Quick Links */}
       <Card className="p-0 overflow-hidden">
-        {[
-          { icon: RiBankCardLine, label: "Платёжные данные", desc: "Kaspi Gold •4821" },
-          { icon: RiCameraLine, label: "API-ключи камеры", desc: "2 активных ключа" },
-          { icon: RiShieldLine, label: "Безопасность", desc: "Двухфакторная аутентификация" },
-        ].map((item, i) => {
+        {quickLinks.map((item, i) => {
           const Icon = item.icon;
           return (
             <button
               key={i}
-              className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0"
+              className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer"
             >
               <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
                 <Icon size={16} className="text-text-secondary" />

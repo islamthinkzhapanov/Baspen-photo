@@ -109,7 +109,7 @@ export function AuditPage() {
                 }) => (
                   <TableRow key={entry.id}>
                     <TableCell className="text-text-secondary whitespace-nowrap">
-                      {new Date(entry.createdAt).toLocaleString()}
+                      {new Date(entry.createdAt).toLocaleString("ru-RU")}
                     </TableCell>
                     <TableCell>
                       {entry.userName || entry.userEmail || "—"}

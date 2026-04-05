@@ -7,14 +7,25 @@ import {
   RiCalendarLine,
   RiMapPinLine,
   RiImageLine,
-  RiMore2Line,
   RiDeleteBinLine,
   RiEditLine,
   RiGroupLine,
   RiSearchLine,
+  RiCameraLine,
+  RiEyeLine,
 } from "@remixicon/react";
 import { useState } from "react";
-import { Badge, Card, Button } from "@tremor/react";
+import {
+  Badge,
+  Card,
+  Button,
+  Table,
+  TableHead,
+  TableRow,
+  TableHeaderCell,
+  TableBody,
+  TableCell,
+} from "@tremor/react";
 
 // --- Demo data ---
 
@@ -81,113 +92,209 @@ const demoEvents = [
   },
 ];
 
+// --- Aggregated stats ---
+
+const totalPhotos = demoEvents.reduce((sum, e) => sum + e.photoCount, 0);
+const totalSearches = demoEvents.reduce((sum, e) => sum + e.searches, 0);
+const totalParticipants = demoEvents.reduce((sum, e) => sum + e.participants, 0);
+
 // --- Component ---
 
 export function EventsPage() {
   const t = useTranslations("events");
-  const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filtered = demoEvents.filter((event) => {
+    if (filter === "published" && !event.isPublished) return false;
+    if (filter === "draft" && event.isPublished) return false;
+    if (
+      searchQuery &&
+      !event.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !event.location.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false;
+    return true;
+  });
+
+  const filterTabs = [
+    { key: "all" as const, label: t("filter_all") },
+    { key: "published" as const, label: t("filter_published") },
+    { key: "draft" as const, label: t("filter_draft") },
+  ];
+
+  const statCards = [
+    {
+      label: t("total_projects"),
+      value: demoEvents.length,
+      icon: RiCameraLine,
+      color: "bg-primary/10 text-primary",
+    },
+    {
+      label: t("total_photos"),
+      value: totalPhotos.toLocaleString("ru-RU"),
+      icon: RiImageLine,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      label: t("total_searches"),
+      value: totalSearches.toLocaleString("ru-RU"),
+      icon: RiEyeLine,
+      color: "bg-amber-50 text-amber-600",
+    },
+    {
+      label: t("total_participants"),
+      value: totalParticipants.toLocaleString("ru-RU"),
+      icon: RiGroupLine,
+      color: "bg-violet-50 text-violet-600",
+    },
+  ];
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
+    <div className="space-y-6 max-w-[1200px]">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
+          <p className="text-sm text-text-secondary mt-1">{t("subtitle")}</p>
+        </div>
         <Link href="/events/new">
-          <Button icon={RiAddLine}>
+          <Button icon={() => <RiAddLine size={16} />}>
             {t("create")}
           </Button>
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {demoEvents.map((event) => (
-          <Card
-            key={event.id}
-            className="p-4 hover:shadow-sm transition-shadow relative group"
-          >
-            {/* Cover placeholder */}
-            <div className="h-32 bg-gradient-to-br from-primary/5 to-primary/15 rounded-lg mb-3 flex items-center justify-center">
-              <RiImageLine size={32} className="text-primary/30" />
-            </div>
-
-            <div className="flex items-start justify-between mb-2">
-              <Link
-                href={`/events/${event.id}`}
-                className="text-base font-semibold hover:text-primary line-clamp-1"
-              >
-                {event.title}
-              </Link>
-              <div className="relative">
-                <button
-                  onClick={() =>
-                    setMenuOpen(menuOpen === event.id ? null : event.id)
-                  }
-                  className="p-1 hover:bg-bg-secondary rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <RiMore2Line size={16} />
-                </button>
-                {menuOpen === event.id && (
-                  <div className="absolute right-0 top-8 bg-bg border border-border rounded-lg shadow-lg py-1 z-10 min-w-[140px]">
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-bg-secondary"
-                    >
-                      <RiEditLine size={16} />
-                      {t("edit_event")}
-                    </Link>
-                    <button
-                      onClick={() => setMenuOpen(null)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                    >
-                      <RiDeleteBinLine size={16} />
-                      {t("delete")}
-                    </button>
-                  </div>
-                )}
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.label} className="p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
+                  <Icon size={20} />
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-1.5 text-sm text-text-secondary">
-              <div className="flex items-center gap-1.5">
-                <RiCalendarLine size={14} />
-                {new Date(event.date).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
+              <div>
+                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xs text-text-secondary mt-0.5">{stat.label}</p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <RiMapPinLine size={14} />
-                {event.location}
-              </div>
-            </div>
-
-            {/* Stats row */}
-            <div className="mt-3 flex items-center gap-4 text-xs text-text-secondary">
-              <span className="flex items-center gap-1">
-                <RiImageLine size={12} />
-                {event.photoCount.toLocaleString()}
-              </span>
-              <span className="flex items-center gap-1">
-                <RiSearchLine size={12} />
-                {event.searches.toLocaleString()}
-              </span>
-              <span className="flex items-center gap-1">
-                <RiGroupLine size={12} />
-                {event.participants}
-              </span>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between">
-              <Badge color={event.isPublished ? "green" : "gray"}>
-                {event.isPublished ? t("published") : t("draft")}
-              </Badge>
-              <span className="text-xs text-text-secondary">
-                {event.pricingMode === "exclusive" ? t("exclusive") : t("commission")}
-              </span>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Filters + Search */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 w-fit">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                filter === tab.key
+                  ? "bg-bg text-text font-medium shadow-sm"
+                  : "text-text-secondary hover:text-text"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative flex-1">
+          <RiSearchLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <input
+            type="text"
+            placeholder={t("search_placeholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-bg placeholder:text-text-secondary focus:outline-none focus:border-border-active transition-colors"
+          />
+        </div>
+        <Link href="/events/new">
+          <Button icon={() => <RiAddLine size={16} />}>
+            {t("create")}
+          </Button>
+        </Link>
+      </div>
+
+      {/* Projects Table */}
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell>{t("col_project")}</TableHeaderCell>
+              <TableHeaderCell className="hidden md:table-cell">{t("col_date")}</TableHeaderCell>
+              <TableHeaderCell className="text-right">{t("col_photos")}</TableHeaderCell>
+              <TableHeaderCell className="text-right hidden sm:table-cell">{t("col_searches")}</TableHeaderCell>
+              <TableHeaderCell className="text-right hidden sm:table-cell">{t("col_participants")}</TableHeaderCell>
+              <TableHeaderCell className="text-right">{t("col_status")}</TableHeaderCell>
+              <TableHeaderCell className="text-right hidden md:table-cell">{t("col_pricing")}</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filtered.map((event) => (
+              <TableRow key={event.id}>
+                <TableCell>
+                  <Link href={`/events/${event.id}`} className="group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/5 to-primary/15 flex items-center justify-center flex-shrink-0">
+                        <RiImageLine size={18} className="text-primary/40" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium group-hover:text-primary transition-colors truncate">
+                          {event.title}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs text-text-secondary">
+                          <RiMapPinLine size={12} />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex items-center gap-1.5 text-text-secondary">
+                    <RiCalendarLine size={14} />
+                    <span className="text-sm">
+                      {new Date(event.date).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {event.photoCount.toLocaleString("ru-RU")}
+                </TableCell>
+                <TableCell className="text-right tabular-nums hidden sm:table-cell">
+                  {event.searches.toLocaleString("ru-RU")}
+                </TableCell>
+                <TableCell className="text-right tabular-nums hidden sm:table-cell">
+                  {event.participants}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Badge color={event.isPublished ? "green" : "gray"} size="xs">
+                    {event.isPublished ? t("published") : t("draft")}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right hidden md:table-cell">
+                  <span className="text-xs text-text-secondary">
+                    {event.pricingMode === "exclusive" ? t("exclusive") : t("commission")}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {filtered.length === 0 && (
+          <div className="py-12 text-center text-text-secondary text-sm">
+            {t("no_results")}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

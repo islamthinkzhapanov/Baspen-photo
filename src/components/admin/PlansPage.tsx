@@ -220,7 +220,7 @@ export function PlansPage() {
                 <p className="text-2xl font-bold text-primary">
                   {plan.priceMonthly === 0
                     ? t("free")
-                    : `${plan.priceMonthly.toLocaleString()} ${t("kzt_month")}`}
+                    : `${plan.priceMonthly.toLocaleString("ru-RU")} ${t("kzt_month")}`}
                 </p>
 
                 <ul className="space-y-1.5 text-sm text-text-secondary">

@@ -200,7 +200,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
             {photo.createdAt && (
               <div className="flex justify-between">
                 <span>Uploaded</span>
-                <span>{new Date(photo.createdAt).toLocaleString()}</span>
+                <span>{new Date(photo.createdAt).toLocaleString("ru-RU")}</span>
               </div>
             )}
             {photo.exifData && (

@@ -11,7 +11,8 @@ import {
   RiSearchLine,
 } from "@remixicon/react";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
-import { Card, LineChart, DonutChart } from "@tremor/react";
+import { Card } from "@tremor/react";
+import { LineChart, DonutChart } from "@/components/charts";
 
 type Period = "today" | "week" | "month" | "all";
 
@@ -140,7 +141,7 @@ export function AnalyticsSection({ eventId }: { eventId: string }) {
             <StatCard
               icon={RiMoneyDollarCircleLine}
               label={t("total_revenue")}
-              value={`${data.totalRevenue.toLocaleString()} ${t("currency_kzt")}`}
+              value={`${data.totalRevenue.toLocaleString("ru-RU")} ${t("currency_kzt")}`}
               highlight
             />
           </div>
@@ -272,7 +273,7 @@ function StatCard({
         }`}
       />
       <div className={`text-lg font-bold ${highlight ? "text-primary" : ""}`}>
-        {typeof value === "number" ? value.toLocaleString() : value}
+        {typeof value === "number" ? value.toLocaleString("ru-RU") : value}
       </div>
       <div className="text-xs text-text-secondary">{label}</div>
     </div>

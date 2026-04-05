@@ -12,7 +12,8 @@ import {
   RiHardDriveLine,
 } from "@remixicon/react";
 import { RiShoppingCartLine } from "@remixicon/react";
-import { Card, BarChart } from "@tremor/react";
+import { Card } from "@tremor/react";
+import { BarChart } from "@/components/charts";
 
 function MetricCard({
   icon: Icon,
@@ -84,38 +85,38 @@ export function MetricsPage() {
         <MetricCard
           icon={RiGroupLine}
           label={t("total_users")}
-          value={totals.users?.toLocaleString() || "0"}
+          value={totals.users?.toLocaleString("ru-RU") || "0"}
           growth={growth.newUsers}
           growthLabel={t("this_month")}
         />
         <MetricCard
           icon={RiFolderOpenLine}
           label={t("total_events")}
-          value={totals.events?.toLocaleString() || "0"}
+          value={totals.events?.toLocaleString("ru-RU") || "0"}
           growth={growth.newEvents}
           growthLabel={t("this_month")}
         />
         <MetricCard
           icon={RiCameraLine}
           label={t("total_photos")}
-          value={totals.photos?.toLocaleString() || "0"}
+          value={totals.photos?.toLocaleString("ru-RU") || "0"}
           growth={growth.newPhotos}
           growthLabel={t("this_month")}
         />
         <MetricCard
           icon={RiSearchLine}
           label={t("total_participants")}
-          value={totals.participants?.toLocaleString() || "0"}
+          value={totals.participants?.toLocaleString("ru-RU") || "0"}
         />
         <MetricCard
           icon={RiShoppingCartLine}
           label={t("total_orders")}
-          value={totals.orders?.toLocaleString() || "0"}
+          value={totals.orders?.toLocaleString("ru-RU") || "0"}
         />
         <MetricCard
           icon={RiStackLine}
           label={t("active_subscriptions")}
-          value={totals.activeSubscriptions?.toLocaleString() || "0"}
+          value={totals.activeSubscriptions?.toLocaleString("ru-RU") || "0"}
         />
         <MetricCard
           icon={RiHardDriveLine}
