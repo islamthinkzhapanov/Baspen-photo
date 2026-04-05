@@ -86,7 +86,8 @@
       "Bash(curl -sI http://localhost:3000)",
       "Bash(npm ls:*)",
       "Bash(wc -l \"/Users/mobibrand/Documents/Baspen photo/src/components\"/*/*.tsx)",
-      "Bash(grep -c \"use client\\\\|use server\" \"/Users/mobibrand/Documents/Baspen photo/src/components\"/*/*.tsx)"
+      "Bash(grep -c \"use client\\\\|use server\" \"/Users/mobibrand/Documents/Baspen photo/src/components\"/*/*.tsx)",
+      "Read(//Users/mobibrand/.git/**)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
@@ -95,7 +96,8 @@
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/photo",
       "/Users/mobibrand/Documents/Baspen photo/src/app/api/events/[id]",
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(dashboard)",
-      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(dashboard)/settings"
+      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(dashboard)/settings",
+      "/Users/mobibrand/.git"
     ]
   }
 }
