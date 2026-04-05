@@ -1,0 +1,179 @@
+services:
+  # --- Nginx reverse proxy + SSL ---
+  nginx:
+    image: nginx:1.27-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot-webroot:/var/www/certbot:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - app
+
+  # --- Let's Encrypt SSL ---
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h & wait $${!}; done;'"
+
+  # --- Next.js App ---
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://baspen:${DB_PASSWORD}@postgres:5432/baspen
+      - REDIS_URL=redis://redis:6379
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - S3_SECRET_KEY=${MINIO_SECRET_KEY}
+      - S3_BUCKET=baspen-photos
+      - S3_PUBLIC_URL=${S3_PUBLIC_URL}
+      - S3_REGION=us-east-1
+      - COMPREFACE_URL=http://compreface:8000
+      - COMPREFACE_API_KEY=${COMPREFACE_API_KEY}
+      - BIB_DETECTOR_URL=http://bib-detector:8001
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  # --- BullMQ Worker (photo processing) ---
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://baspen:${DB_PASSWORD}@postgres:5432/baspen
+      - REDIS_URL=redis://redis:6379
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - S3_SECRET_KEY=${MINIO_SECRET_KEY}
+      - S3_BUCKET=baspen-photos
+      - S3_PUBLIC_URL=${S3_PUBLIC_URL}
+      - S3_REGION=us-east-1
+      - COMPREFACE_URL=http://compreface:8000
+      - COMPREFACE_API_KEY=${COMPREFACE_API_KEY}
+      - BIB_DETECTOR_URL=http://bib-detector:8001
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - compreface
+      - bib-detector
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 2G
+
+  # --- PostgreSQL + pgvector ---
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: always
+    environment:
+      POSTGRES_DB: baspen
+      POSTGRES_USER: baspen
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    shm_size: "256mb"
+    command: >
+      postgres
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c maintenance_work_mem=256MB
+      -c work_mem=16MB
+      -c max_connections=200
+      -c random_page_cost=1.1
+      -c wal_buffers=16MB
+
+  # --- Redis ---
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - redisdata:/data
+
+  # --- MinIO (S3-compatible storage) ---
+  minio:
+    image: minio/minio:latest
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - miniodata:/data
+
+  # --- CompreFace (face recognition) ---
+  compreface:
+    image: exadel/compreface:latest
+    restart: always
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/frs
+      - POSTGRES_USER=frs
+      - POSTGRES_PASSWORD=${COMPREFACE_DB_PASSWORD}
+    depends_on:
+      - compreface-postgres
+
+  compreface-postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: frs
+      POSTGRES_USER: frs
+      POSTGRES_PASSWORD: ${COMPREFACE_DB_PASSWORD}
+    volumes:
+      - compreface_pgdata:/var/lib/postgresql/data
+
+  # --- Bib Number Detector ---
+  bib-detector:
+    build: ./bib-detector
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # --- Backup (pg_dump daily) ---
+  backup:
+    image: postgres:16-alpine
+    restart: "no"
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - backups:/backups
+    entrypoint: >
+      /bin/sh -c "
+        pg_dump -h postgres -U baspen baspen | gzip > /backups/baspen_$$(date +%Y%m%d_%H%M%S).sql.gz &&
+        find /backups -name '*.sql.gz' -mtime +30 -delete
+      "
+    depends_on:
+      - postgres
+    profiles:
+      - backup
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+  compreface_pgdata:
+  backups:
+  certbot-webroot:
+  nginx-cache:

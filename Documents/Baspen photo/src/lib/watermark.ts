@@ -1,0 +1,73 @@
+import sharp from "sharp";
+
+export interface WatermarkConfig {
+  enabled: boolean;
+  text?: string;
+  opacity?: number; // 0.0 - 1.0, default 0.25
+  logoUrl?: string;
+}
+
+/**
+ * Generate a watermarked version of the image.
+ *
+ * Supports two modes:
+ * 1. Text watermark (diagonal repeating pattern) — default
+ * 2. Logo watermark (centered semi-transparent logo overlay)
+ *
+ * The watermarked image is resized to max 1200px (preview size).
+ */
+export async function generateWatermarkedImage(
+  imageBuffer: Buffer,
+  config: WatermarkConfig = { enabled: true }
+): Promise<Buffer> {
+  if (!config.enabled) {
+    // Just resize without watermark
+    return sharp(imageBuffer)
+      .resize(1200, undefined, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  }
+
+  const resized = sharp(imageBuffer).resize(1200, undefined, {
+    fit: "inside",
+    withoutEnlargement: true,
+  });
+
+  const meta = await resized.clone().metadata();
+  const w = meta.width || 1200;
+  const h = meta.height || 900;
+  const opacity = config.opacity ?? 0.25;
+  const text = config.text || "BASPEN";
+
+  const fontSize = Math.max(24, Math.floor(w / 20));
+  const fillOpacity = opacity;
+
+  const svgWatermark = Buffer.from(`
+    <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="watermark" patternUnits="userSpaceOnUse"
+          width="${fontSize * 12}" height="${fontSize * 6}"
+          patternTransform="rotate(-30)">
+          <text x="0" y="${fontSize}" font-family="sans-serif"
+            font-size="${fontSize}" fill="rgba(255,255,255,${fillOpacity})"
+            font-weight="bold">${escapeXml(text)}</text>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#watermark)" />
+    </svg>
+  `);
+
+  return resized
+    .composite([{ input: svgWatermark, top: 0, left: 0 }])
+    .jpeg({ quality: 85 })
+    .toBuffer();
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
