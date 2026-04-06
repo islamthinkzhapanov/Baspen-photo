@@ -63,6 +63,30 @@ export async function POST(request: Request) {
     );
   }
 
+  // Package validation: must include ALL ready event photos, minimum 3
+  if (isPackage) {
+    const allReadyPhotos = await db
+      .select({ id: photos.id })
+      .from(photos)
+      .where(and(eq(photos.eventId, eventId), eq(photos.status, "ready")));
+
+    if (allReadyPhotos.length < 3) {
+      return NextResponse.json(
+        { error: "Package discount requires at least 3 photos" },
+        { status: 400 }
+      );
+    }
+
+    const allIds = new Set(allReadyPhotos.map((p) => p.id));
+    const submittedIds = new Set(photoIds);
+    if (allIds.size !== submittedIds.size || ![...allIds].every((id) => submittedIds.has(id))) {
+      return NextResponse.json(
+        { error: "Package must include all event photos" },
+        { status: 400 }
+      );
+    }
+  }
+
   // Calculate pricing
   const pricing = calculatePhotoPrice(event);
   const totalAmount = calculateOrderTotal(
@@ -101,21 +125,20 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  // Create order items
-  const itemValues = photoIds.map((photoId) => ({
+  // Create order items with correct price distribution
+  const itemType = isPackage ? ("package" as const) : ("single" as const);
+  const basePrice = isPackage
+    ? Math.floor(totalAmount / photoIds.length)
+    : pricing.pricePerPhoto;
+  const remainder = isPackage
+    ? totalAmount - basePrice * photoIds.length
+    : 0;
+
+  const itemValues = photoIds.map((photoId, index) => ({
     orderId: order.id,
     photoId,
-    type: isPackage ? ("package" as const) : ("single" as const),
-    price: isPackage
-      ? Math.round(
-          calculateOrderTotal(
-            pricing.pricePerPhoto,
-            photoIds.length,
-            true,
-            pricing.packageDiscount
-          ) / photoIds.length
-        )
-      : pricing.pricePerPhoto,
+    type: itemType,
+    price: basePrice + (index < remainder ? 1 : 0),
   }));
 
   await db.insert(orderItems).values(itemValues);

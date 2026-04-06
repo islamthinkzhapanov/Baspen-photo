@@ -311,6 +311,9 @@ export function EventForm({ event }: EventFormProps) {
                   value={packageDiscount}
                   onValueChange={setPackageDiscount}
                 />
+                <p className="text-xs text-text-secondary mt-1">
+                  {t("package_discount_hint")}
+                </p>
               </div>
             </div>
           )}

@@ -8,6 +8,27 @@
       "when": 1775418852810,
       "tag": "0000_dark_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775502262622,
+      "tag": "0001_superb_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775507243473,
+      "tag": "0002_square_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775593643473,
+      "tag": "0003_performance_hnsw_avif",
+      "breakpoints": true
     }
   ]
 }

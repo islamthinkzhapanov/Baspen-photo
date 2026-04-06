@@ -62,7 +62,9 @@ export async function POST(request: Request) {
     SELECT DISTINCT ON (p.id)
       p.id,
       p.thumbnail_path,
+      p.thumbnail_avif_path,
       p.watermarked_path,
+      p.placeholder,
       p.width,
       p.height,
       p.created_at,

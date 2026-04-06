@@ -90,8 +90,22 @@ export async function processPhoto(job: Job<PhotoJobData>) {
     .webp({ quality: 75 })
     .toBuffer();
 
+  const thumbnailAvif = await sharp(imageBuffer)
+    .resize(400, undefined, { fit: "inside" })
+    .avif({ quality: 65, effort: 4 })
+    .toBuffer();
+
+  // Generate tiny blurred placeholder for blur-up effect (~ 300-500 bytes)
+  const placeholderBuffer = await sharp(imageBuffer)
+    .resize(20, undefined, { fit: "inside" })
+    .blur(2)
+    .jpeg({ quality: 40 })
+    .toBuffer();
+  const placeholder = `data:image/jpeg;base64,${placeholderBuffer.toString("base64")}`;
+
   const thumbnailKey = storagePath.replace("/originals/", "/thumbnails/");
   const thumbnailWebpKey = thumbnailKey.replace(/\.\w+$/, ".webp");
+  const thumbnailAvifKey = thumbnailKey.replace(/\.\w+$/, ".avif");
 
   await Promise.all([
     s3.send(
@@ -108,6 +122,14 @@ export async function processPhoto(job: Job<PhotoJobData>) {
         Key: thumbnailWebpKey,
         Body: thumbnailWebp,
         ContentType: "image/webp",
+      })
+    ),
+    s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: thumbnailAvifKey,
+        Body: thumbnailAvif,
+        ContentType: "image/avif",
       })
     ),
   ]);
@@ -197,7 +219,9 @@ export async function processPhoto(job: Job<PhotoJobData>) {
   await db.execute(sql`
     UPDATE photos SET
       thumbnail_path = ${`${publicUrl}/${thumbnailKey}`},
+      thumbnail_avif_path = ${`${publicUrl}/${thumbnailAvifKey}`},
       watermarked_path = ${`${publicUrl}/${watermarkedKey}`},
+      placeholder = ${placeholder},
       width = ${metadata.width || null},
       height = ${metadata.height || null},
       exif_data = ${exifData ? JSON.stringify(exifData) : null}::jsonb,

@@ -5,7 +5,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 export interface SearchPhoto {
   id: string;
   thumbnail_path: string | null;
+  thumbnail_avif_path: string | null;
   watermarked_path: string | null;
+  placeholder: string | null;
   width: number | null;
   height: number | null;
   created_at: string;

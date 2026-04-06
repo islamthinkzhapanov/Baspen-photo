@@ -109,6 +109,12 @@ const photoColors = [
   "from-lime-200 to-lime-300",
 ];
 
+export interface EmbedConfig {
+  theme: "light" | "dark";
+  showBranding: boolean;
+  showSponsors: boolean;
+}
+
 type View = "landing" | "searching" | "results";
 
 // --- Camera Component ---
@@ -264,7 +270,15 @@ function CameraView({
 
 // --- Main Component ---
 
-export function PublicEventPage({ slug }: { slug: string }) {
+export function PublicEventPage({
+  slug,
+  embedConfig,
+}: {
+  slug: string;
+  embedConfig?: EmbedConfig;
+}) {
+  const isDark = embedConfig?.theme === "dark";
+  const hideBranding = embedConfig ? !embedConfig.showBranding : false;
   const t = useTranslations("public");
   const [view, setView] = useState<View>("landing");
   const [showCamera, setShowCamera] = useState(false);
@@ -298,11 +312,13 @@ export function PublicEventPage({ slug }: { slug: string }) {
   // --- Searching View ---
   if (view === "searching") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="text-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-gray-950 text-white" : "bg-bg"}`}>
+        <div className="text-center" style={{ opacity: 0, animation: "fade-in 0.4s ease-out forwards" }}>
           <span className="animate-spin inline-flex mx-auto mb-3"><RiLoader4Line size={40} className="text-primary" /></span>
-          <p className="text-text-secondary font-medium">{t("searching")}</p>
-          <p className="text-xs text-text-secondary mt-1">Анализируем {fmt(event.photoCount)} фото...</p>
+          <p className={`font-medium ${isDark ? "text-gray-300" : "text-text-secondary"}`}>{t("searching")}</p>
+          <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-text-secondary"}`} style={{ opacity: 0, animation: "fade-in-up 0.4s ease-out 0.2s forwards" }}>
+            Анализируем {fmt(event.photoCount)} фото...
+          </p>
         </div>
       </div>
     );
@@ -313,9 +329,9 @@ export function PublicEventPage({ slug }: { slug: string }) {
     const likedCount = likes.size;
 
     return (
-      <div className="min-h-screen bg-bg">
+      <div className={`min-h-screen ${isDark ? "bg-gray-950 text-white" : "bg-bg"}`}>
         {/* Header */}
-        <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-border">
+        <div className={`sticky top-0 z-30 backdrop-blur border-b ${isDark ? "bg-gray-900/90 border-gray-800" : "bg-white/90 border-border"}`}>
           <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <button
               onClick={() => setView("landing")}
@@ -345,7 +361,7 @@ export function PublicEventPage({ slug }: { slug: string }) {
 
         {/* Results info */}
         <div className="max-w-6xl mx-auto px-4 py-5">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5" style={{ opacity: 0, animation: "fade-in-up 0.4s ease-out 0.1s forwards" }}>
             <div>
               <h2 className="text-lg font-bold">{t("results", { count: demoResults.length })}</h2>
               <p className="text-xs text-text-secondary mt-0.5">Номер на нагруднике: #1247</p>
@@ -366,19 +382,29 @@ export function PublicEventPage({ slug }: { slug: string }) {
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
             {demoResults.map((photo, index) => {
               const isLiked = likes.has(photo.id);
+              const staggerDelay = Math.min(index * 40, 400);
               return (
-                <div key={photo.id} className="mb-3 break-inside-avoid group relative">
+                <div
+                  key={photo.id}
+                  className="mb-3 break-inside-avoid group relative"
+                  style={{
+                    opacity: 0,
+                    animation: `masonry-fade-in 0.5s ease-out ${staggerDelay}ms forwards`,
+                  }}
+                >
                   <div
-                    className={`bg-gradient-to-br ${photoColors[index % photoColors.length]} rounded-xl overflow-hidden cursor-pointer`}
+                    className={`bg-gradient-to-br ${photoColors[index % photoColors.length]} rounded-xl overflow-hidden cursor-pointer relative`}
                     style={{ aspectRatio: `${photo.w}/${photo.h}` }}
                     onClick={() => setLightbox(index)}
                   >
                     {/* Watermark overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none">
-                      <span className="text-4xl font-bold text-black -rotate-30 select-none">
-                        BASPEN
-                      </span>
-                    </div>
+                    {!hideBranding && (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none">
+                        <span className="text-4xl font-bold text-black -rotate-30 select-none">
+                          BASPEN
+                        </span>
+                      </div>
+                    )}
 
                     {/* Bib number badge */}
                     <div className="absolute top-2 left-2 bg-black/50 backdrop-blur text-white text-[10px] px-1.5 py-0.5 rounded">
@@ -422,7 +448,7 @@ export function PublicEventPage({ slug }: { slug: string }) {
           </div>
 
           {/* Purchase CTA */}
-          <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 text-center">
+          <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 text-center" style={{ opacity: 0, animation: "fade-in-up 0.5s ease-out 0.6s forwards" }}>
             <h3 className="text-lg font-bold mb-1">Скачайте свои фото</h3>
             <p className="text-sm text-text-secondary mb-4">
               1 фото — 1 200 ₸ &nbsp;|&nbsp; Все {demoResults.length} фото — 9 600 ₸ (скидка 30%)
@@ -439,13 +465,15 @@ export function PublicEventPage({ slug }: { slug: string }) {
         </div>
 
         {/* Footer */}
-        <div className="text-center py-6 text-xs text-text-secondary">
-          {t("powered_by")}
-        </div>
+        {!hideBranding && (
+          <div className={`text-center py-6 text-xs ${isDark ? "text-gray-600" : "text-text-secondary"}`}>
+            {t("powered_by")}
+          </div>
+        )}
 
         {/* Lightbox */}
         {lightbox !== null && (
-          <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+          <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" style={{ animation: "fade-in 0.2s ease-out" }}>
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
@@ -486,9 +514,11 @@ export function PublicEventPage({ slug }: { slug: string }) {
             >
               <div className="w-full h-full flex items-center justify-center relative">
                 <RiImageLine size={64} className="text-white/20" />
-                <span className="absolute text-5xl font-bold text-black/[0.06] -rotate-30 select-none">
-                  BASPEN
-                </span>
+                {!hideBranding && (
+                  <span className="absolute text-5xl font-bold text-black/[0.06] -rotate-30 select-none">
+                    BASPEN
+                  </span>
+                )}
               </div>
             </div>
 
@@ -537,7 +567,7 @@ export function PublicEventPage({ slug }: { slug: string }) {
     "linear-gradient(90deg, rgba(38,192,255,0.4) 0%, rgba(230,0,194,0.4) 20%, rgba(255,73,78,0.4) 40%, rgba(255,161,62,0.4) 60%, rgba(255,200,55,0.4) 80%, rgba(0,204,61,0.4) 100%)";
 
   return (
-    <div className="relative h-screen bg-white flex items-center justify-center overflow-hidden">
+    <div className={`relative h-screen flex items-center justify-center overflow-hidden ${isDark ? "bg-gray-950" : "bg-white"}`}>
       {/* Background container with gradient + rainbow beams */}
       <div
         className="absolute inset-0 overflow-hidden"
@@ -590,24 +620,30 @@ export function PublicEventPage({ slug }: { slug: string }) {
         borderWidth={3}
         duration={10}
         color={["#26c0ff", "#e600c2", "#ff494e", "#ffa13e", "#ffc837", "#00cc3d"]}
-        className="relative z-10 w-full max-w-[600px] rounded-t-[24px] overflow-hidden bg-[#fcfcfc]"
+        className={`relative z-10 w-full max-w-[600px] rounded-t-[24px] overflow-hidden ${isDark ? "bg-gray-900" : "bg-[#fcfcfc]"}`}
       >
         <div
           className="w-full flex flex-col items-center pb-[120px]"
         >
         {/* Logo */}
-        <div className="mt-[50px] mb-[80px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo-baspen.svg"
-            alt="Baspen"
-            className="h-[24px] w-auto"
-            style={{ filter: "brightness(0) saturate(100%) invert(15%) sepia(20%) saturate(800%) hue-rotate(175deg)" }}
-          />
-        </div>
+        {!hideBranding && (
+          <div className="mt-[50px] mb-[80px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-baspen.svg"
+              alt="Baspen"
+              className="h-[24px] w-auto"
+              style={{ filter: isDark
+                ? "brightness(0) saturate(100%) invert(85%)"
+                : "brightness(0) saturate(100%) invert(15%) sepia(20%) saturate(800%) hue-rotate(175deg)"
+              }}
+            />
+          </div>
+        )}
+        {hideBranding && <div className="mt-[50px] mb-[80px]" />}
 
         {/* Headline */}
-        <div className="text-center text-[#2c2d2e] px-6 mb-6">
+        <div className={`text-center px-6 mb-6 ${isDark ? "text-gray-100" : "text-[#2c2d2e]"}`}>
           <p
             className="text-[28px] sm:text-[42px] leading-none tracking-[-1px]"
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
@@ -629,7 +665,7 @@ export function PublicEventPage({ slug }: { slug: string }) {
         </div>
 
         {/* Subtitle */}
-        <p className="text-[15px] text-[#7b7b7b] text-center leading-[18px] tracking-[-0.3px] mb-10 px-6">
+        <p className={`text-[15px] text-center leading-[18px] tracking-[-0.3px] mb-10 px-6 ${isDark ? "text-gray-500" : "text-[#7b7b7b]"}`}>
           Используйте поиск по номеру, если ваше лицо
           <br />
           было закрыто аксессуарами
@@ -647,7 +683,11 @@ export function PublicEventPage({ slug }: { slug: string }) {
           </button>
           <button
             onClick={() => setShowNumberSearch(true)}
-            className="flex items-center justify-center gap-2 w-full py-4 px-[14px] bg-white border border-[rgba(0,16,61,0.12)] text-[#08304c] rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-gray-50 transition-colors"
+            className={`flex items-center justify-center gap-2 w-full py-4 px-[14px] border rounded-[6px] text-[15px] tracking-[-0.3px] transition-colors ${
+              isDark
+                ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700"
+                : "bg-white border-[rgba(0,16,61,0.12)] text-[#08304c] hover:bg-gray-50"
+            }`}
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
           >
             <img src="/icon-number.svg" alt="" className="w-[18px] h-[18px]" />
@@ -656,11 +696,13 @@ export function PublicEventPage({ slug }: { slug: string }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pb-6 pt-8">
-          <p className="text-[15px] text-[rgba(8,48,76,0.7)] text-center tracking-[-0.3px]">
-            {new Date().getFullYear()}. All rights reserved
-          </p>
-        </div>
+        {!hideBranding && (
+          <div className="mt-auto pb-6 pt-8">
+            <p className={`text-[15px] text-center tracking-[-0.3px] ${isDark ? "text-gray-600" : "text-[rgba(8,48,76,0.7)]"}`}>
+              {new Date().getFullYear()}. All rights reserved
+            </p>
+          </div>
+        )}
         </div>
       </ShineBorder>
 

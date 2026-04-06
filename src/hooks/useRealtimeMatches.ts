@@ -55,7 +55,9 @@ export function useRealtimeMatches({
         {
           id: data.photoId,
           thumbnail_path: data.thumbnailPath,
+          thumbnail_avif_path: null,
           watermarked_path: data.watermarkedPath,
+          placeholder: null,
           width: data.width,
           height: data.height,
           created_at: new Date().toISOString(),
@@ -73,7 +75,9 @@ export function useRealtimeMatches({
           {
             id: data.photoId,
             thumbnail_path: data.thumbnailPath,
+            thumbnail_avif_path: null,
             watermarked_path: data.watermarkedPath,
+            placeholder: null,
             width: data.width,
             height: data.height,
             created_at: new Date().toISOString(),

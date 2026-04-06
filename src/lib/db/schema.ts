@@ -132,6 +132,25 @@ export const inviteTokens = pgTable(
   ]
 );
 
+// --- Password Reset Tokens ---
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    usedAt: timestamp("used_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("password_reset_tokens_token_idx").on(t.token),
+    index("password_reset_tokens_user_idx").on(t.userId),
+  ]
+);
+
 // --- Subscription Plans ---
 export const subscriptionPlans = pgTable("subscription_plans", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -243,7 +262,9 @@ export const photos = pgTable(
       .references(() => users.id),
     storagePath: text("storage_path").notNull(),
     thumbnailPath: text("thumbnail_path"),
+    thumbnailAvifPath: text("thumbnail_avif_path"),
     watermarkedPath: text("watermarked_path"),
+    placeholder: text("placeholder"), // tiny base64 blurred JPEG for blur-up effect
     originalFilename: text("original_filename"),
     mimeType: text("mime_type"),
     fileSize: integer("file_size"),
@@ -572,6 +593,16 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const inviteTokensRelations = relations(inviteTokens, ({ one }) => ({
   user: one(users, { fields: [inviteTokens.userId], references: [users.id] }),
 }));
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [passwordResetTokens.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
   owner: one(users, { fields: [events.ownerId], references: [users.id] }),

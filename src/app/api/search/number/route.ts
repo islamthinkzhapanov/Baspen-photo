@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
     .select({
       id: photos.id,
       thumbnailPath: photos.thumbnailPath,
+      thumbnailAvifPath: photos.thumbnailAvifPath,
       watermarkedPath: photos.watermarkedPath,
+      placeholder: photos.placeholder,
       width: photos.width,
       height: photos.height,
       createdAt: photos.createdAt,

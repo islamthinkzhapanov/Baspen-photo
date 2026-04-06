@@ -47,7 +47,23 @@
     "facebook_continue": "Facebook арқылы жалғастыру",
     "back": "Артқа",
     "register_error": "Тіркелу қатесі",
-    "or": "немесе"
+    "or": "немесе",
+    "reset_password_desc": "Email енгізіңіз, біз құпия сөзді қалпына келтіру сілтемесін жібереміз.",
+    "reset_send_link": "Сілтеме жіберу",
+    "reset_sending": "Жіберілуде...",
+    "reset_email_sent": "Хат жіберілді",
+    "reset_email_sent_desc": "Егер осындай email-мен аккаунт болса, құпия сөзді қалпына келтіру сілтемесін жібердік. Поштаңызды тексеріңіз.",
+    "reset_error": "Хат жіберу сәтсіз аяқталды. Қайта көріңіз.",
+    "reset_validating": "Сілтеме тексерілуде...",
+    "reset_invalid": "Жарамсыз сілтеме",
+    "reset_invalid_desc": "Бұл құпия сөзді қалпына келтіру сілтемесі жарамсыз немесе мерзімі өткен. Жаңасын сұраңыз.",
+    "reset_new_password_desc": "Аккаунтыңыз үшін жаңа құпия сөз енгізіңіз.",
+    "reset_save_password": "Құпия сөзді сақтау",
+    "reset_saving": "Сақталуда...",
+    "reset_success": "Құпия сөз өзгертілді!",
+    "reset_success_desc": "Құпия сөзіңіз сәтті өзгертілді. Кіру бетіне бағытталуда...",
+    "passwords_dont_match": "Құпия сөздер сәйкес келмейді",
+    "back_to_login": "Кіру бетіне оралу"
   },
   "landing": {
     "nav_features": "Мүмкіндіктер",
@@ -204,6 +220,7 @@
     "watermark": "Су таңбасы",
     "price_per_photo": "Фото бағасы",
     "package_discount": "Пакет жеңілдігі (%)",
+    "package_discount_hint": "Барлық фотоны сатып алғанда қолданылады (мин. 3)",
     "geofence": "Геоаймақ",
     "geofence_lat": "Ендік",
     "geofence_lng": "Бойлық",
@@ -303,7 +320,11 @@
     "pay": "Төлеу",
     "paid": "Төленді",
     "purchased": "Сатып алынды",
-    "payment_error": "Төлем қатесі"
+    "payment_error": "Төлем қатесі",
+    "payment_method": "Төлем тәсілі",
+    "provider_kaspi": "Kaspi Pay",
+    "provider_stripe": "Банк картасы",
+    "provider_manual": "Банк аударымы"
   },
   "download": {
     "title": "Фотоларыңыз дайын!",
@@ -315,6 +336,29 @@
     "invalid_link_desc": "Сілтемені тексеріңіз немесе ұйымдастырушыға хабарласыңыз",
     "error": "Жүктеу қатесі",
     "no_photos": "Фото табылмады"
+  },
+  "order": {
+    "title": "Тапсырыс мәртебесі",
+    "pending_title": "Төлем өңделуде",
+    "pending_desc": "Төлеміңіз өңделуде. Бұл әдетте бірнеше секунд алады.",
+    "paid_title": "Төлем сәтті өтті!",
+    "paid_desc": "Фотоларыңыз жүктеуге дайын",
+    "failed_title": "Төлем қатесі",
+    "failed_desc": "Бірдеңе дұрыс болмады. Қайталап көріңіз.",
+    "expired_title": "Тапсырыс мерзімі өтті",
+    "expired_desc": "Бұл тапсырыстың мерзімі өтті. Жаңа тапсырыс беріңіз.",
+    "refunded_title": "Тапсырыс қайтарылды",
+    "refunded_desc": "Бұл тапсырыс бойынша қаражат қайтарылды.",
+    "download_photos": "Фотоларды жүктеу",
+    "retry_payment": "Қайталап көру",
+    "back_to_event": "Іс-шараға оралу",
+    "order_summary": "Тапсырыс мәліметтері",
+    "event": "Іс-шара",
+    "photos_count": "{count} фото",
+    "total": "Барлығы",
+    "payment_method": "Төлем тәсілі",
+    "order_not_found": "Тапсырыс табылмады",
+    "order_not_found_desc": "Бұл тапсырыс жоқ немесе сілтеме жарамсыз."
   },
   "analytics": {
     "title": "Аналитика",
@@ -503,7 +547,9 @@
     "delete_confirm": "Бұл фотоны жоясыз ба?",
     "delete_confirm_desc": "Бұл әрекетті кері қайтару мүмкін емес",
     "cancel": "Болдырмау",
-    "delete": "Жою"
+    "delete": "Жою",
+    "processing_status": "Өңдеу: {total} ішінен {ready}",
+    "failed": "қатемен"
   },
   "camera": {
     "title": "Камера API кілттері",

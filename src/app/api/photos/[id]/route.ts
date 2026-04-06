@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { photos, events, faceEmbeddings } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { getDownloadUrl, getPublicUrl } from "@/lib/storage/s3";
+import { getDownloadUrl, getPublicUrl, deleteObject } from "@/lib/storage/s3";
+import { getEventAccess } from "@/lib/event-auth";
 
 // GET /api/photos/[id] — get photo details (public)
 export async function GET(
@@ -69,4 +71,71 @@ export async function GET(
       : null,
     freeDownload: isFreeDownload,
   });
+}
+
+// DELETE /api/photos/[id] — delete photo (uploader or event owner)
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const [photo] = await db
+    .select({
+      id: photos.id,
+      eventId: photos.eventId,
+      uploadedBy: photos.uploadedBy,
+      storagePath: photos.storagePath,
+      thumbnailPath: photos.thumbnailPath,
+      watermarkedPath: photos.watermarkedPath,
+    })
+    .from(photos)
+    .where(eq(photos.id, id))
+    .limit(1);
+
+  if (!photo) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const access = await getEventAccess(photo.eventId, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Only uploader or event owner can delete
+  const isUploader = photo.uploadedBy === session.user.id;
+  const isOwner = access.role === "owner";
+  if (!isUploader && !isOwner) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Delete files from S3
+  const keysToDelete = [
+    photo.storagePath,
+    photo.thumbnailPath,
+    photo.watermarkedPath,
+  ].filter(Boolean) as string[];
+
+  await Promise.allSettled(keysToDelete.map((key) => deleteObject(key)));
+
+  // Delete face embeddings
+  await db.delete(faceEmbeddings).where(eq(faceEmbeddings.photoId, id));
+
+  // Delete photo record
+  await db.delete(photos).where(eq(photos.id, id));
+
+  // Decrement event photo count
+  await db
+    .update(events)
+    .set({
+      photoCount: sql`greatest(${events.photoCount} - 1, 0)`,
+      updatedAt: new Date(),
+    })
+    .where(eq(events.id, photo.eventId));
+
+  return NextResponse.json({ success: true });
 }

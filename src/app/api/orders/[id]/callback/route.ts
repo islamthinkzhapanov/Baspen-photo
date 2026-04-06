@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, paymentTransactions } from "@/lib/db/schema";
+import { orders, orderItems, paymentTransactions, events } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 // GET /api/orders/[id]/callback -- payment provider redirects here after checkout
 export async function GET(
@@ -40,6 +41,34 @@ export async function GET(
         .update(orders)
         .set({ status: "paid", updatedAt: new Date() })
         .where(eq(orders.id, id));
+
+      // Send confirmation email
+      if (order.email) {
+        try {
+          const [event] = await db
+            .select({ title: events.title })
+            .from(events)
+            .where(eq(events.id, order.eventId))
+            .limit(1);
+
+          const items = await db
+            .select()
+            .from(orderItems)
+            .where(eq(orderItems.orderId, order.id));
+
+          await sendOrderConfirmationEmail({
+            to: order.email,
+            orderId: order.id,
+            totalAmount: order.totalAmount,
+            currency: order.currency,
+            photoCount: items.length,
+            downloadToken: order.downloadToken,
+            eventTitle: event?.title,
+          });
+        } catch (emailErr) {
+          console.error("Failed to send order email:", emailErr);
+        }
+      }
     }
 
     // Redirect to download page with token

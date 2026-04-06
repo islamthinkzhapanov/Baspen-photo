@@ -58,7 +58,23 @@
     "or": "или",
     "no_account_full": "У вас еще нет учетной записи?",
     "has_account_full": "Уже есть учетная запись?",
-    "email_label": "Адрес электронной почты"
+    "email_label": "Адрес электронной почты",
+    "reset_password_desc": "Введите email, и мы отправим ссылку для сброса пароля.",
+    "reset_send_link": "Отправить ссылку",
+    "reset_sending": "Отправляем...",
+    "reset_email_sent": "Письмо отправлено",
+    "reset_email_sent_desc": "Если аккаунт с таким email существует, мы отправили ссылку для сброса пароля. Проверьте почту.",
+    "reset_error": "Не удалось отправить письмо. Попробуйте ещё раз.",
+    "reset_validating": "Проверяем ссылку...",
+    "reset_invalid": "Недействительная ссылка",
+    "reset_invalid_desc": "Ссылка для сброса пароля недействительна или истекла. Запросите новую.",
+    "reset_new_password_desc": "Введите новый пароль для вашего аккаунта.",
+    "reset_save_password": "Сохранить пароль",
+    "reset_saving": "Сохраняем...",
+    "reset_success": "Пароль изменён!",
+    "reset_success_desc": "Ваш пароль успешно изменён. Перенаправляем на вход...",
+    "passwords_dont_match": "Пароли не совпадают",
+    "back_to_login": "Назад к входу"
   },
   "landing": {
     "nav_features": "Возможности",
@@ -217,6 +233,7 @@
     "watermark": "Водяной знак",
     "price_per_photo": "Цена за фото",
     "package_discount": "Скидка на пакет (%)",
+    "package_discount_hint": "Применяется при покупке всех фото (мин. 3)",
     "geofence": "Геозона",
     "geofence_lat": "Широта",
     "geofence_lng": "Долгота",
@@ -319,7 +336,11 @@
     "pay": "Оплатить",
     "paid": "Оплачено",
     "purchased": "Куплено",
-    "payment_error": "Ошибка оплаты"
+    "payment_error": "Ошибка оплаты",
+    "payment_method": "Способ оплаты",
+    "provider_kaspi": "Kaspi Pay",
+    "provider_stripe": "Банковская карта",
+    "provider_manual": "Банковский перевод"
   },
   "download": {
     "title": "Ваши фото готовы!",
@@ -331,6 +352,29 @@
     "invalid_link_desc": "Проверьте правильность ссылки или обратитесь к организатору",
     "error": "Ошибка загрузки",
     "no_photos": "Фото не найдены"
+  },
+  "order": {
+    "title": "Статус заказа",
+    "pending_title": "Обработка платежа",
+    "pending_desc": "Ваш платёж обрабатывается. Обычно это занимает несколько секунд.",
+    "paid_title": "Оплата прошла успешно!",
+    "paid_desc": "Ваши фото готовы к скачиванию",
+    "failed_title": "Ошибка оплаты",
+    "failed_desc": "Что-то пошло не так. Попробуйте ещё раз.",
+    "expired_title": "Заказ истёк",
+    "expired_desc": "Срок этого заказа истёк. Оформите новый заказ.",
+    "refunded_title": "Заказ возвращён",
+    "refunded_desc": "Средства по этому заказу возвращены.",
+    "download_photos": "Скачать фото",
+    "retry_payment": "Попробовать снова",
+    "back_to_event": "Вернуться к мероприятию",
+    "order_summary": "Детали заказа",
+    "event": "Мероприятие",
+    "photos_count": "{count} фото",
+    "total": "Итого",
+    "payment_method": "Способ оплаты",
+    "order_not_found": "Заказ не найден",
+    "order_not_found_desc": "Этот заказ не существует или ссылка недействительна."
   },
   "analytics": {
     "title": "Аналитика",
@@ -568,7 +612,9 @@
     "delete_confirm": "Удалить это фото?",
     "delete_confirm_desc": "Это действие нельзя отменить",
     "cancel": "Отмена",
-    "delete": "Удалить"
+    "delete": "Удалить",
+    "processing_status": "Обработка: {ready} из {total}",
+    "failed": "с ошибкой"
   },
   "camera": {
     "title": "API-ключи камеры",

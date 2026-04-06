@@ -55,7 +55,23 @@
     "facebook_continue": "Continue with Facebook",
     "back": "Back",
     "register_error": "Registration failed",
-    "or": "or"
+    "or": "or",
+    "reset_password_desc": "Enter your email and we'll send you a link to reset your password.",
+    "reset_send_link": "Send reset link",
+    "reset_sending": "Sending...",
+    "reset_email_sent": "Email sent",
+    "reset_email_sent_desc": "If an account with that email exists, we've sent a password reset link. Check your inbox.",
+    "reset_error": "Failed to send email. Please try again.",
+    "reset_validating": "Validating link...",
+    "reset_invalid": "Invalid link",
+    "reset_invalid_desc": "This password reset link is invalid or has expired. Please request a new one.",
+    "reset_new_password_desc": "Enter a new password for your account.",
+    "reset_save_password": "Save password",
+    "reset_saving": "Saving...",
+    "reset_success": "Password changed!",
+    "reset_success_desc": "Your password has been successfully changed. Redirecting to login...",
+    "passwords_dont_match": "Passwords don't match",
+    "back_to_login": "Back to login"
   },
   "landing": {
     "nav_features": "Features",
@@ -215,6 +231,7 @@
     "watermark": "Watermark",
     "price_per_photo": "Price per photo",
     "package_discount": "Package discount (%)",
+    "package_discount_hint": "Applied when buyer purchases all photos (min. 3)",
     "geofence": "Geofence",
     "geofence_lat": "Latitude",
     "geofence_lng": "Longitude",
@@ -317,7 +334,11 @@
     "pay": "Pay",
     "paid": "Paid",
     "purchased": "Purchased",
-    "payment_error": "Payment error"
+    "payment_error": "Payment error",
+    "payment_method": "Payment method",
+    "provider_kaspi": "Kaspi Pay",
+    "provider_stripe": "Bank card",
+    "provider_manual": "Bank transfer"
   },
   "download": {
     "title": "Your photos are ready!",
@@ -329,6 +350,29 @@
     "invalid_link_desc": "Check the link or contact the organizer",
     "error": "Download error",
     "no_photos": "No photos found"
+  },
+  "order": {
+    "title": "Order status",
+    "pending_title": "Processing payment",
+    "pending_desc": "Your payment is being processed. This usually takes a few seconds.",
+    "paid_title": "Payment successful!",
+    "paid_desc": "Your photos are ready for download",
+    "failed_title": "Payment failed",
+    "failed_desc": "Something went wrong with your payment. Please try again.",
+    "expired_title": "Order expired",
+    "expired_desc": "This order has expired. Please place a new order.",
+    "refunded_title": "Order refunded",
+    "refunded_desc": "This order has been refunded.",
+    "download_photos": "Download photos",
+    "retry_payment": "Try again",
+    "back_to_event": "Back to event",
+    "order_summary": "Order summary",
+    "event": "Event",
+    "photos_count": "{count} photos",
+    "total": "Total",
+    "payment_method": "Payment method",
+    "order_not_found": "Order not found",
+    "order_not_found_desc": "This order does not exist or the link is invalid."
   },
   "analytics": {
     "title": "Analytics",
@@ -566,7 +610,9 @@
     "delete_confirm": "Delete this photo?",
     "delete_confirm_desc": "This action cannot be undone",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "processing_status": "Processing: {ready} of {total}",
+    "failed": "failed"
   },
   "camera": {
     "title": "Camera API Keys",

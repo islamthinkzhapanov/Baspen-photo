@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, paymentTransactions } from "@/lib/db/schema";
+import { orders, orderItems, paymentTransactions, events } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPaymentProvider } from "@/lib/payments/provider";
+import {
+  sendOrderConfirmationEmail,
+  sendPaymentFailedEmail,
+  sendRefundEmail,
+} from "@/lib/email";
 
 // POST /api/webhooks/payment -- payment provider webhook callback
 export async function POST(request: Request) {
@@ -64,6 +69,57 @@ export async function POST(request: Request) {
     .update(orders)
     .set({ status: newOrderStatus, updatedAt: new Date() })
     .where(eq(orders.id, tx.orderId));
+
+  // Send email notifications
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, tx.orderId))
+    .limit(1);
+
+  if (order?.email) {
+    const [event] = await db
+      .select({ title: events.title })
+      .from(events)
+      .where(eq(events.id, order.eventId))
+      .limit(1);
+
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+
+    try {
+      if (result.status === "succeeded") {
+        await sendOrderConfirmationEmail({
+          to: order.email,
+          orderId: order.id,
+          totalAmount: order.totalAmount,
+          currency: order.currency,
+          photoCount: items.length,
+          downloadToken: order.downloadToken,
+          eventTitle: event?.title,
+        });
+      } else if (result.status === "refunded") {
+        await sendRefundEmail({
+          to: order.email,
+          orderId: order.id,
+          totalAmount: order.totalAmount,
+          currency: order.currency,
+        });
+      } else if (result.status === "failed") {
+        await sendPaymentFailedEmail({
+          to: order.email,
+          orderId: order.id,
+          totalAmount: order.totalAmount,
+          currency: order.currency,
+          eventTitle: event?.title,
+        });
+      }
+    } catch (emailErr) {
+      console.error("Failed to send payment email:", emailErr);
+    }
+  }
 
   return NextResponse.json({ received: true });
 }

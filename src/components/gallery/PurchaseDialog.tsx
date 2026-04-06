@@ -35,11 +35,17 @@ export function PurchaseDialog({
     useEventPricing(eventId);
   const createOrder = useCreateOrder();
 
+  const packageEligible = pricing?.packageEligible ?? false;
   const [mode, setMode] = useState<"single" | "package">(
-    selectedPhotoIds.length > 0 ? "single" : "package"
+    selectedPhotoIds.length > 0 ? "single" : packageEligible ? "package" : "single"
   );
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+
+  const availableProviders = (
+    process.env.NEXT_PUBLIC_PAYMENT_PROVIDERS || "manual"
+  ).split(",") as Array<"kaspi" | "stripe" | "manual">;
+  const [paymentMethod, setPaymentMethod] = useState(availableProviders[0]);
 
   if (pricingLoading) {
     return (
@@ -59,9 +65,7 @@ export function PurchaseDialog({
   const photoIds = mode === "package" ? allPhotoIds : selectedPhotoIds;
   const count = photoIds.length;
   const singleTotal = pricing.pricePerPhoto * count;
-  const packageTotal = Math.round(
-    singleTotal * (1 - pricing.packageDiscount / 100)
-  );
+  const packageTotal = pricing.packageTotal ?? singleTotal;
   const total = mode === "package" ? packageTotal : singleTotal;
   const savings = mode === "package" ? singleTotal - packageTotal : 0;
 
@@ -75,7 +79,7 @@ export function PurchaseDialog({
         isPackage: mode === "package",
         email: email || undefined,
         phone: phone || undefined,
-        paymentMethod: "manual", // Will be replaced with real provider
+        paymentMethod,
         sessionToken,
       },
       {
@@ -106,7 +110,7 @@ export function PurchaseDialog({
 
         <div className="p-4 space-y-4">
           {/* Mode toggle */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-2 ${packageEligible ? "grid-cols-2" : "grid-cols-1"}`}>
             <button
               onClick={() => setMode("single")}
               disabled={selectedPhotoIds.length === 0}
@@ -127,28 +131,30 @@ export function PurchaseDialog({
               </div>
             </button>
 
-            <button
-              onClick={() => setMode("package")}
-              className={`p-3 rounded-xl border-2 text-left transition-colors relative ${
-                mode === "package"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-border-active"
-              }`}
-            >
-              {pricing.packageDiscount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-success text-white text-xs px-2 py-0.5 rounded-full">
-                  -{pricing.packageDiscount}%
-                </span>
-              )}
-              <RiBox3Line size={20} className="mb-1" />
-              <div className="font-medium text-sm">{t("buy_all")}</div>
-              <div className="text-xs text-text-secondary">
-                {allPhotoIds.length} {t("photos")}
-              </div>
-              <div className="font-semibold mt-1">
-                {packageTotal.toLocaleString("ru-RU")} {t("currency_kzt")}
-              </div>
-            </button>
+            {packageEligible && (
+              <button
+                onClick={() => setMode("package")}
+                className={`p-3 rounded-xl border-2 text-left transition-colors relative ${
+                  mode === "package"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-border-active"
+                }`}
+              >
+                {pricing.packageDiscount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-success text-white text-xs px-2 py-0.5 rounded-full">
+                    -{pricing.packageDiscount}%
+                  </span>
+                )}
+                <RiBox3Line size={20} className="mb-1" />
+                <div className="font-medium text-sm">{t("buy_all")}</div>
+                <div className="text-xs text-text-secondary">
+                  {allPhotoIds.length} {t("photos")}
+                </div>
+                <div className="font-semibold mt-1">
+                  {packageTotal.toLocaleString("ru-RU")} {t("currency_kzt")}
+                </div>
+              </button>
+            )}
           </div>
 
           {/* Savings banner */}
@@ -183,6 +189,31 @@ export function PurchaseDialog({
               />
             </div>
           </div>
+
+          {/* Payment method */}
+          {availableProviders.length > 1 && (
+            <div>
+              <label className="text-sm text-text-secondary block mb-2">
+                {t("payment_method")}
+              </label>
+              <div className={`grid gap-2 grid-cols-${availableProviders.length}`}>
+                {availableProviders.map((provider) => (
+                  <button
+                    key={provider}
+                    onClick={() => setPaymentMethod(provider)}
+                    className={`p-3 rounded-xl border-2 text-center text-sm font-medium transition-colors ${
+                      paymentMethod === provider
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-border-active"
+                    }`}
+                  >
+                    <RiBankCardLine size={18} className="mx-auto mb-1" />
+                    {t(`provider_${provider}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Summary */}
           <div className="border-t border-border pt-3">

@@ -114,7 +114,7 @@ Figma file: `lxIG84nQsymXeHORHfegsl`
 | Database | PostgreSQL + pgvector (self-hosted, не Supabase — для КЗ хостинга) |
 | ORM | Drizzle ORM |
 | State | TanStack Query |
-| Auth | NextAuth.js v5 (email + Google OAuth) |
+| Auth | NextAuth.js v5 (email/password) |
 | Face Recognition | CompreFace (Docker, InsightFace, 99.86% accuracy) |
 | Client face detection | face-api.js (браузер) |
 | Queue | BullMQ + Redis |
@@ -238,7 +238,7 @@ baspen-photo/
 | # | Task | Описание |
 |---|---|---|
 | 1 | Project scaffolding | `pnpm create next-app`, Drizzle ORM, next-intl (RU/KZ/EN), Docker Compose (PostgreSQL+pgvector, Redis, CompreFace, MinIO), ESLint, структура папок |
-| 2 | Auth + roles + users | NextAuth.js v5 (email + Google OAuth). Роли: super_admin, owner, photographer, viewer. Таблица `users`, `subscription_plans`. Protected routes, layout дашборда |
+| 2 | Auth + roles + users | NextAuth.js v5 (email/password). Роли: super_admin, owner, photographer, viewer. Таблица `users`, `subscription_plans`. Protected routes, layout дашборда |
 | 3 | Events CRUD + team | Создание/редактирование событий, slug, `event_members` (приглашение фотографов/команды по email). QR-код генерация. Публичная страница `/[locale]/e/[slug]` |
 | 4 | Photo upload + storage | Bulk drag-drop upload, presigned URLs → MinIO, thumbnail generation (Sharp), фото-грид на странице события. Без модерации — сразу публикуется |
 

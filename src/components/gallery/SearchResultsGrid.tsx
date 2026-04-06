@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useCallback } from "react";
 import { Lightbox } from "./Lightbox";
+import { MasonryPhoto } from "./MasonryPhoto";
 import { PurchaseDialog } from "./PurchaseDialog";
 import {
   RiDownloadLine,
@@ -27,6 +28,27 @@ interface Props {
   onBack: () => void;
 }
 
+/** Skeleton placeholder grid shown while search is in progress */
+function MasonrySkeleton() {
+  // Varied heights for realistic masonry skeleton
+  const heights = [200, 260, 180, 300, 220, 240, 280, 190, 250, 210, 270, 230];
+  return (
+    <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
+      {heights.map((h, i) => (
+        <div
+          key={i}
+          className="mb-3 break-inside-avoid rounded-lg bg-gray-100 animate-pulse"
+          style={{
+            height: h,
+            opacity: 0,
+            animation: `masonry-fade-in 0.4s ease-out ${i * 50}ms forwards`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function SearchResultsGrid({
   photos,
   eventId,
@@ -44,11 +66,12 @@ export function SearchResultsGrid({
   const [showPurchase, setShowPurchase] = useState(false);
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
 
-  // Normalize field names (API returns snake_case from raw SQL)
   const normalizedPhotos = photos.map((p) => ({
     id: p.id,
     thumbnailPath: p.thumbnail_path ?? null,
+    thumbnailAvifPath: p.thumbnail_avif_path ?? null,
     watermarkedPath: p.watermarked_path ?? null,
+    placeholder: p.placeholder ?? null,
     storagePath: "",
     originalFilename: null,
     width: p.width,
@@ -144,17 +167,16 @@ export function SearchResultsGrid({
                   key={photo.id}
                   className="mb-3 break-inside-avoid group relative"
                 >
-                  <button
+                  <MasonryPhoto
+                    src={photo.watermarkedPath || photo.thumbnailPath || ""}
+                    srcAvif={photo.thumbnailAvifPath}
+                    alt=""
+                    width={photo.width}
+                    height={photo.height}
+                    placeholder={photo.placeholder}
+                    index={index}
                     onClick={() => setLightboxIndex(index)}
-                    className="w-full"
-                  >
-                    <img
-                      src={photo.watermarkedPath || photo.thumbnailPath || ""}
-                      alt=""
-                      className="w-full rounded-lg"
-                      loading="lazy"
-                    />
-                  </button>
+                  />
 
                   {/* Hover overlay with actions */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg pointer-events-none">
@@ -237,3 +259,5 @@ export function SearchResultsGrid({
     </div>
   );
 }
+
+export { MasonrySkeleton };

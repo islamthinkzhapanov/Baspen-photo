@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { events, photos } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { calculatePhotoPrice, calculateOrderTotal } from "@/lib/payments/provider";
 
 // GET /api/events/[id]/pricing -- get pricing info for an event (public)
@@ -32,11 +32,17 @@ export async function GET(
 
   const pricing = calculatePhotoPrice(event);
 
-  // Count total ready photos for package pricing estimate
+  // Count total ready photos for package pricing
   const [{ count }] = await db
-    .select({ count: photos.id })
+    .select({ count: sql<number>`cast(count(*) as int)` })
     .from(photos)
     .where(and(eq(photos.eventId, id), eq(photos.status, "ready")));
+
+  const totalPhotos = count ?? 0;
+  const packageEligible = totalPhotos >= 3;
+  const packageTotal = packageEligible
+    ? calculateOrderTotal(pricing.pricePerPhoto, totalPhotos, true, pricing.packageDiscount)
+    : null;
 
   return NextResponse.json({
     freeDownload: false,
@@ -44,12 +50,8 @@ export async function GET(
     packageDiscount: pricing.packageDiscount,
     currency: "KZT",
     pricingMode: event.pricingMode,
-    // Example package prices
-    examples: {
-      single: pricing.pricePerPhoto,
-      package5: calculateOrderTotal(pricing.pricePerPhoto, 5, true, pricing.packageDiscount),
-      package10: calculateOrderTotal(pricing.pricePerPhoto, 10, true, pricing.packageDiscount),
-    },
-    totalPhotos: count ? 1 : 0, // simplified count
+    totalPhotos,
+    packageEligible,
+    packageTotal,
   });
 }

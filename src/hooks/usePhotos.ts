@@ -91,6 +91,25 @@ export function useUploadPhotos(eventId: string) {
   });
 }
 
+export function useDeletePhoto(eventId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (photoId: string) => {
+      const res = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] });
+      qc.invalidateQueries({ queryKey: ["events", eventId] });
+    },
+  });
+}
+
 export function useProcessingStatus(eventId: string, enabled = true) {
   return useQuery({
     queryKey: ["events", eventId, "processing-status"],

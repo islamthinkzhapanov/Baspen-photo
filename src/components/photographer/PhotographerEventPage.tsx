@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent 
 import { useTranslations } from "next-intl";
 import {
   RiImageLine,
-  RiUploadLine,
   RiCalendarLine,
   RiMapPinLine,
   RiEyeLine,
@@ -12,74 +11,39 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiCloseLine,
+  RiLoader4Line,
 } from "@remixicon/react";
+import { useSession } from "next-auth/react";
+import { useEvent } from "@/hooks/useEvents";
+import { useEventPhotos, useDeletePhoto, useProcessingStatus } from "@/hooks/usePhotos";
+import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
 
-// TODO: replace with real data from API
-const demoEvents: Record<
-  string,
-  {
-    id: string;
-    title: string;
-    date: string;
-    location: string;
-    photoCount: number;
-    myUploads: number;
-    searches: number;
-    downloads: number;
-  }
-> = {
-  "1": {
-    id: "1",
-    title: "Almaty Marathon 2026",
-    date: "2026-03-30",
-    location: "Алматы, пр. Абая",
-    photoCount: 0,
-    myUploads: 0,
-    searches: 0,
-    downloads: 0,
-  },
-  "2": {
-    id: "2",
-    title: "Nauryz Festival",
-    date: "2026-03-22",
-    location: "Астана, EXPO",
-    photoCount: 3100,
-    myUploads: 860,
-    searches: 890,
-    downloads: 312,
-  },
-  "3": {
-    id: "3",
-    title: "Tech Conference KZ",
-    date: "2026-03-15",
-    location: "Алматы, Rixos",
-    photoCount: 2800,
-    myUploads: 520,
-    searches: 520,
-    downloads: 95,
-  },
-};
+interface Photo {
+  id: string;
+  uploadedBy: string;
+  thumbnailPath: string | null;
+  watermarkedPath: string | null;
+  storagePath: string;
+  originalFilename: string | null;
+  status: string;
+  createdAt: string;
+}
 
 const PHOTOS_PER_PAGE = 100;
-
-const demoPhotos = Array.from({ length: 120 }, (_, i) => ({
-  id: `p${i + 1}`,
-  index: i + 1,
-  uploadedByMe: i < 80,
-  thumbnailPath: null as string | null,
-}));
 
 /* ─── Photo Lightbox ─── */
 
 function PhotoLightbox({
   photos,
   currentIndex,
+  userId,
   onClose,
   onChange,
   onDelete,
 }: {
-  photos: typeof demoPhotos;
+  photos: Photo[];
   currentIndex: number;
+  userId: string;
   onClose: () => void;
   onChange: (index: number) => void;
   onDelete: (photoId: string) => void;
@@ -113,10 +77,12 @@ function PhotoLightbox({
 
   if (!photo) return null;
 
+  const isMyPhoto = photo.uploadedBy === userId;
+  const imageUrl = photo.watermarkedPath || photo.thumbnailPath;
+
   const handleDelete = () => {
     onDelete(photo.id);
     setShowDeleteConfirm(false);
-    // If we deleted the last photo, go back
     if (currentIndex >= photos.length - 1 && currentIndex > 0) {
       onChange(currentIndex - 1);
     }
@@ -133,7 +99,7 @@ function PhotoLightbox({
           })}
         </span>
         <div className="flex items-center gap-1">
-          {photo.uploadedByMe && (
+          {isMyPhoto && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer text-red-400 hover:text-red-300"
@@ -170,10 +136,10 @@ function PhotoLightbox({
       )}
 
       {/* Image */}
-      {photo.thumbnailPath ? (
+      {imageUrl ? (
         <img
-          src={photo.thumbnailPath}
-          alt={`Photo #${photo.index}`}
+          src={imageUrl}
+          alt={photo.originalFilename || ""}
           className="max-h-[85vh] max-w-[90vw] object-contain"
         />
       ) : (
@@ -316,6 +282,40 @@ function Pagination({
   );
 }
 
+/* ─── Processing Status Bar ─── */
+
+function ProcessingBar({ eventId }: { eventId: string }) {
+  const t = useTranslations("photographer");
+  const { data: status } = useProcessingStatus(eventId);
+
+  if (!status || status.processing === 0) return null;
+
+  const percent = Math.round(((status.ready + status.failed) / status.total) * 100);
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl text-sm">
+      <RiLoader4Line size={16} className="text-primary animate-spin shrink-0" />
+      <span className="text-text-secondary">
+        {t("processing_status", {
+          ready: status.ready,
+          total: status.total,
+        })}
+      </span>
+      <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+        <div
+          className="h-full bg-primary rounded-full transition-all duration-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      {status.failed > 0 && (
+        <span className="text-xs text-red-500">
+          {status.failed} {t("failed")}
+        </span>
+      )}
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 
 export function PhotographerEventPage({ eventId }: { eventId: string }) {
@@ -324,17 +324,16 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const event = demoEvents[eventId];
 
-  if (!event) {
-    return (
-      <div className="text-center py-16">
-        <p className="text-text-secondary">{te("not_found") || "Проект не найден"}</p>
-      </div>
-    );
-  }
+  const { data: session } = useSession();
+  const { data: event, isLoading: eventLoading } = useEvent(eventId);
+  const { data: allPhotos, isLoading: photosLoading } = useEventPhotos(eventId);
+  const deleteMutation = useDeletePhoto(eventId);
 
-  const pagePhotos = demoPhotos.slice(
+  const photos: Photo[] = allPhotos ?? [];
+  const readyPhotos = photos.filter((p: Photo) => p.status === "ready");
+
+  const pagePhotos = readyPhotos.slice(
     (currentPage - 1) * PHOTOS_PER_PAGE,
     currentPage * PHOTOS_PER_PAGE
   );
@@ -344,9 +343,37 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
   };
 
   const handleDelete = (photoId: string) => {
-    // TODO: call API to delete photo
-    console.log("Delete photo:", photoId);
+    deleteMutation.mutate(photoId, {
+      onSuccess: () => {
+        if (lightboxIndex !== null) {
+          if (pagePhotos.length <= 1) {
+            setLightboxIndex(null);
+          } else if (lightboxIndex >= pagePhotos.length - 1) {
+            setLightboxIndex(lightboxIndex - 1);
+          }
+        }
+      },
+    });
   };
+
+  if (eventLoading || photosLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 gap-2 text-text-secondary">
+        <RiLoader4Line size={20} className="animate-spin" />
+        <span>{te("loading")}</span>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-text-secondary">{te("not_found") || "Проект не найден"}</p>
+      </div>
+    );
+  }
+
+  const userId = session?.user?.id ?? "";
 
   return (
     <div>
@@ -354,69 +381,76 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display">{event.title}</h1>
         <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
-          <span className="flex items-center gap-1">
-            <RiCalendarLine size={14} />
-            {new Date(event.date).toLocaleDateString("ru-RU", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <span className="flex items-center gap-1">
-            <RiMapPinLine size={14} />
-            {event.location}
-          </span>
+          {event.date && (
+            <span className="flex items-center gap-1">
+              <RiCalendarLine size={14} />
+              {new Date(event.date).toLocaleDateString("ru-RU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+          )}
+          {event.location && (
+            <span className="flex items-center gap-1">
+              <RiMapPinLine size={14} />
+              {event.location}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Photos */}
       <div className="space-y-4">
-        {/* Upload zone + photo count */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer flex-1">
-            <RiUploadLine size={32} className="text-text-secondary mx-auto mb-2" />
-            <p className="text-sm font-medium">{t("drag_drop")}</p>
-            <p className="text-xs text-text-secondary mt-1">JPG, PNG, WebP до 50 МБ</p>
-          </div>
-        </div>
+        {/* Upload zone */}
+        <PhotoUploadZone eventId={eventId} />
+
+        {/* Processing status */}
+        <ProcessingBar eventId={eventId} />
 
         {/* Photo count badge */}
-        {demoPhotos.length > 0 && (
+        {readyPhotos.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text">
               <RiImageLine size={16} className="text-text-secondary" />
-              {t("uploaded_count", { count: demoPhotos.length.toLocaleString("ru-RU") })}
+              {t("uploaded_count", { count: readyPhotos.length.toLocaleString("ru-RU") })}
             </span>
           </div>
         )}
 
         {/* Photo grid or empty state */}
-        {event.photoCount > 0 ? (
+        {readyPhotos.length > 0 ? (
           <>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {pagePhotos.map((photo, idx) => (
-                <div
-                  key={photo.id}
-                  onClick={() => handlePhotoClick(idx)}
-                  className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
-                >
-                  <RiImageLine size={24} className="text-gray-300" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2">
-                    <RiEyeLine size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              {pagePhotos.map((photo, idx) => {
+                const thumbUrl = photo.thumbnailPath || photo.watermarkedPath;
+                return (
+                  <div
+                    key={photo.id}
+                    onClick={() => handlePhotoClick(idx)}
+                    className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
+                  >
+                    {thumbUrl ? (
+                      <img
+                        src={thumbUrl}
+                        alt={photo.originalFilename || ""}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <RiImageLine size={24} className="text-gray-300" />
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2">
+                      <RiEyeLine size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
-                  {photo.uploadedByMe && (
-                    <span className="absolute top-1 left-1 w-2 h-2 rounded-full bg-primary" />
-                  )}
-                  <span className="absolute bottom-1 right-1 text-[10px] text-gray-400">
-                    #{photo.index}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <Pagination
               currentPage={currentPage}
-              totalItems={demoPhotos.length}
+              totalItems={readyPhotos.length}
               perPage={PHOTOS_PER_PAGE}
               onPageChange={setCurrentPage}
               t={t}
@@ -428,14 +462,9 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
               <RiImageLine size={36} className="text-primary" />
             </div>
             <h3 className="text-lg font-semibold font-display mb-2">{t("empty_title")}</h3>
-            <p className="text-sm text-text-secondary max-w-md mx-auto mb-6">
+            <p className="text-sm text-text-secondary max-w-md mx-auto">
               {t("empty_desc")}
             </p>
-            <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer">
-              <RiUploadLine size={18} />
-              {t("empty_select_files")}
-            </button>
-            <p className="text-xs text-text-secondary mt-4">{t("empty_formats")}</p>
           </div>
         )}
       </div>
@@ -445,6 +474,7 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
         <PhotoLightbox
           photos={pagePhotos}
           currentIndex={lightboxIndex}
+          userId={userId}
           onClose={() => setLightboxIndex(null)}
           onChange={setLightboxIndex}
           onDelete={handleDelete}

@@ -167,7 +167,24 @@
       "Bash(curl -s http://localhost:3000/api/auth/csrf)",
       "Bash(node -e \"process.stdin.on\\('data', d => { const t = JSON.parse\\(d\\).csrfToken; console.log\\(t\\); }\\)\")",
       "Bash(curl -v -X POST http://localhost:3000/api/auth/signin/google -H 'Content-Type: application/x-www-form-urlencoded' -d 'csrfToken=fcd79916f085305baa50981c0af0d2f47770535e4093dd64756d2ab38d53caa2&callbackUrl=http://localhost:3000/events')",
-      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep \"^export async function\" {} | head -3')"
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep \"^export async function\" {} | head -3')",
+      "Bash(ls -la /Users/mobibrand/Documents/\"Baspen photo\"/src/app/[locale]/\\\\\\(auth\\\\\\)/reset-password/)",
+      "Bash(find /Users/mobibrand/Documents/\"Baspen photo\"/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"token\\\\|email.*send\\\\|reset\" {} \\\\;)",
+      "Bash(find /Users/mobibrand/Documents/\"Baspen photo\"/src/app/[locale] -type f -name \"page.tsx\")",
+      "Bash(wc -l /Users/mobibrand/Documents/\"Baspen photo\"/messages/*.json)",
+      "Bash(ssh-keygen -t ed25519 -C \"baspen-hetzner\" -f ~/.ssh/hetzner -N \"\")",
+      "Bash(ssh -i ~/.ssh/hetzner -o StrictHostKeyChecking=accept-new root@204.168.229.127 \"echo 'Connected OK' && uname -a\")",
+      "Bash(ssh -i ~/.ssh/hetzner root@204.168.229.127 \"apt update && DEBIAN_FRONTEND=noninteractive apt upgrade -y 2>&1 | tail -5\")",
+      "Bash(ssh -i ~/.ssh/hetzner root@204.168.229.127 \"curl -fsSL https://get.docker.com | sh 2>&1 | tail -10\")",
+      "Bash(ssh -i ~/.ssh/hetzner root@204.168.229.127 bash -s)",
+      "Bash(ssh -i ~/.ssh/hetzner -o ConnectTimeout=10 baspen@204.168.229.127 \"echo 'Connected OK' && docker --version && docker compose version && git --version\")",
+      "Bash(dig +short mytime.kz A)",
+      "Bash(dig +short www.mytime.kz A)",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"git clone https://github.com/islamthinkzhapanov/Baspen-photo.git ~/app 2>&1\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"ls ~/app/ && git -C ~/app log --oneline -3\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 bash -s)",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml up -d postgres redis minio compreface compreface-postgres 2>&1\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml ps 2>&1\")"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
@@ -181,7 +198,9 @@
       "/tmp",
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(auth)/invite",
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(auth)",
-      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(photographer)/photographer/events"
+      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(photographer)/photographer/events",
+      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(auth)/reset-password",
+      "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/order"
     ]
   }
 }

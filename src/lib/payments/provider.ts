@@ -176,7 +176,7 @@ export function calculateOrderTotal(
   packageDiscount: number
 ): number {
   const subtotal = pricePerPhoto * photoCount;
-  if (isPackage && photoCount > 1) {
+  if (isPackage) {
     return Math.round(subtotal * (1 - packageDiscount / 100));
   }
   return subtotal;

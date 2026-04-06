@@ -38,3 +38,23 @@ export function useDownloadPhotos(token: string | null) {
     enabled: !!token,
   });
 }
+
+export function useOrderStatus(orderId: string | null) {
+  return useQuery({
+    queryKey: ["orders", orderId, "status"],
+    queryFn: () => fetchJson(`/api/orders/${orderId}`),
+    enabled: !!orderId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (
+        status === "paid" ||
+        status === "failed" ||
+        status === "expired" ||
+        status === "refunded"
+      ) {
+        return false;
+      }
+      return 3000;
+    },
+  });
+}
