@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sponsorBlocks, events, eventMembers } from "@/lib/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { sponsorBlocks } from "@/lib/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { createSponsorSchema } from "@/lib/validators/sponsor";
+import { requireEventRole } from "@/lib/event-auth";
 
 // GET /api/events/[id]/sponsors
 export async function GET(
@@ -32,31 +33,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check ownership or membership
-  const [event] = await db
-    .select({ ownerId: events.ownerId })
-    .from(events)
-    .where(eq(events.id, id))
-    .limit(1);
-
-  if (!event) {
-    return NextResponse.json({ error: "Event not found" }, { status: 404 });
-  }
-
-  if (event.ownerId !== session.user.id) {
-    const [member] = await db
-      .select()
-      .from(eventMembers)
-      .where(
-        and(
-          eq(eventMembers.eventId, id),
-          eq(eventMembers.userId, session.user.id)
-        )
-      )
-      .limit(1);
-    if (!member || member.role !== "owner") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await request.json();

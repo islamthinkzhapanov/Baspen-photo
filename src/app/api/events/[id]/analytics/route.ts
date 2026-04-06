@@ -10,6 +10,7 @@ import {
   orderItems,
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql, count as countFn } from "drizzle-orm";
+import { requireEventRole } from "@/lib/event-auth";
 
 // GET /api/events/[id]/analytics?from=&to=
 export async function GET(
@@ -22,20 +23,15 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Analytics are owner-only
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");
-
-  // Verify access
-  const [event] = await db
-    .select()
-    .from(events)
-    .where(eq(events.id, id))
-    .limit(1);
-
-  if (!event) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
 
   const dateFrom = from ? new Date(from) : new Date(0);
   const dateTo = to ? new Date(to) : new Date();

@@ -201,7 +201,7 @@ export function PaymentsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-[1000px]">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
@@ -230,7 +230,7 @@ export function PaymentsPage() {
       </div>
 
       {/* Filters + Search */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 w-fit">
           {filterTabs.map((tab) => (
             <button
@@ -246,7 +246,7 @@ export function PaymentsPage() {
             </button>
           ))}
         </div>
-        <div className="relative flex-1">
+        <div className="relative max-w-xs">
           <RiSearchLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
           <input
             type="text"
@@ -256,82 +256,93 @@ export function PaymentsPage() {
             className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-bg placeholder:text-text-secondary focus:outline-none focus:border-border-active transition-colors"
           />
         </div>
-        <Button variant="secondary" icon={() => <RiDownloadLine size={16} />}>
+        <Button className="sm:ml-auto" variant="secondary" icon={() => <RiDownloadLine size={16} />}>
           {t("export")}
         </Button>
       </div>
 
       {/* Transactions List */}
-      <Card className="p-0 overflow-hidden">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>{t("col_transaction")}</TableHeaderCell>
-              <TableHeaderCell className="hidden sm:table-cell">{t("col_project")}</TableHeaderCell>
-              <TableHeaderCell className="hidden md:table-cell">{t("col_method")}</TableHeaderCell>
-              <TableHeaderCell className="text-right">{t("col_amount")}</TableHeaderCell>
-              <TableHeaderCell className="text-right hidden sm:table-cell">{t("col_status")}</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filtered.map((tx) => {
-              const status = statusConfig[tx.status];
-              const StatusIcon = status.icon;
-              return (
-                <TableRow key={tx.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          tx.type === "income"
-                            ? "bg-emerald-50 text-emerald-600"
-                            : "bg-red-50 text-red-500"
-                        }`}
-                      >
-                        {tx.type === "income" ? (
-                          <RiArrowLeftDownLine size={16} />
-                        ) : (
-                          <RiArrowRightUpLine size={16} />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{tx.description}</p>
-                        <p className="text-xs text-text-secondary">{tx.date}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-text-secondary hidden sm:table-cell">{tx.event}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex items-center gap-1.5">
-                      <RiBankCardLine size={14} className="text-text-secondary" />
-                      <span className="text-text-secondary text-xs">{tx.method}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className={`font-semibold tabular-nums ${tx.type === "income" ? "text-success" : "text-text"}`}>
-                      {tx.type === "income" ? "+" : "−"}{tx.amount.toLocaleString("ru-RU")} ₸
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right hidden sm:table-cell">
-                    <Badge color={status.color} size="xs">
-                      <span className="inline-flex items-center gap-1">
-                        <StatusIcon size={12} />
-                        {status.label}
-                      </span>
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        {filtered.length === 0 && (
-          <div className="py-12 text-center text-text-secondary text-sm">
-            {t("no_transactions")}
+      {transactions.length === 0 ? (
+        <Card className="p-12">
+          <div className="text-center max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <RiWalletLine size={32} className="text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold">{t("no_transactions_title")}</h2>
+            <p className="text-sm text-text-secondary mt-2">{t("no_transactions_desc")}</p>
           </div>
-        )}
-      </Card>
+        </Card>
+      ) : (
+        <Card className="p-0 overflow-hidden">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeaderCell>{t("col_transaction")}</TableHeaderCell>
+                <TableHeaderCell className="hidden sm:table-cell">{t("col_project")}</TableHeaderCell>
+                <TableHeaderCell className="hidden md:table-cell">{t("col_method")}</TableHeaderCell>
+                <TableHeaderCell className="text-right">{t("col_amount")}</TableHeaderCell>
+                <TableHeaderCell className="text-right hidden sm:table-cell">{t("col_status")}</TableHeaderCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filtered.map((tx) => {
+                const status = statusConfig[tx.status];
+                const StatusIcon = status.icon;
+                return (
+                  <TableRow key={tx.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            tx.type === "income"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-red-50 text-red-500"
+                          }`}
+                        >
+                          {tx.type === "income" ? (
+                            <RiArrowLeftDownLine size={16} />
+                          ) : (
+                            <RiArrowRightUpLine size={16} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{tx.description}</p>
+                          <p className="text-xs text-text-secondary">{tx.date}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-text-secondary hidden sm:table-cell">{tx.event}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center gap-1.5">
+                        <RiBankCardLine size={14} className="text-text-secondary" />
+                        <span className="text-text-secondary text-xs">{tx.method}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className={`font-semibold tabular-nums ${tx.type === "income" ? "text-success" : "text-text"}`}>
+                        {tx.type === "income" ? "+" : "−"}{tx.amount.toLocaleString("ru-RU")} ₸
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right hidden sm:table-cell">
+                      <Badge color={status.color} icon={StatusIcon} size="xs">
+                        {status.label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          {filtered.length === 0 && (
+            <div className="py-12 text-center">
+              <RiSearchLine size={32} className="text-text-secondary mx-auto mb-2" />
+              <p className="text-sm font-medium">{t("no_transactions")}</p>
+              <p className="text-xs text-text-secondary mt-1">{t("no_transactions_desc")}</p>
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

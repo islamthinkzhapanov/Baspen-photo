@@ -67,7 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .from(users)
           .where(eq(users.id, user.id!))
           .limit(1);
-        token.role = dbUser?.role || "photographer";
+        token.role = dbUser?.role || "user";
       }
       return token;
     },

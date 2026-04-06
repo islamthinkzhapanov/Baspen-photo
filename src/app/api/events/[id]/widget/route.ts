@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { embedWidgets, events } from "@/lib/db/schema";
+import { embedWidgets } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { createWidgetSchema } from "@/lib/validators/sponsor";
+import { requireEventRole } from "@/lib/event-auth";
 
 // GET /api/events/[id]/widget
 export async function GET(
@@ -32,13 +33,8 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [event] = await db
-    .select({ ownerId: events.ownerId })
-    .from(events)
-    .where(eq(events.id, id))
-    .limit(1);
-
-  if (!event || event.ownerId !== session.user.id) {
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

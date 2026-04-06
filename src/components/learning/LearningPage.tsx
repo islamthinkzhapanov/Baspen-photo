@@ -12,7 +12,7 @@ import {
   RiBarChart2Line,
   RiLockLine,
 } from "@remixicon/react";
-import { Card } from "@tremor/react";
+import { Card, Badge } from "@tremor/react";
 
 // --- Demo data ---
 
@@ -99,23 +99,20 @@ const modules: {
 
 const statusConfig: Record<
   ModuleStatus,
-  { bg: string; text: string; icon: typeof RiCheckboxCircleLine; iconBg: string }
+  { badgeColor: "green" | "blue" | "gray"; icon: typeof RiCheckboxCircleLine; iconBg: string }
 > = {
   completed: {
-    bg: "bg-success/10",
-    text: "text-success",
+    badgeColor: "green",
     icon: RiCheckboxCircleLine,
-    iconBg: "bg-success/10 text-success",
+    iconBg: "bg-success/20 text-success",
   },
   in_progress: {
-    bg: "bg-primary/10",
-    text: "text-primary",
+    badgeColor: "blue",
     icon: RiPlayLine,
-    iconBg: "bg-primary/10 text-primary",
+    iconBg: "bg-primary/20 text-primary",
   },
   locked: {
-    bg: "bg-bg-secondary",
-    text: "text-text-secondary",
+    badgeColor: "gray",
     icon: RiLockLine,
     iconBg: "bg-bg-secondary text-text-secondary",
   },
@@ -127,10 +124,10 @@ export function LearningPage() {
   const t = useTranslations();
 
   const completedCount = modules.filter((m) => m.status === "completed").length;
-  const progress = Math.round((completedCount / modules.length) * 100);
+  const progress = modules.length > 0 ? Math.round((completedCount / modules.length) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-[800px]">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display">{t("learning.title")}</h1>
@@ -139,28 +136,30 @@ export function LearningPage() {
         </p>
       </div>
 
-      {/* Progress */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium">{t("learning.your_progress")}</span>
-          <span className="text-sm text-text-secondary">
-            {t("learning.modules_count", { done: completedCount, total: modules.length })}
-          </span>
-        </div>
-        <div className="h-2 w-full rounded-full bg-bg-secondary overflow-hidden">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="text-xs text-text-secondary mt-2">
-          {t("learning.percent_done", { percent: progress })}
-        </p>
-      </Card>
+      {modules.length > 0 ? (
+        <>
+          {/* Progress */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">{t("learning.your_progress")}</span>
+              <span className="text-sm text-text-secondary">
+                {t("learning.modules_count", { done: completedCount, total: modules.length })}
+              </span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-xs text-text-secondary mt-2">
+              {t("learning.percent_done", { percent: progress })}
+            </p>
+          </Card>
 
-      {/* Modules */}
-      <div className="space-y-3">
-        {modules.map((mod) => {
+          {/* Modules */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {modules.map((mod) => {
           const st = statusConfig[mod.status];
           const StIcon = st.icon;
           const ModIcon = mod.icon;
@@ -169,7 +168,7 @@ export function LearningPage() {
           return (
             <Card
               key={mod.id}
-              className={`p-5 transition-colors ${
+              className={`p-5 transition-colors flex flex-col ${
                 isLocked ? "opacity-60" : "hover:border-border-active cursor-pointer"
               }`}
             >
@@ -181,46 +180,55 @@ export function LearningPage() {
                   <ModIcon size={20} />
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-sm">{mod.title}</h3>
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${st.bg} ${st.text}`}
-                    >
-                      <StIcon size={12} />
-                      {t(`learning.status_${mod.status}`)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-text-secondary mt-1">{mod.description}</p>
-
-                  {/* Lessons */}
-                  <div className="mt-3 space-y-1.5">
-                    {mod.lessons.map((lesson, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        {lesson.done ? (
-                          <RiCheckboxCircleLine size={14} className="text-success flex-shrink-0" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0" />
-                        )}
-                        <span className={lesson.done ? "text-text-secondary line-through" : ""}>
-                          {lesson.title}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Duration */}
-                <div className="flex items-center gap-1 text-xs text-text-secondary flex-shrink-0">
+                <div className="flex items-center gap-1 text-xs text-text-secondary flex-shrink-0 ml-auto">
                   <RiTimeLine size={14} />
                   {t("learning.min", { n: mod.durationMin })}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="mt-3 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-sm">{mod.title}</h3>
+                  <Badge color={st.badgeColor} icon={StIcon} size="xs">
+                    {t(`learning.status_${mod.status}`)}
+                  </Badge>
+                </div>
+                <p className="text-xs text-text-secondary mt-1">{mod.description}</p>
+
+                {/* Lessons */}
+                <div className="mt-3 space-y-1.5">
+                  {mod.lessons.map((lesson, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      {lesson.done ? (
+                        <RiCheckboxCircleLine size={14} className="text-success flex-shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0" />
+                      )}
+                      <span className={lesson.done ? "text-text-secondary line-through" : ""}>
+                        {lesson.title}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </Card>
           );
         })}
-      </div>
+          </div>
+        </>
+      ) : (
+        <Card className="p-12">
+          <div className="text-center max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <RiBookOpenLine size={32} className="text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold">{t("learning.no_modules")}</h2>
+            <p className="text-sm text-text-secondary mt-2">{t("learning.no_modules_desc")}</p>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

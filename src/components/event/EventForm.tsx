@@ -5,7 +5,19 @@ import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { TextInput, NumberInput, Textarea, Button, Switch } from "@tremor/react";
+import { TextInput, NumberInput, Textarea, Button, DatePicker } from "@tremor/react";
+import { ru } from "date-fns/locale";
+import { Switch } from "@/components/ui/switch";
+import { TimePicker } from "@/components/ui/time-picker";
+import {
+  RiMapPinLine,
+  RiPercentLine,
+  RiImageLine,
+  RiDownloadLine,
+  RiDropLine,
+  RiArrowLeftLine,
+  RiInformationLine,
+} from "@remixicon/react";
 
 interface EventFormProps {
   event?: {
@@ -36,8 +48,11 @@ export function EventForm({ event }: EventFormProps) {
   const [slug, setSlug] = useState(event?.slug || "");
   const [title, setTitle] = useState(event?.title || "");
   const [description, setDescription] = useState(event?.description || "");
-  const [date, setDate] = useState(
-    event?.date ? new Date(event.date).toISOString().slice(0, 16) : ""
+  const [eventDate, setEventDate] = useState<Date | undefined>(
+    event?.date ? new Date(event.date) : undefined
+  );
+  const [eventTime, setEventTime] = useState(
+    event?.date ? new Date(event.date).toISOString().slice(11, 16) : ""
   );
   const [location, setLocation] = useState(event?.location || "");
   const [pricingMode, setPricingMode] = useState(event?.pricingMode || "commission");
@@ -62,7 +77,16 @@ export function EventForm({ event }: EventFormProps) {
       title,
       slug,
       description: description || undefined,
-      date: date || undefined,
+      date: eventDate
+        ? (() => {
+            const d = new Date(eventDate);
+            if (eventTime) {
+              const [h, m] = eventTime.split(":");
+              d.setHours(Number(h), Number(m), 0, 0);
+            }
+            return d.toISOString();
+          })()
+        : undefined,
       location: location || undefined,
       pricingMode: pricingMode as "exclusive" | "commission",
       settings: {
@@ -86,157 +110,221 @@ export function EventForm({ event }: EventFormProps) {
     });
   }
 
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          {t("event_name")} *
-        </label>
-        <TextInput
-          name="title"
-          required
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            if (!isEdit) setSlug(generateSlug(e.target.value));
-          }}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("slug")} *</label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-secondary">/e/</span>
+    <form onSubmit={handleSubmit} className="max-w-2xl space-y-6 pb-8">
+      {/* Section 1: Basic Info */}
+      <section className="rounded-xl bg-bg-secondary p-5 space-y-5">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-text mb-1.5">
+            {t("event_name")} <span className="text-red-500">*</span>
+          </label>
           <TextInput
-            name="slug"
+            id="title"
+            name="title"
+            placeholder={t("event_name")}
             required
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (!isEdit) setSlug(generateSlug(e.target.value));
+            }}
           />
         </div>
-        <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
-      </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          {t("event_description")}
-        </label>
-        <Textarea
-          name="description"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">
-            {t("event_date")}
+          <label htmlFor="slug" className="block text-sm font-medium text-text mb-1.5">
+            {t("slug")} <span className="text-red-500">*</span>
           </label>
-          <input
-            name="date"
-            type="datetime-local"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="tremor-TextInput-input w-full rounded-tremor-default border border-tremor-border bg-tremor-background px-3 py-2 text-tremor-default text-tremor-content-emphasis shadow-tremor-input focus:border-tremor-brand focus:ring-2 focus:ring-tremor-brand-muted"
-          />
+          <div className="flex">
+            <span className="inline-flex items-center px-3 rounded-l-tremor-default border border-r-0 border-tremor-border bg-tremor-background-subtle text-sm text-text-secondary select-none">
+              /e/
+            </span>
+            <div className="flex-1 [&_.tremor-TextInput-root]:rounded-l-none">
+              <TextInput
+                id="slug"
+                name="slug"
+                required
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            {t("event_location")}
-          </label>
-          <TextInput
-            name="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </div>
-      </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-text mb-1.5">
+            {t("event_description")}
+          </label>
+          <Textarea
+            id="description"
+            name="description"
+            rows={3}
+            placeholder={t("event_description")}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      </section>
+
+      {/* Section 2: Date & Location */}
+      <section className="rounded-xl bg-bg-secondary p-5">
+        <div className="grid grid-cols-[1fr_auto_1.5fr] gap-3 items-end">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              {t("event_date")}
+            </label>
+            <DatePicker
+              value={eventDate}
+              onValueChange={setEventDate}
+              placeholder="дд.мм.гггг"
+              displayFormat="dd.MM.yyyy"
+              locale={ru}
+              enableClear={true}
+              enableYearNavigation
+              weekStartsOn={1}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              &nbsp;
+            </label>
+            <TimePicker
+              value={eventTime}
+              onChange={setEventTime}
+            />
+          </div>
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-text mb-1.5">
+              {t("event_location")}
+            </label>
+            <TextInput
+              id="location"
+              name="location"
+              icon={RiMapPinLine}
+              placeholder={t("event_location")}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: Pricing Model */}
+      <section className="rounded-xl bg-bg-secondary p-5">
+        <label className="block text-sm font-medium text-text mb-3">
           {t("pricing_mode")}
         </label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="pricingMode"
-              value="commission"
-              checked={pricingMode === "commission"}
-              onChange={() => setPricingMode("commission")}
-            />
-            <span className="text-sm">{t("commission")}</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="pricingMode"
-              value="exclusive"
-              checked={pricingMode === "exclusive"}
-              onChange={() => setPricingMode("exclusive")}
-            />
-            <span className="text-sm">{t("exclusive")}</span>
-          </label>
-        </div>
-      </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setPricingMode("commission")}
+            className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all cursor-pointer ${
+              pricingMode === "commission"
+                ? "border-primary bg-blue-50/60 shadow-sm"
+                : "border-border hover:border-border-active bg-white"
+            }`}
+          >
+            <RiPercentLine className={`w-6 h-6 ${pricingMode === "commission" ? "text-primary" : "text-text-secondary"}`} />
+            <span className={`text-sm font-medium ${pricingMode === "commission" ? "text-primary" : "text-text"}`}>
+              {t("commission")}
+            </span>
+            <span className={`text-xs leading-relaxed ${pricingMode === "commission" ? "text-primary/70" : "text-text-secondary"}`}>
+              {t("commission_desc")}
+            </span>
+          </button>
 
-      <div className="border-t border-border pt-4">
-        <h3 className="font-medium mb-3">{t("settings")}</h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={freeDownload}
-              onChange={setFreeDownload}
-            />
-            <span className="text-sm">{t("free_download")}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={watermarkEnabled}
-              onChange={setWatermarkEnabled}
-            />
-            <span className="text-sm">{t("watermark")}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm mb-1">
-                {t("price_per_photo")}
-              </label>
-              <NumberInput
-                name="pricePerPhoto"
-                min={0}
-                value={pricePerPhoto}
-                onValueChange={setPricePerPhoto}
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">
-                {t("package_discount")}
-              </label>
-              <NumberInput
-                name="packageDiscount"
-                min={0}
-                max={100}
-                value={packageDiscount}
-                onValueChange={setPackageDiscount}
-              />
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setPricingMode("exclusive")}
+            className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all cursor-pointer ${
+              pricingMode === "exclusive"
+                ? "border-primary bg-blue-50/60 shadow-sm"
+                : "border-border hover:border-border-active bg-white"
+            }`}
+          >
+            <RiImageLine className={`w-6 h-6 ${pricingMode === "exclusive" ? "text-primary" : "text-text-secondary"}`} />
+            <span className={`text-sm font-medium ${pricingMode === "exclusive" ? "text-primary" : "text-text"}`}>
+              {t("exclusive")}
+            </span>
+            <span className={`text-xs leading-relaxed ${pricingMode === "exclusive" ? "text-primary/70" : "text-text-secondary"}`}>
+              {t("exclusive_desc")}
+            </span>
+          </button>
         </div>
-      </div>
 
-      <div className="flex gap-3">
+        {/* Pricing terms info */}
+        <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-2.5">
+          <RiInformationLine className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+          <span className="text-xs text-primary/80 leading-relaxed">
+            {pricingMode === "commission" ? t("commission_terms") : t("exclusive_terms")}
+          </span>
+        </div>
+      </section>
+
+      {/* Section 4: Settings */}
+      <section className="rounded-xl bg-bg-secondary p-5">
+        <div className="space-y-4">
+          {/* Free Download Toggle */}
+          <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white">
+            <div className="flex items-center gap-3">
+              <RiDownloadLine className="w-4.5 h-4.5 text-text-secondary" />
+              <span className="text-sm font-medium text-text">{t("free_download")}</span>
+            </div>
+            <Switch checked={freeDownload} onChange={setFreeDownload} />
+          </div>
+
+          {/* Watermark Toggle */}
+          <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white">
+            <div className="flex items-center gap-3">
+              <RiDropLine className="w-4.5 h-4.5 text-text-secondary" />
+              <span className="text-sm font-medium text-text">{t("watermark")}</span>
+            </div>
+            <Switch checked={watermarkEnabled} onChange={setWatermarkEnabled} />
+          </div>
+
+          {/* Pricing fields — only relevant when not free */}
+          {!freeDownload && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div>
+                <label htmlFor="pricePerPhoto" className="block text-sm font-medium text-text mb-1.5">
+                  {t("price_per_photo")}
+                </label>
+                <NumberInput
+                  id="pricePerPhoto"
+                  name="pricePerPhoto"
+                  min={0}
+                  value={pricePerPhoto}
+                  onValueChange={setPricePerPhoto}
+                />
+              </div>
+              <div>
+                <label htmlFor="packageDiscount" className="block text-sm font-medium text-text mb-1.5">
+                  {t("package_discount")}
+                </label>
+                <NumberInput
+                  id="packageDiscount"
+                  name="packageDiscount"
+                  min={0}
+                  max={100}
+                  value={packageDiscount}
+                  onValueChange={setPackageDiscount}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 pt-2">
         <Button
           type="submit"
-          disabled={createMutation.isPending || updateMutation.isPending}
+          disabled={isPending}
+          className="min-w-[140px]"
         >
-          {createMutation.isPending || updateMutation.isPending
-            ? "..."
-            : isEdit
-              ? tc("save")
-              : tc("create")}
+          {isPending ? "..." : isEdit ? tc("save") : tc("create")}
         </Button>
         <Button
           type="button"

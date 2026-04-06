@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { photos } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { getEventAccess } from "@/lib/event-auth";
 
 // GET /api/events/[id]/processing-status — get photo processing stats
 export async function GET(
@@ -13,6 +14,11 @@ export async function GET(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const access = await getEventAccess(id, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const [stats] = await db

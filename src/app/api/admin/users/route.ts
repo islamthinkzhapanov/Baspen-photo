@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     );
   }
   if (role) {
-    conditions.push(eq(users.role, role as "super_admin" | "owner" | "photographer"));
+    conditions.push(eq(users.role, role as "super_admin" | "user"));
   }
 
   const whereClause = conditions.length > 0
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
         email: users.email,
         name: users.name,
         role: users.role,
+        status: users.status,
         image: users.image,
         createdAt: users.createdAt,
       })
@@ -91,7 +92,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "userId and role required" }, { status: 400 });
   }
 
-  const validRoles = ["super_admin", "owner", "photographer"];
+  const validRoles = ["super_admin", "user"];
   if (!validRoles.includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }

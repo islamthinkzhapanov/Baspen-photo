@@ -59,7 +59,7 @@ export function BarChart({
   return (
     <ResponsiveContainer width="100%" height={height}>
       <RechartsBarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 16, 61, 0.08)" vertical={false} />
         <XAxis
           dataKey={index}
           tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -75,6 +75,7 @@ export function BarChart({
         />
         <Tooltip
           content={<ChartTooltip colors={hex} valueFormatter={valueFormatter} />}
+          cursor={{ fill: "rgba(0, 0, 0, 0.04)" }}
         />
         {showLegend && (
           <Legend
@@ -83,15 +84,18 @@ export function BarChart({
             wrapperStyle={{ fontSize: 12, color: "#6b7280" }}
           />
         )}
-        {categories.map((cat, i) => (
-          <Bar
-            key={cat}
-            dataKey={cat}
-            fill={hex[i % hex.length]}
-            stackId={stackId}
-            radius={stack ? undefined : [4, 4, 0, 0]}
-          />
-        ))}
+        {categories.map((cat, i) => {
+          const isLast = stack && i === categories.length - 1;
+          return (
+            <Bar
+              key={cat}
+              dataKey={cat}
+              fill={hex[i % hex.length]}
+              stackId={stackId}
+              radius={isLast || !stack ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+            />
+          );
+        })}
       </RechartsBarChart>
     </ResponsiveContainer>
   );

@@ -1,7 +1,7 @@
 /** Color name → hex map for charts. Hex values bypass CSS variables, fixing Safari SVG fill/stroke. */
 export const chartColorMap: Record<string, string> = {
-  blue: "#3b82f6",
-  sky: "#0ea5e9",
+  blue: "#005FF9",
+  sky: "#5EB3F9",
   green: "#22c55e",
   cyan: "#06b6d4",
   emerald: "#10b981",

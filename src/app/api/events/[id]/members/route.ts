@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { events, eventMembers, users } from "@/lib/db/schema";
+import { eventMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { inviteMemberSchema } from "@/lib/validators/event";
+import { getEventAccess, requireEventRole } from "@/lib/event-auth";
 
 // GET /api/events/[id]/members
 export async function GET(
@@ -14,6 +15,11 @@ export async function GET(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const access = await getEventAccess(id, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const members = await db
@@ -36,7 +42,7 @@ export async function GET(
   return NextResponse.json(members);
 }
 
-// POST /api/events/[id]/members — invite by email
+// POST /api/events/[id]/members — invite by email (owner only)
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -47,15 +53,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify ownership
-  const [event] = await db
-    .select({ id: events.id })
-    .from(events)
-    .where(and(eq(events.id, id), eq(events.ownerId, session.user.id)))
-    .limit(1);
-
-  if (!event) {
-    return NextResponse.json({ error: "Not owner" }, { status: 403 });
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await request.json();

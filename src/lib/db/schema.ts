@@ -16,8 +16,7 @@ import { relations } from "drizzle-orm";
 // --- Enums ---
 export const userRoleEnum = pgEnum("user_role", [
   "super_admin",
-  "owner",
-  "photographer",
+  "user",
 ]);
 
 export const eventMemberRoleEnum = pgEnum("event_member_role", [
@@ -62,6 +61,8 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "refunded",
 ]);
 
+export const inviteStatusEnum = pgEnum("invite_status", ["active", "invited"]);
+
 // --- Users ---
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -69,7 +70,8 @@ export const users = pgTable("users", {
   name: text("name"),
   passwordHash: text("password_hash"),
   image: text("image"),
-  role: userRoleEnum("role").notNull().default("photographer"),
+  role: userRoleEnum("role").notNull().default("user"),
+  status: inviteStatusEnum("status").notNull().default("active"),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
@@ -109,6 +111,25 @@ export const verificationTokens = pgTable(
     expires: timestamp("expires", { mode: "date" }).notNull(),
   },
   (t) => [uniqueIndex("verification_token_idx").on(t.identifier, t.token)]
+);
+
+// --- Invite Tokens ---
+export const inviteTokens = pgTable(
+  "invite_tokens",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    usedAt: timestamp("used_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("invite_tokens_token_idx").on(t.token),
+    index("invite_tokens_user_idx").on(t.userId),
+  ]
 );
 
 // --- Subscription Plans ---
@@ -545,6 +566,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   eventMembers: many(eventMembers),
   photos: many(photos),
   subscriptions: many(userSubscriptions),
+  inviteTokens: many(inviteTokens),
+}));
+
+export const inviteTokensRelations = relations(inviteTokens, ({ one }) => ({
+  user: one(users, { fields: [inviteTokens.userId], references: [users.id] }),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({

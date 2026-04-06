@@ -377,12 +377,12 @@
   --radius-tremor-full: 9999px;
 
   /* Shadows */
-  --shadow-tremor: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-tremor-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-tremor-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-tremor: none;
+  --shadow-tremor-input: none;
+  --shadow-tremor-card: none;
   --shadow-tremor-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-dark-tremor-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-dark-tremor-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-dark-tremor-input: none;
+  --shadow-dark-tremor-card: none;
   --shadow-dark-tremor-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   /* Font sizes (for text-tremor-default, text-tremor-title, etc.) */
@@ -396,6 +396,45 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: "Inter", system-ui, sans-serif;
+}
+
+/* ── Landing page animations ─────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-up {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ── Tremor design-token bridge ────────────────────────────────────────
@@ -433,51 +472,14 @@ body {
   --tremor-radius: 0.5rem;
 
   /* Shadows */
-  --tremor-shadow-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tremor-shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tremor-shadow-input: none;
+  --tremor-shadow-card: none;
   --tremor-shadow-dropdown: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 /* ── Tremor component overrides ────────────────────────────────────── */
 
-/* Switch — fix broken rendering in Tailwind v4 + Safari */
-button[role="switch"] {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  width: 2.75rem;
-  min-width: 2.75rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  background-color: #d1d5db;
-  padding: 0.125rem;
-  cursor: pointer;
-  transition: background-color 200ms ease-in-out;
-  border: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-button[role="switch"][data-headlessui-state~="checked"],
-button[role="switch"][aria-checked="true"] {
-  background-color: var(--tremor-brand, #005FF9);
-}
-
-button[role="switch"] > span[aria-hidden="true"] {
-  display: block;
-  height: 1.25rem;
-  width: 1.25rem;
-  border-radius: 9999px;
-  background-color: white;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  transition: transform 200ms ease-in-out;
-  transform: translateX(0);
-}
-
-button[role="switch"][data-headlessui-state~="checked"] > span[aria-hidden="true"],
-button[role="switch"][aria-checked="true"] > span[aria-hidden="true"] {
-  transform: translateX(1.25rem);
-}
+/* Switch styles are now handled inline by src/components/ui/switch.tsx */
 
 /* Make Tremor Select wider by default */
 .tremor-SelectTrigger-root {
@@ -507,18 +509,38 @@ button[role="switch"][aria-checked="true"] > span[aria-hidden="true"] {
   box-shadow: 0 0 0 1px var(--tremor-brand);
 }
 
-/* Badge — soft filled style, no outline */
+/* DatePicker — normalize trigger to match TextInput height */
+.tremor-DatePicker-root button[data-headlessui-state] {
+  min-height: 0;
+  padding-top: 0.5rem;   /* py-2 */
+  padding-bottom: 0.5rem;
+}
+
+/* Badge — soft filled style, no outline, 30% bg opacity */
 .tremor-Badge-root {
   border: none !important;
   box-shadow: none !important;
   opacity: 1;
 }
 
-.tremor-Badge-root.bg-green-100 { background-color: rgba(34, 197, 94, 0.3) !important; }
-.tremor-Badge-root.bg-red-100 { background-color: rgba(239, 68, 68, 0.3) !important; }
-.tremor-Badge-root.bg-amber-100 { background-color: rgba(245, 158, 11, 0.3) !important; }
-.tremor-Badge-root.bg-blue-100 { background-color: rgba(59, 130, 246, 0.3) !important; }
-.tremor-Badge-root.bg-gray-100 { background-color: rgba(107, 114, 128, 0.3) !important; }
-.tremor-Badge-root.bg-yellow-100 { background-color: rgba(234, 179, 8, 0.3) !important; }
-.tremor-Badge-root.bg-emerald-100 { background-color: rgba(16, 185, 129, 0.3) !important; }
-.tremor-Badge-root.bg-violet-100 { background-color: rgba(139, 92, 246, 0.3) !important; }
+/* Tremor uses bg-{color}-500 + bg-opacity-10, but Tailwind v4 ignores bg-opacity-*.
+   Override background-color directly with 30% opacity. */
+/* Background — 20% opacity */
+.tremor-Badge-root.bg-green-500 { background-color: rgba(34, 197, 94, 0.2) !important; }
+.tremor-Badge-root.bg-gray-500 { background-color: rgba(107, 114, 128, 0.2) !important; }
+.tremor-Badge-root.bg-amber-500 { background-color: rgba(245, 158, 11, 0.2) !important; }
+.tremor-Badge-root.bg-blue-500 { background-color: rgba(59, 130, 246, 0.2) !important; }
+.tremor-Badge-root.bg-red-500 { background-color: rgba(239, 68, 68, 0.2) !important; }
+.tremor-Badge-root.bg-yellow-500 { background-color: rgba(234, 179, 8, 0.2) !important; }
+.tremor-Badge-root.bg-emerald-500 { background-color: rgba(16, 185, 129, 0.2) !important; }
+.tremor-Badge-root.bg-violet-500 { background-color: rgba(139, 92, 246, 0.2) !important; }
+
+/* Text + icon color — Tremor sets text-{color}-600 but Tailwind v4 may not apply it */
+.tremor-Badge-root.text-green-600 { color: #16a34a !important; }
+.tremor-Badge-root.text-gray-600 { color: #4b5563 !important; }
+.tremor-Badge-root.text-amber-600 { color: #d97706 !important; }
+.tremor-Badge-root.text-blue-600 { color: #2563eb !important; }
+.tremor-Badge-root.text-red-600 { color: #dc2626 !important; }
+.tremor-Badge-root.text-yellow-600 { color: #ca8a04 !important; }
+.tremor-Badge-root.text-emerald-600 { color: #059669 !important; }
+.tremor-Badge-root.text-violet-600 { color: #7c3aed !important; }

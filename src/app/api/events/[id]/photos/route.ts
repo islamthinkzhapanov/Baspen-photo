@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { photos, events } from "@/lib/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { enqueuePhotoProcessing } from "@/lib/queue/photo-queue";
+import { getEventAccess } from "@/lib/event-auth";
 
 // GET /api/events/[id]/photos — list photos for event
 export async function GET(
@@ -14,6 +15,11 @@ export async function GET(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const access = await getEventAccess(id, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const eventPhotos = await db
@@ -34,6 +40,12 @@ export async function POST(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Any event member can upload photos
+  const access = await getEventAccess(id, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await request.json();

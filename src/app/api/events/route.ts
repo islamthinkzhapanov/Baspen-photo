@@ -14,33 +14,41 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // Events where user is owner or member
+  // Events where user is a member (includes owner members and photographers)
+  const memberRows = await db
+    .select({ event: events, role: eventMembers.role })
+    .from(eventMembers)
+    .innerJoin(events, eq(eventMembers.eventId, events.id))
+    .where(eq(eventMembers.userId, userId))
+    .orderBy(desc(events.createdAt));
+
+  // Also find events where user is ownerId but not yet in eventMembers (legacy)
   const ownedEvents = await db
     .select()
     .from(events)
     .where(eq(events.ownerId, userId))
     .orderBy(desc(events.createdAt));
 
-  const memberEvents = await db
-    .select({ event: events })
-    .from(eventMembers)
-    .innerJoin(events, eq(eventMembers.eventId, events.id))
-    .where(eq(eventMembers.userId, userId));
+  // Build map with role info
+  const eventMap = new Map<string, { currentUserRole: string }>();
+  const result: (typeof ownedEvents[number] & { currentUserRole: string })[] = [];
 
-  const allEvents = [
-    ...ownedEvents,
-    ...memberEvents.map((m) => m.event),
-  ];
+  for (const row of memberRows) {
+    if (!eventMap.has(row.event.id)) {
+      eventMap.set(row.event.id, { currentUserRole: row.role });
+      result.push({ ...row.event, currentUserRole: row.role });
+    }
+  }
 
-  // Deduplicate
-  const seen = new Set<string>();
-  const unique = allEvents.filter((e) => {
-    if (seen.has(e.id)) return false;
-    seen.add(e.id);
-    return true;
-  });
+  // Add legacy owned events not in eventMembers
+  for (const event of ownedEvents) {
+    if (!eventMap.has(event.id)) {
+      eventMap.set(event.id, { currentUserRole: "owner" });
+      result.push({ ...event, currentUserRole: "owner" });
+    }
+  }
 
-  return NextResponse.json(unique);
+  return NextResponse.json(result);
 }
 
 // POST /api/events — create event
@@ -82,6 +90,14 @@ export async function POST(request: Request) {
       ownerId: session.user.id,
     })
     .returning();
+
+  // Add creator as event member with owner role
+  await db.insert(eventMembers).values({
+    eventId: event.id,
+    userId: session.user.id,
+    role: "owner",
+    acceptedAt: new Date(),
+  });
 
   return NextResponse.json(event, { status: 201 });
 }

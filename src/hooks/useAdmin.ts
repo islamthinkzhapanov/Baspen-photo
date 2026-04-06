@@ -25,6 +25,7 @@ export function useAdminUsers(params?: {
   return useQuery({
     queryKey: ["admin", "users", params],
     queryFn: () => fetchJson(`/api/admin/users?${sp.toString()}`),
+    retry: false,
   });
 }
 
@@ -41,6 +42,33 @@ export function useUpdateUserRole() {
   });
 }
 
+// --- Invites ---
+export function useCreateInvite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { email: string; name?: string }) =>
+      fetchJson("/api/admin/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
+export function useResendInvite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      fetchJson("/api/admin/invites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
 // --- Events ---
 export function useAdminEvents(params?: { page?: number; search?: string }) {
   const sp = new URLSearchParams();
@@ -50,6 +78,7 @@ export function useAdminEvents(params?: { page?: number; search?: string }) {
   return useQuery({
     queryKey: ["admin", "events", params],
     queryFn: () => fetchJson(`/api/admin/events?${sp.toString()}`),
+    retry: false,
   });
 }
 
@@ -75,6 +104,7 @@ export function useAdminFinance(from?: string, to?: string) {
   return useQuery({
     queryKey: ["admin", "finance", from, to],
     queryFn: () => fetchJson(`/api/admin/finance?${sp.toString()}`),
+    retry: false,
   });
 }
 
@@ -83,6 +113,7 @@ export function useAdminPlans() {
   return useQuery({
     queryKey: ["admin", "plans"],
     queryFn: () => fetchJson("/api/admin/plans"),
+    retry: false,
   });
 }
 
@@ -123,6 +154,7 @@ export function useAdminMetrics() {
   return useQuery({
     queryKey: ["admin", "metrics"],
     queryFn: () => fetchJson("/api/admin/metrics"),
+    retry: false,
   });
 }
 
@@ -144,6 +176,7 @@ export function useAdminAudit(params?: {
   return useQuery({
     queryKey: ["admin", "audit", params],
     queryFn: () => fetchJson(`/api/admin/audit?${sp.toString()}`),
+    retry: false,
   });
 }
 

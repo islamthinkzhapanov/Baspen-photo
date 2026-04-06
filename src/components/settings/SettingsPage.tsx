@@ -9,7 +9,9 @@ import {
   RiShieldLine,
   RiCameraLine,
   RiArrowRightSLine,
+  RiLogoutBoxRLine,
 } from "@remixicon/react";
+import { signOut } from "next-auth/react";
 import { useState } from "react";
 import {
   Card,
@@ -19,7 +21,6 @@ import {
   Button,
 } from "@tremor/react";
 import { Switch } from "@/components/ui/switch";
-
 // --- Demo data ---
 
 const demoProfile = {
@@ -27,7 +28,6 @@ const demoProfile = {
   email: "arman@baspen.kz",
   phone: "+7 707 123 45 67",
   avatar: null,
-  role: "owner",
   language: "ru",
   timezone: "Asia/Almaty",
 };
@@ -38,12 +38,18 @@ export function SettingsPage() {
   const t = useTranslations();
   const [profile, setProfile] = useState(demoProfile);
   const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState({
+  const initialNotifications = {
     email_purchases: true,
     email_uploads: false,
     push_searches: true,
     push_withdrawals: true,
-  });
+  };
+  const [notifications, setNotifications] = useState(initialNotifications);
+
+  const hasChanges =
+    JSON.stringify(profile) !== JSON.stringify(demoProfile) ||
+    darkMode !== false ||
+    JSON.stringify(notifications) !== JSON.stringify(initialNotifications);
 
   const notificationItems = [
     { key: "email_purchases", label: t("settings.notif_purchases"), desc: t("settings.notif_purchases_desc") },
@@ -59,7 +65,7 @@ export function SettingsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-[700px]">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display">{t("settings.title")}</h1>
@@ -68,25 +74,29 @@ export function SettingsPage() {
 
       {/* Profile Section */}
       <Card className="p-5">
-        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <RiUserLine size={16} className="text-text-secondary" />
-          {t("settings.profile")}
-        </h2>
-
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex items-start gap-4 mb-5">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
             {profile.name.charAt(0)}
           </div>
-          <div>
-            <p className="font-semibold">{profile.name}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold">{profile.name}</p>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text transition-colors cursor-pointer"
+              >
+                <RiLogoutBoxRLine size={16} />
+                {t("auth.logout")}
+              </button>
+            </div>
             <p className="text-sm text-text-secondary">{profile.email}</p>
             <p className="text-xs text-primary mt-0.5 capitalize">
-              {profile.role === "owner" ? t("settings.role_owner") : t("settings.role_photographer")}
+              {t("settings.role_user")}
             </p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-xs text-text-secondary block mb-1">{t("settings.name")}</label>
             <TextInput
@@ -112,114 +122,119 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      {/* Notifications */}
-      <Card className="p-5">
-        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <RiNotification3Line size={16} className="text-text-secondary" />
-          {t("settings.notifications")}
-        </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Notifications */}
+        <Card className="p-5">
+          <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <RiNotification3Line size={16} className="text-text-secondary" />
+            {t("settings.notifications")}
+          </h2>
 
-        <div className="space-y-3">
-          {notificationItems.map((item) => (
-            <div key={item.key} className="flex items-center justify-between py-2">
+          <div className="space-y-3">
+            {notificationItems.map((item) => (
+              <div key={item.key} className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm font-medium">{item.label}</p>
+                  <p className="text-xs text-text-secondary">{item.desc}</p>
+                </div>
+                <Switch
+                  checked={notifications[item.key as keyof typeof notifications]}
+                  onChange={(val) =>
+                    setNotifications({
+                      ...notifications,
+                      [item.key]: val,
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Preferences */}
+        <Card className="p-5">
+          <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <RiGlobalLine size={16} className="text-text-secondary" />
+            {t("settings.preferences")}
+          </h2>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-medium">{item.label}</p>
-                <p className="text-xs text-text-secondary">{item.desc}</p>
+                <p className="text-sm font-medium">{t("settings.language")}</p>
+              </div>
+              <Select
+                value={profile.language}
+                onValueChange={(val) => setProfile({ ...profile, language: val })}
+                enableClear={false}
+                className="w-auto"
+              >
+                <SelectItem value="ru">Русский</SelectItem>
+                <SelectItem value="kz">Қазақша</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-medium">{t("settings.timezone")}</p>
+              </div>
+              <Select
+                value={profile.timezone}
+                onValueChange={(val) => setProfile({ ...profile, timezone: val })}
+                enableClear={false}
+                className="w-auto"
+              >
+                <SelectItem value="Asia/Almaty">Алматы (UTC+6)</SelectItem>
+                <SelectItem value="Asia/Aqtau">Актау (UTC+5)</SelectItem>
+                <SelectItem value="Europe/Moscow">Москва (UTC+3)</SelectItem>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-medium">{t("settings.dark_mode")}</p>
+                <p className="text-xs text-text-secondary">{t("settings.dark_mode_soon")}</p>
               </div>
               <Switch
-                checked={notifications[item.key as keyof typeof notifications]}
-                onChange={(val) =>
-                  setNotifications({
-                    ...notifications,
-                    [item.key]: val,
-                  })
-                }
+                checked={darkMode}
+                onChange={setDarkMode}
+                disabled
               />
             </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Preferences */}
-      <Card className="p-5">
-        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <RiGlobalLine size={16} className="text-text-secondary" />
-          {t("settings.preferences")}
-        </h2>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium">{t("settings.language")}</p>
-            </div>
-            <Select
-              value={profile.language}
-              onValueChange={(val) => setProfile({ ...profile, language: val })}
-              enableClear={false}
-              className="w-auto"
-            >
-              <SelectItem value="ru">Русский</SelectItem>
-              <SelectItem value="kz">Қазақша</SelectItem>
-              <SelectItem value="en">English</SelectItem>
-            </Select>
           </div>
+        </Card>
 
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium">{t("settings.timezone")}</p>
-            </div>
-            <Select
-              value={profile.timezone}
-              onValueChange={(val) => setProfile({ ...profile, timezone: val })}
-              enableClear={false}
-              className="w-auto"
-            >
-              <SelectItem value="Asia/Almaty">Алматы (UTC+6)</SelectItem>
-              <SelectItem value="Asia/Aqtau">Актау (UTC+5)</SelectItem>
-              <SelectItem value="Europe/Moscow">Москва (UTC+3)</SelectItem>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium">{t("settings.dark_mode")}</p>
-              <p className="text-xs text-text-secondary">{t("settings.dark_mode_soon")}</p>
-            </div>
-            <Switch
-              checked={darkMode}
-              onChange={setDarkMode}
-              disabled
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Quick Links */}
-      <Card className="p-0 overflow-hidden">
-        {quickLinks.map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={i}
-              className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer"
-            >
-              <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
-                <Icon size={16} className="text-text-secondary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{item.label}</p>
-                <p className="text-xs text-text-secondary">{item.desc}</p>
-              </div>
-              <RiArrowRightSLine size={16} className="text-text-secondary" />
-            </button>
-          );
-        })}
-      </Card>
+        {/* Quick Links */}
+        <Card className="p-0 overflow-hidden">
+          {quickLinks.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={i}
+                className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
+                  <Icon size={16} className="text-text-secondary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{item.label}</p>
+                  <p className="text-xs text-text-secondary">{item.desc}</p>
+                </div>
+                <RiArrowRightSLine size={16} className="text-text-secondary" />
+              </button>
+            );
+          })}
+        </Card>
+      </div>
 
       {/* Save */}
-      <div className="flex justify-end">
-        <Button>{t("common.save")}</Button>
-      </div>
+      {hasChanges && (
+        <div className="flex justify-end">
+          <Button>{t("common.save")}</Button>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -171,22 +171,12 @@ export function AnalyticsSection({ eventId }: { eventId: string }) {
             <div className="bg-bg-secondary rounded-xl p-4">
               <h3 className="text-sm font-medium mb-3">{t("search_stats")}</h3>
               {searchData.length > 0 ? (
-                <div className="flex flex-col items-center">
-                  <DonutChart
+                <DonutChart
                     data={searchData}
                     category="value"
                     index="name"
                     colors={["blue", "green"]}
-                    className="h-40"
                   />
-                  <div className="flex gap-4 mt-2">
-                    {searchData.map((d) => (
-                      <div key={d.name} className="flex items-center gap-1.5 text-xs">
-                        {d.name}: {d.value}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               ) : (
                 <div className="h-40 flex items-center justify-center text-text-secondary text-sm">
                   {t("no_data")}

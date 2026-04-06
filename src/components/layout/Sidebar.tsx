@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
   RiFolderOpenLine,
@@ -14,6 +13,7 @@ import {
   RiSideBarLine,
 } from "@remixicon/react";
 import { useSidebar } from "./SidebarContext";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const navItems: readonly { key: string; href: string; icon: typeof RiDashboardLine }[] = [
   { key: "dashboard", href: "/dashboard", icon: RiDashboardLine },
@@ -27,13 +27,12 @@ const navItems: readonly { key: string; href: string; icon: typeof RiDashboardLi
 export function Sidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.role === "super_admin";
+  const { isAdmin } = useUserRole();
   const { collapsed, toggle } = useSidebar();
 
   return (
     <aside
-      className={`hidden md:flex flex-col border-r border-border bg-bg-secondary min-h-screen transition-all duration-200 ${
+      className={`hidden md:flex flex-col border-r border-border bg-bg-secondary h-screen sticky top-0 transition-all duration-200 ${
         collapsed ? "md:w-16" : "md:w-60"
       }`}
     >
@@ -59,19 +58,20 @@ export function Sidebar() {
       <nav className="flex-1 px-3 space-y-1">
         {navItems.map(({ key, href, icon: Icon }) => {
           const active = pathname.startsWith(href);
+          const label = t(key);
           return (
             <Link
               key={key}
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? "bg-primary/10 text-primary"
+                  ? "text-primary"
                   : "text-text-secondary hover:bg-bg hover:text-text"
               } ${collapsed ? "justify-center" : ""}`}
-              title={collapsed ? t(key) : undefined}
+              title={collapsed ? label : undefined}
             >
               <Icon size={20} />
-              {!collapsed && t(key)}
+              {!collapsed && label}
             </Link>
           );
         })}
@@ -81,7 +81,7 @@ export function Sidebar() {
             href="/admin/users"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               pathname.startsWith("/admin")
-                ? "bg-primary/10 text-primary"
+                ? "text-primary"
                 : "text-text-secondary hover:bg-bg hover:text-text"
             } ${collapsed ? "justify-center" : ""}`}
             title={collapsed ? t("admin") : undefined}

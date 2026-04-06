@@ -10,44 +10,11 @@ import {
   RiStackLine,
   RiArrowUpLine,
   RiHardDriveLine,
+  RiShoppingCartLine,
+  RiBarChartBoxLine,
 } from "@remixicon/react";
-import { RiShoppingCartLine } from "@remixicon/react";
 import { Card } from "@tremor/react";
 import { BarChart } from "@/components/charts";
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  growth,
-  growthLabel,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  growth?: number;
-  growthLabel?: string;
-}) {
-  return (
-    <Card className="p-4">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon size={20} className="text-primary" />
-        </div>
-        <p className="text-sm text-text-secondary">{label}</p>
-      </div>
-      <p className="text-2xl font-bold">{value}</p>
-      {growth !== undefined && (
-        <p className="text-xs text-text-secondary mt-1">
-          <span className={growth > 0 ? "text-success" : "text-text-secondary"}>
-            +{growth}
-          </span>{" "}
-          {growthLabel}
-        </p>
-      )}
-    </Card>
-  );
-}
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -57,87 +24,128 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
+const DEMO_METRICS = {
+  totals: {
+    users: 48,
+    events: 24,
+    photos: 24800,
+    participants: 3291,
+    orders: 342,
+    activeSubscriptions: 18,
+  },
+  monthGrowth: {
+    newUsers: 12,
+    newEvents: 6,
+    newPhotos: 8400,
+  },
+  storage: { totalBytes: 36_507_222_016 },
+  charts: {
+    usersPerDay: [
+      { date: "28 мар", count: 3 },
+      { date: "29 мар", count: 5 },
+      { date: "30 мар", count: 2 },
+      { date: "31 мар", count: 7 },
+      { date: "1 апр", count: 4 },
+      { date: "2 апр", count: 9 },
+      { date: "3 апр", count: 6 },
+      { date: "4 апр", count: 5 },
+      { date: "5 апр", count: 8 },
+    ],
+  },
+};
+
 export function MetricsPage() {
   const t = useTranslations("admin");
-  const { data, isLoading } = useAdminMetrics();
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold font-display">{t("metrics_title")}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-28 bg-bg-secondary rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const { data: apiData } = useAdminMetrics();
+  const data = apiData ?? DEMO_METRICS;
 
   const totals = data?.totals || {};
   const growth = data?.monthGrowth || {};
+
+  const metricCards = [
+    {
+      icon: RiGroupLine,
+      label: t("total_users"),
+      value: totals.users?.toLocaleString("ru-RU") || "0",
+      growth: growth.newUsers,
+      color: "bg-primary/10 text-primary",
+    },
+    {
+      icon: RiFolderOpenLine,
+      label: t("total_events"),
+      value: totals.events?.toLocaleString("ru-RU") || "0",
+      growth: growth.newEvents,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      icon: RiCameraLine,
+      label: t("total_photos"),
+      value: totals.photos?.toLocaleString("ru-RU") || "0",
+      growth: growth.newPhotos,
+      color: "bg-amber-50 text-amber-600",
+    },
+    {
+      icon: RiSearchLine,
+      label: t("total_participants"),
+      value: totals.participants?.toLocaleString("ru-RU") || "0",
+      color: "bg-violet-50 text-violet-600",
+    },
+    {
+      icon: RiShoppingCartLine,
+      label: t("total_orders"),
+      value: totals.orders?.toLocaleString("ru-RU") || "0",
+      color: "bg-rose-50 text-rose-600",
+    },
+    {
+      icon: RiStackLine,
+      label: t("active_subscriptions"),
+      value: totals.activeSubscriptions?.toLocaleString("ru-RU") || "0",
+      color: "bg-cyan-50 text-cyan-600",
+    },
+    {
+      icon: RiHardDriveLine,
+      label: t("storage_used"),
+      value: formatBytes(data?.storage?.totalBytes || 0),
+      color: "bg-orange-50 text-orange-600",
+    },
+    {
+      icon: RiArrowUpLine,
+      label: t("avg_photos_per_event"),
+      value: String(totals.events > 0 ? Math.round(totals.photos / totals.events) : 0),
+      color: "bg-indigo-50 text-indigo-600",
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold font-display">{t("metrics_title")}</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          icon={RiGroupLine}
-          label={t("total_users")}
-          value={totals.users?.toLocaleString("ru-RU") || "0"}
-          growth={growth.newUsers}
-          growthLabel={t("this_month")}
-        />
-        <MetricCard
-          icon={RiFolderOpenLine}
-          label={t("total_events")}
-          value={totals.events?.toLocaleString("ru-RU") || "0"}
-          growth={growth.newEvents}
-          growthLabel={t("this_month")}
-        />
-        <MetricCard
-          icon={RiCameraLine}
-          label={t("total_photos")}
-          value={totals.photos?.toLocaleString("ru-RU") || "0"}
-          growth={growth.newPhotos}
-          growthLabel={t("this_month")}
-        />
-        <MetricCard
-          icon={RiSearchLine}
-          label={t("total_participants")}
-          value={totals.participants?.toLocaleString("ru-RU") || "0"}
-        />
-        <MetricCard
-          icon={RiShoppingCartLine}
-          label={t("total_orders")}
-          value={totals.orders?.toLocaleString("ru-RU") || "0"}
-        />
-        <MetricCard
-          icon={RiStackLine}
-          label={t("active_subscriptions")}
-          value={totals.activeSubscriptions?.toLocaleString("ru-RU") || "0"}
-        />
-        <MetricCard
-          icon={RiHardDriveLine}
-          label={t("storage_used")}
-          value={formatBytes(data?.storage?.totalBytes || 0)}
-        />
-        <MetricCard
-          icon={RiArrowUpLine}
-          label={t("avg_photos_per_event")}
-          value={
-            totals.events > 0
-              ? Math.round(totals.photos / totals.events)
-              : 0
-          }
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {metricCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.label} className="p-4 flex flex-col gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
+                <Icon size={20} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xs text-text-secondary mt-0.5">{stat.label}</p>
+                {stat.growth !== undefined && (
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    <span className="text-success">+{stat.growth.toLocaleString("ru-RU")}</span>{" "}
+                    {t("this_month")}
+                  </p>
+                )}
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* User registration chart */}
-      {data?.charts?.usersPerDay?.length > 0 && (
-        <Card className="p-4">
-          <h2 className="font-medium mb-4">{t("users_per_day")}</h2>
+      <Card className="p-4">
+        <h2 className="font-medium mb-4">{t("users_per_day")}</h2>
+        {data?.charts?.usersPerDay?.length > 0 ? (
           <BarChart
             data={data.charts.usersPerDay.map((d: { date: string; count: number }) => ({
               date: d.date,
@@ -149,8 +157,16 @@ export function MetricsPage() {
             className="h-32"
             showLegend={false}
           />
-        </Card>
-      )}
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-12 h-12 rounded-full bg-bg-secondary flex items-center justify-center mb-3">
+              <RiBarChartBoxLine size={24} className="text-text-secondary" />
+            </div>
+            <p className="text-sm text-text-secondary">{t("no_metrics_data")}</p>
+            <p className="text-xs text-text-secondary mt-1">{t("no_metrics_data_desc")}</p>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

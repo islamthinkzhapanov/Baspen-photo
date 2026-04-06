@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAdminPlans, useCreatePlan, useUpdatePlan } from "@/hooks/useAdmin";
-import { RiAddLine, RiPencilLine, RiCloseLine } from "@remixicon/react";
+import { RiAddLine, RiPencilLine, RiCloseLine, RiPriceTag3Line } from "@remixicon/react";
 import { toast } from "sonner";
 import {
   Button,
@@ -29,13 +29,20 @@ const emptyForm: PlanForm = {
   priceMonthly: 0,
 };
 
+const DEMO_PLANS = [
+  { id: "p1", name: "Free", maxEvents: 2, maxPhotosPerEvent: 500, maxStorageGb: 5, priceMonthly: 0, isActive: true, subscriberCount: 32 },
+  { id: "p2", name: "Pro", maxEvents: 20, maxPhotosPerEvent: 50000, maxStorageGb: 100, priceMonthly: 9900, isActive: true, subscriberCount: 14 },
+  { id: "p3", name: "Enterprise", maxEvents: 999, maxPhotosPerEvent: 200000, maxStorageGb: 1000, priceMonthly: 29900, isActive: true, subscriberCount: 4 },
+];
+
 export function PlansPage() {
   const t = useTranslations("admin");
-  const { data: plans, isLoading } = useAdminPlans();
+  const { data: apiPlans } = useAdminPlans();
+  const plans = apiPlans ?? DEMO_PLANS;
   const createPlan = useCreatePlan();
   const updatePlan = useUpdatePlan();
 
-  const [editing, setEditing] = useState<string | null>(null); // plan id or "new"
+  const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<PlanForm>(emptyForm);
 
   function startCreate() {
@@ -101,30 +108,30 @@ export function PlansPage() {
         </Button>
       </div>
 
-      {/* Edit / Create form */}
       {editing && (
-        <Card className="p-4 space-y-4 bg-bg-secondary">
+        <Card className="p-5 space-y-4 bg-bg-secondary">
           <div className="flex items-center justify-between">
             <h2 className="font-medium">
               {editing === "new" ? t("create_plan") : t("edit_plan")}
             </h2>
-            <button onClick={() => setEditing(null)}>
+            <button
+              onClick={() => setEditing(null)}
+              className="p-1.5 rounded-lg hover:bg-bg transition-colors"
+            >
               <RiCloseLine size={16} />
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium">{t("plan_name")}</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("plan_name")}</label>
               <TextInput
-                className="mt-1"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("max_events")}</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("max_events")}</label>
               <NumberInput
-                className="mt-1"
                 value={form.maxEvents}
                 onValueChange={(val) =>
                   setForm((f) => ({ ...f, maxEvents: val ?? 0 }))
@@ -132,9 +139,8 @@ export function PlansPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("max_photos")}</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("max_photos")}</label>
               <NumberInput
-                className="mt-1"
                 value={form.maxPhotosPerEvent}
                 onValueChange={(val) =>
                   setForm((f) => ({
@@ -145,9 +151,8 @@ export function PlansPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("max_storage")}</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("max_storage")}</label>
               <NumberInput
-                className="mt-1"
                 value={form.maxStorageGb}
                 onValueChange={(val) =>
                   setForm((f) => ({
@@ -158,9 +163,8 @@ export function PlansPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("price_monthly")}</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("price_monthly")}</label>
               <NumberInput
-                className="mt-1"
                 value={form.priceMonthly}
                 onValueChange={(val) =>
                   setForm((f) => ({
@@ -182,15 +186,9 @@ export function PlansPage() {
         </Card>
       )}
 
-      {isLoading ? (
+      {plans?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-48 bg-bg-secondary rounded-lg animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans?.map(
+          {plans.map(
             (plan: {
               id: string;
               name: string;
@@ -207,14 +205,12 @@ export function PlansPage() {
               >
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold">{plan.name}</h3>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => startEdit(plan)}
-                      className="p-1.5 hover:bg-bg-secondary rounded"
-                    >
-                      <RiPencilLine size={16} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => startEdit(plan)}
+                    className="p-1.5 rounded-lg hover:bg-bg-secondary transition-colors"
+                  >
+                    <RiPencilLine size={16} className="text-text-secondary" />
+                  </button>
                 </div>
 
                 <p className="text-2xl font-bold text-primary">
@@ -243,6 +239,23 @@ export function PlansPage() {
             )
           )}
         </div>
+      ) : (
+        <Card className="p-0">
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-bg-secondary flex items-center justify-center mb-4">
+              <RiPriceTag3Line size={28} className="text-text-secondary" />
+            </div>
+            <p className="text-sm font-medium text-text">{t("no_plans")}</p>
+            <p className="text-xs text-text-secondary mt-1">{t("no_plans_desc")}</p>
+            <Button
+              icon={() => <RiAddLine size={16} />}
+              onClick={startCreate}
+              className="mt-4"
+            >
+              {t("create_plan")}
+            </Button>
+          </div>
+        </Card>
       )}
     </div>
   );

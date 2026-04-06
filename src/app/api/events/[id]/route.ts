@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { updateEventSchema } from "@/lib/validators/event";
+import { getEventAccess, requireEventRole } from "@/lib/event-auth";
 
 // GET /api/events/[id]
 export async function GET(
@@ -16,6 +17,11 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const access = await getEventAccess(id, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const [event] = await db
     .select()
     .from(events)
@@ -26,7 +32,7 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json(event);
+  return NextResponse.json({ ...event, currentUserRole: access.role });
 }
 
 // PATCH /api/events/[id]
@@ -38,6 +44,11 @@ export async function PATCH(
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -58,11 +69,11 @@ export async function PATCH(
   const [updated] = await db
     .update(events)
     .set(updateData)
-    .where(and(eq(events.id, id), eq(events.ownerId, session.user.id)))
+    .where(eq(events.id, id))
     .returning();
 
   if (!updated) {
-    return NextResponse.json({ error: "Not found or not owner" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   return NextResponse.json(updated);
@@ -79,13 +90,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { denied } = await requireEventRole(id, session.user.id, "owner");
+  if (denied) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const [deleted] = await db
     .delete(events)
-    .where(and(eq(events.id, id), eq(events.ownerId, session.user.id)))
+    .where(eq(events.id, id))
     .returning({ id: events.id });
 
   if (!deleted) {
-    return NextResponse.json({ error: "Not found or not owner" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   return NextResponse.json({ success: true });

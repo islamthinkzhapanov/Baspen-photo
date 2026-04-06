@@ -10,7 +10,10 @@ import {
   RiBarChart2Line,
   RiFileList2Line,
   RiArrowLeftLine,
+  RiSideBarLine,
 } from "@remixicon/react";
+import { useSidebar } from "@/components/layout/SidebarContext";
+
 const navItems: readonly { key: string; href: string; icon: typeof RiGroupLine }[] = [
   { key: "users", href: "/admin/users", icon: RiGroupLine },
   { key: "events", href: "/admin/events", icon: RiFolderOpenLine },
@@ -23,14 +26,28 @@ const navItems: readonly { key: string; href: string; icon: typeof RiGroupLine }
 export function AdminSidebar() {
   const t = useTranslations("admin");
   const pathname = usePathname();
+  const { collapsed, toggle } = useSidebar();
 
   return (
-    <aside className="hidden md:flex md:w-60 flex-col border-r border-border bg-bg-secondary min-h-screen">
-      <div className="p-6">
-        <Link href="/admin/users" className="flex items-center gap-2">
-          <img src="/logo-baspen.svg" alt="Baspen" className="h-5 w-auto" />
-          <span className="text-sm font-medium text-text-secondary">Admin</span>
-        </Link>
+    <aside
+      className={`hidden md:flex flex-col border-r border-border bg-bg-secondary h-screen sticky top-0 transition-all duration-200 ${
+        collapsed ? "md:w-16" : "md:w-60"
+      }`}
+    >
+      <div className={`flex items-center ${collapsed ? "justify-center p-4" : "justify-between p-6"}`}>
+        {!collapsed && (
+          <Link href="/admin/users" className="flex items-center gap-2">
+            <img src="/logo-baspen.svg" alt="Baspen" className="h-5 w-auto brightness-0" />
+            <span className="text-sm font-medium text-text-secondary">Admin</span>
+          </Link>
+        )}
+        <button
+          onClick={toggle}
+          className="text-text-secondary hover:text-text transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <RiSideBarLine size={20} />
+        </button>
       </div>
 
       <nav className="flex-1 px-3 space-y-1">
@@ -42,12 +59,13 @@ export function AdminSidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? "bg-primary/10 text-primary"
+                  ? "text-primary"
                   : "text-text-secondary hover:bg-bg hover:text-text"
-              }`}
+              } ${collapsed ? "justify-center" : ""}`}
+              title={collapsed ? t(`nav.${key}`) : undefined}
             >
               <Icon size={20} />
-              {t(`nav.${key}`)}
+              {!collapsed && t(`nav.${key}`)}
             </Link>
           );
         })}
@@ -56,10 +74,13 @@ export function AdminSidebar() {
       <div className="px-3 pb-4">
         <Link
           href="/events"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg hover:text-text transition-colors"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg hover:text-text transition-colors ${
+            collapsed ? "justify-center" : ""
+          }`}
+          title={collapsed ? t("back_to_dashboard") : undefined}
         >
           <RiArrowLeftLine size={20} />
-          {t("back_to_dashboard")}
+          {!collapsed && t("back_to_dashboard")}
         </Link>
       </div>
     </aside>

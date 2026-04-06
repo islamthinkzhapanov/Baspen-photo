@@ -37,6 +37,7 @@ import {
   TabPanel,
 } from "@tremor/react";
 import { LineChart } from "@/components/charts";
+import { useEventRole } from "@/hooks/useEventRole";
 
 // --- Demo data ---
 
@@ -188,6 +189,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const t = useTranslations("events");
   const tc = useTranslations("common");
   const ta = useTranslations("analytics");
+  const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
@@ -221,12 +223,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     revenue: RiArrowUpLine,
   };
 
-  const stats = [
+  const allStats = [
     { key: "photos", label: t("photos"), value: event.photoCount, icon: statIcons.photos, color: "text-primary" },
     { key: "searches", label: ta("total_searches"), value: event.searches, icon: statIcons.searches, color: "text-amber-600" },
     { key: "downloads", label: ta("total_downloads"), value: event.downloads, icon: statIcons.downloads, color: "text-emerald-600" },
-    { key: "revenue", label: ta("total_revenue"), value: `${event.revenue.toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600" },
+    { key: "revenue", label: ta("total_revenue"), value: `${event.revenue.toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600", ownerOnly: true },
   ];
+
+  const stats = isPhotographer
+    ? allStats.filter((s) => !s.ownerOnly)
+    : allStats;
 
   return (
     <div className="max-w-[1000px]">
@@ -271,9 +277,11 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <Button variant="secondary" icon={RiQrCodeLine} size="sm">
             QR
           </Button>
-          <Button icon={event.isPublished ? RiGlobalLine : RiGlobalLine} size="sm">
-            {event.isPublished ? t("unpublish") : t("publish")}
-          </Button>
+          {!isPhotographer && (
+            <Button icon={event.isPublished ? RiGlobalLine : RiGlobalLine} size="sm">
+              {event.isPublished ? t("unpublish") : t("publish")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -298,10 +306,18 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       {/* Tabs */}
       <TabGroup>
         <TabList>
-          <Tab icon={RiImageLine}>Фото</Tab>
-          <Tab icon={RiGroupLine}>Команда</Tab>
-          <Tab icon={RiBarChart2Line}>Аналитика</Tab>
-          <Tab icon={RiSettings3Line}>Настройки</Tab>
+          {[
+            { icon: RiImageLine, label: t("photos"), show: true },
+            { icon: RiGroupLine, label: t("team"), show: true },
+            { icon: RiBarChart2Line, label: ta("analytics"), show: !isPhotographer },
+            { icon: RiSettings3Line, label: tc("settings"), show: !isPhotographer },
+          ]
+            .filter((tab) => tab.show)
+            .map((tab) => (
+              <Tab key={tab.label} icon={tab.icon}>
+                {tab.label}
+              </Tab>
+            ))}
         </TabList>
         <TabPanels>
           {/* Photos Tab */}
@@ -350,27 +366,29 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {/* Team Tab */}
           <TabPanel>
             <div className="space-y-4">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setInviteEmail("");
-                }}
-                className="flex gap-2"
-              >
-                <TextInput
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder={t("invite_email")}
-                  className="flex-1"
-                />
-                <span className="flex items-center px-3 py-2 border border-tremor-border rounded-tremor-default text-sm">
-                  {t("role_photographer")}
-                </span>
-                <Button type="submit" icon={RiUserAddLine} size="sm">
-                  {t("invite_member")}
-                </Button>
-              </form>
+              {!isPhotographer && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setInviteEmail("");
+                  }}
+                  className="flex gap-2"
+                >
+                  <TextInput
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t("invite_email")}
+                    className="flex-1"
+                  />
+                  <span className="flex items-center px-3 py-2 border border-tremor-border rounded-tremor-default text-sm">
+                    {t("role_photographer")}
+                  </span>
+                  <Button type="submit" icon={RiUserAddLine} size="sm">
+                    {t("invite_member")}
+                  </Button>
+                </form>
+              )}
 
               <div className="space-y-2">
                 {demoMembers.map((m) => (
@@ -398,107 +416,107 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
             </div>
           </TabPanel>
 
-          {/* Analytics Tab */}
-          <TabPanel>
-            <div className="space-y-6">
-              {/* Chart */}
-              <Card className="p-5">
-                <h3 className="text-sm font-semibold mb-4">Поиски и скачивания</h3>
-                <LineChart
-                  data={chartData}
-                  index="date"
-                  categories={["searches", "downloads"]}
-                  colors={["blue", "green"]}
-                  yAxisWidth={40}
-                  className="h-64"
-                />
-              </Card>
+          {/* Analytics Tab (Owner only) */}
+          {!isPhotographer && (
+            <TabPanel>
+              <div className="space-y-6">
+                <Card className="p-5">
+                  <h3 className="text-sm font-semibold mb-4">Поиски и скачивания</h3>
+                  <LineChart
+                    data={chartData}
+                    index="date"
+                    categories={["searches", "downloads"]}
+                    colors={["blue", "green"]}
+                    yAxisWidth={40}
+                    className="h-64"
+                  />
+                </Card>
 
-              {/* Conversion funnel */}
-              <Card className="p-5">
-                <h3 className="text-sm font-semibold mb-4">Воронка</h3>
-                <div className="flex items-center gap-6">
-                  {[
-                    { label: "Посетители", value: event.participants + event.searches },
-                    { label: "Искали фото", value: event.searches },
-                    { label: "Скачали", value: event.downloads },
-                  ].map((step, i) => (
-                    <div key={step.label} className="flex items-center gap-4">
-                      <div className="text-center">
-                        <p className="text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
-                        <p className="text-xs text-text-secondary">{step.label}</p>
+                <Card className="p-5">
+                  <h3 className="text-sm font-semibold mb-4">Воронка</h3>
+                  <div className="flex items-center gap-6">
+                    {[
+                      { label: "Посетители", value: event.participants + event.searches },
+                      { label: "Искали фото", value: event.searches },
+                      { label: "Скачали", value: event.downloads },
+                    ].map((step, i) => (
+                      <div key={step.label} className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
+                          <p className="text-xs text-text-secondary">{step.label}</p>
+                        </div>
+                        {i < 2 && <span className="text-text-secondary">→</span>}
                       </div>
-                      {i < 2 && <span className="text-text-secondary">→</span>}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-          </TabPanel>
-
-          {/* Settings Tab */}
-          <TabPanel>
-            <div className="space-y-6">
-              {/* General */}
-              <Card className="p-5 space-y-4">
-                <h3 className="text-sm font-semibold">Основное</h3>
-                <div>
-                  <label className="text-xs text-text-secondary block mb-1">{t("event_name")}</label>
-                  <TextInput defaultValue={event.title} />
-                </div>
-                <div>
-                  <label className="text-xs text-text-secondary block mb-1">{t("slug")}</label>
-                  <TextInput defaultValue={event.slug} />
-                  <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
-                </div>
-                <div>
-                  <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
-                  <Textarea defaultValue={event.description} rows={3} />
-                </div>
-              </Card>
-
-              {/* Pricing */}
-              <Card className="p-5 space-y-4">
-                <h3 className="text-sm font-semibold">Продажи</h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm">{t("free_download")}</p>
-                    <p className="text-xs text-text-secondary">Участники скачивают бесплатно</p>
+                    ))}
                   </div>
-                  <Switch
-                    checked={freeDownloadToggle}
-                    onChange={setFreeDownloadToggle}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm">{t("watermark")}</p>
-                    <p className="text-xs text-text-secondary">Водяной знак на превью</p>
-                  </div>
-                  <Switch
-                    checked={watermarkToggle}
-                    onChange={setWatermarkToggle}
-                  />
-                </div>
-                {!freeDownloadToggle && (
-                  <>
-                    <div>
-                      <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
-                      <NumberInput defaultValue={event.pricePerPhoto} className="w-40" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
-                      <NumberInput defaultValue={event.packageDiscount} className="w-40" />
-                    </div>
-                  </>
-                )}
-              </Card>
-
-              <div className="flex justify-end">
-                <Button>{tc("save")}</Button>
+                </Card>
               </div>
-            </div>
-          </TabPanel>
+            </TabPanel>
+          )}
+
+          {/* Settings Tab (Owner only) */}
+          {!isPhotographer && (
+            <TabPanel>
+              <div className="space-y-6">
+                <Card className="p-5 space-y-4">
+                  <h3 className="text-sm font-semibold">Основное</h3>
+                  <div>
+                    <label className="text-xs text-text-secondary block mb-1">{t("event_name")}</label>
+                    <TextInput defaultValue={event.title} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-text-secondary block mb-1">{t("slug")}</label>
+                    <TextInput defaultValue={event.slug} />
+                    <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
+                    <Textarea defaultValue={event.description} rows={3} />
+                  </div>
+                </Card>
+
+                <Card className="p-5 space-y-4">
+                  <h3 className="text-sm font-semibold">Продажи</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm">{t("free_download")}</p>
+                      <p className="text-xs text-text-secondary">Участники скачивают бесплатно</p>
+                    </div>
+                    <Switch
+                      checked={freeDownloadToggle}
+                      onChange={setFreeDownloadToggle}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm">{t("watermark")}</p>
+                      <p className="text-xs text-text-secondary">Водяной знак на превью</p>
+                    </div>
+                    <Switch
+                      checked={watermarkToggle}
+                      onChange={setWatermarkToggle}
+                    />
+                  </div>
+                  {!freeDownloadToggle && (
+                    <>
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
+                        <NumberInput defaultValue={event.pricePerPhoto} className="w-40" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
+                        <NumberInput defaultValue={event.packageDiscount} className="w-40" />
+                      </div>
+                    </>
+                  )}
+                </Card>
+
+                <div className="flex justify-end">
+                  <Button>{tc("save")}</Button>
+                </div>
+              </div>
+            </TabPanel>
+          )}
         </TabPanels>
       </TabGroup>
     </div>

@@ -64,7 +64,7 @@ export function LineChart({
             </linearGradient>
           ))}
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 16, 61, 0.08)" vertical={false} />
         <XAxis
           dataKey={index}
           tick={{ fontSize: 12, fill: "#6b7280" }}

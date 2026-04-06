@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       email,
       name,
       passwordHash,
-      role: "photographer",
+      role: "user",
     })
     .returning({ id: users.id, email: users.email, name: users.name });
 
