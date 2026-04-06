@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
@@ -13,16 +12,13 @@ const loginSchema = z.object({
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  debug: process.env.NODE_ENV === "development",
   adapter: DrizzleAdapter(db),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },

@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  return new Resend(apiKey);
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@baspen.kz";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -51,7 +57,7 @@ export async function sendInviteEmail({
 </body>
 </html>`;
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to,
     subject,

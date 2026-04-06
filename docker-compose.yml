@@ -34,7 +34,7 @@ services:
     image: exadel/compreface:latest
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8000:80"
     depends_on:
       - compreface-postgres
 
