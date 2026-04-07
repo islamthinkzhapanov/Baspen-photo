@@ -309,8 +309,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {[
             { icon: RiImageLine, label: t("photos"), show: true },
             { icon: RiGroupLine, label: t("team"), show: true },
-            { icon: RiBarChart2Line, label: ta("analytics"), show: !isPhotographer },
-            { icon: RiSettings3Line, label: tc("settings"), show: !isPhotographer },
+            { icon: RiBarChart2Line, label: ta("title"), show: !isPhotographer },
+            { icon: RiSettings3Line, label: t("settings"), show: !isPhotographer },
           ]
             .filter((tab) => tab.show)
             .map((tab) => (
