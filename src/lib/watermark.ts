@@ -28,12 +28,12 @@ export async function generateWatermarkedImage(
       .toBuffer();
   }
 
-  const resized = sharp(imageBuffer).resize(1200, undefined, {
-    fit: "inside",
-    withoutEnlargement: true,
-  });
+  const resizedBuffer = await sharp(imageBuffer)
+    .resize(1200, undefined, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toBuffer();
 
-  const meta = await resized.clone().metadata();
+  const meta = await sharp(resizedBuffer).metadata();
   const w = meta.width || 1200;
   const h = meta.height || 900;
   const opacity = config.opacity ?? 0.25;
@@ -57,7 +57,7 @@ export async function generateWatermarkedImage(
     </svg>
   `);
 
-  return resized
+  return sharp(resizedBuffer)
     .composite([{ input: svgWatermark, top: 0, left: 0 }])
     .jpeg({ quality: 85 })
     .toBuffer();
