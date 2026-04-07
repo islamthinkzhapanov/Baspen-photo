@@ -41,7 +41,7 @@ export async function detectFaces(
   const formData = new FormData();
   formData.append(
     "file",
-    new Blob([new Uint8Array(imageBuffer)]),
+    new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" }),
     "photo.jpg"
   );
 
