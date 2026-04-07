@@ -20,9 +20,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  if (files.length > 100) {
+  if (files.length > 500) {
     return NextResponse.json(
-      { error: "Max 100 files per batch" },
+      { error: "Max 500 files per batch" },
       { status: 400 }
     );
   }
