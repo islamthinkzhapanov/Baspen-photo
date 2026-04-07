@@ -83,11 +83,15 @@ export function ShareDialog({
 
   const handleNativeShare = useCallback(async () => {
     if (navigator.share) {
-      await navigator.share({
-        title: eventTitle,
-        text: t("share_text", { event: eventTitle }),
-        url: pageUrl,
-      });
+      try {
+        await navigator.share({
+          title: eventTitle,
+          text: t("share_text", { event: eventTitle }),
+          url: pageUrl,
+        });
+      } catch {
+        // User cancelled share dialog
+      }
     }
   }, [eventTitle, pageUrl, t]);
 

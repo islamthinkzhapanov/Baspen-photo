@@ -93,10 +93,14 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
   const handleShare = useCallback(async () => {
     if (!photo) return;
     const url = `${window.location.origin}/photo/${photo.id}`;
-    if (navigator.share) {
-      await navigator.share({ title: "Photo", url });
-    } else {
-      await navigator.clipboard.writeText(url);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Photo", url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch {
+      // User cancelled share dialog
     }
   }, [photo]);
 

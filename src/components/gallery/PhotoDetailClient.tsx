@@ -73,13 +73,17 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
 
   const handleShare = useCallback(async () => {
     const url = window.location.href;
-    if (navigator.share) {
-      await navigator.share({
-        title: data?.event?.title || "Photo",
-        url,
-      });
-    } else {
-      await navigator.clipboard.writeText(url);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: data?.event?.title || "Photo",
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch {
+      // User cancelled share dialog
     }
   }, [data?.event?.title]);
 
