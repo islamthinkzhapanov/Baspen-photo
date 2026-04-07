@@ -110,13 +110,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 text-white z-10">
         <button
-          onClick={() => {
-            if (event) {
-              router.push(`/e/${event.slug}`);
-            } else {
-              router.back();
-            }
-          }}
+          onClick={() => router.back()}
           className="p-2 hover:bg-white/10 rounded-full"
         >
           <RiArrowLeftLine size={20} />
@@ -147,13 +141,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
             )}
           </button>
           <button
-            onClick={() => {
-              if (event) {
-                router.push(`/e/${event.slug}`);
-              } else {
-                router.back();
-              }
-            }}
+            onClick={() => router.back()}
             className="p-2 hover:bg-white/10 rounded-full"
           >
             <RiCloseLine size={20} />
