@@ -203,7 +203,7 @@ export function EventsPage() {
           </div>
         </Card>
       ) : (
-        <Card className="p-0 overflow-hidden">
+        <Card className="p-0 overflow-x-auto">
           <Table className="min-w-[500px]">
             <TableHead>
               <TableRow>

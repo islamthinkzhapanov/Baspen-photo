@@ -235,7 +235,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     : allStats;
 
   return (
-    <div className="max-w-[1000px]">
+    <div className="max-w-[1000px] w-full">
       {/* Back */}
       <Link
         href="/events"
@@ -270,15 +270,15 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
             </span>
           </div>
         </div>
-        <div className="flex gap-2 flex-shrink-0 flex-wrap">
-          <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm">
+        <div className="flex gap-2 flex-shrink-0 flex-wrap w-full sm:w-auto">
+          <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm" className="text-xs sm:text-sm">
             {t("copy_link")}
           </Button>
-          <Button variant="secondary" icon={RiQrCodeLine} size="sm">
+          <Button variant="secondary" icon={RiQrCodeLine} size="sm" className="text-xs sm:text-sm">
             QR
           </Button>
           {!isPhotographer && (
-            <Button icon={event.isPublished ? RiGlobalLine : RiGlobalLine} size="sm">
+            <Button icon={event.isPublished ? RiGlobalLine : RiGlobalLine} size="sm" className="text-xs sm:text-sm">
               {event.isPublished ? t("unpublish") : t("publish")}
             </Button>
           )}
@@ -286,7 +286,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
