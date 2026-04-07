@@ -85,18 +85,18 @@ export function BillingPage() {
 
   const usageItems = [
     {
-      icon: RiCalendarLine,
-      label: t("limit_events", { count: currentPlan.maxEvents }),
-      used: currentPlan.usedEvents,
-      max: currentPlan.maxEvents,
-      color: "bg-primary/10 text-primary",
-    },
-    {
       icon: RiImageLine,
       label: t("limit_photos", { count: currentPlan.maxPhotosPerEvent.toLocaleString("ru-RU") }),
       used: currentPlan.usedPhotos,
       max: currentPlan.maxPhotosPerEvent,
       color: "bg-amber-50 text-amber-600",
+    },
+    {
+      icon: RiCalendarLine,
+      label: t("limit_events", { count: currentPlan.maxEvents }),
+      used: currentPlan.usedEvents,
+      max: currentPlan.maxEvents,
+      color: "bg-primary/10 text-primary",
     },
     {
       icon: RiHardDriveLine,
