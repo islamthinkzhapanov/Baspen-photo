@@ -280,7 +280,13 @@
     "no_photos_desc": "Загрузите первые фото в этот проект",
     "download": "Скачать",
     "share": "Поделиться",
-    "photo_of": "{current} из {total}"
+    "photo_of": "{current} из {total}",
+    "view": "Просмотр",
+    "delete_photo": "Удалить фото",
+    "delete_confirm": "Удалить это фото?",
+    "delete_confirm_desc": "Это действие нельзя отменить.",
+    "cancel": "Отмена",
+    "delete": "Удалить"
   },
   "public": {
     "find_photos": "Найди свои фото",

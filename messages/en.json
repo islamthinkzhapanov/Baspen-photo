@@ -277,7 +277,13 @@
     "no_photos_desc": "Upload your first photos to this project",
     "download": "Download",
     "share": "Share",
-    "photo_of": "{current} of {total}"
+    "photo_of": "{current} of {total}",
+    "view": "View",
+    "delete_photo": "Delete photo",
+    "delete_confirm": "Delete this photo?",
+    "delete_confirm_desc": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete"
   },
   "public": {
     "find_photos": "Find your photos",

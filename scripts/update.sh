@@ -16,8 +16,13 @@ echo ">>> Pulling latest code..."
 git pull
 
 # --- 2. Rebuild images ---
-echo ">>> Rebuilding Docker images..."
-docker compose -f docker-compose.prod.yml build
+if git diff HEAD~1 --name-only | grep -q '^bib-detector/'; then
+    echo ">>> bib-detector changed, rebuilding all services..."
+    docker compose -f docker-compose.prod.yml build
+else
+    echo ">>> Rebuilding app services only (ml-service unchanged)..."
+    docker compose -f docker-compose.prod.yml build app worker
+fi
 
 # --- 3. Restart services (zero-downtime for app) ---
 echo ">>> Restarting services..."
@@ -48,6 +53,17 @@ docker image prune -f
 echo ""
 echo "=== Services status ==="
 docker compose -f docker-compose.prod.yml ps
+
+# --- 7. Health check ---
+echo ">>> Checking app health..."
+sleep 5
+if curl -sf http://localhost:3000 > /dev/null; then
+    echo "App is healthy!"
+else
+    echo "WARNING: App health check failed"
+    docker compose -f docker-compose.prod.yml logs --tail=20 app
+    exit 1
+fi
 
 echo ""
 echo "=== Update complete! ==="

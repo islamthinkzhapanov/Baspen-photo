@@ -262,7 +262,13 @@
     "no_photos_desc": "Осы жобаға бірінші фотоларды жүктеңіз",
     "download": "Жүктеу",
     "share": "Бөлісу",
-    "photo_of": "{total} ішінен {current}"
+    "photo_of": "{total} ішінен {current}",
+    "view": "Көру",
+    "delete_photo": "Фотоны жою",
+    "delete_confirm": "Бұл фотоны жою керек пе?",
+    "delete_confirm_desc": "Бұл әрекетті кері қайтару мүмкін емес.",
+    "cancel": "Болдырмау",
+    "delete": "Жою"
   },
   "public": {
     "find_photos": "Фотоларыңызды табыңыз",

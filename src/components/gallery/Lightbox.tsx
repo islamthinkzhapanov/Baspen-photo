@@ -6,7 +6,7 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiDownloadLine,
-  RiShareLine,
+  RiDeleteBinLine,
   RiFullscreenLine,
   RiLoader4Line,
 } from "@remixicon/react";
@@ -25,9 +25,10 @@ interface Props {
   currentIndex: number;
   onClose: () => void;
   onChange: (index: number) => void;
+  onDelete?: (photoId: string) => void;
 }
 
-export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
+export function Lightbox({ photos, currentIndex, onClose, onChange, onDelete }: Props) {
   const t = useTranslations("gallery");
   const router = useRouter();
   const photo = photos[currentIndex];
@@ -90,20 +91,6 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
     }
   }, [photo]);
 
-  const handleShare = useCallback(async () => {
-    if (!photo) return;
-    const url = `${window.location.origin}/photo/${photo.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "Photo", url });
-      } else {
-        await navigator.clipboard.writeText(url);
-      }
-    } catch {
-      // User cancelled share dialog
-    }
-  }, [photo]);
-
   const openDetail = useCallback(() => {
     if (!photo) return;
     onClose();
@@ -123,13 +110,15 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
           })}
         </span>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleShare}
-            className="p-2 hover:bg-white/10 rounded-full"
-            title={t("share")}
-          >
-            <RiShareLine size={20} />
-          </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(photo.id)}
+              className="p-2 hover:bg-white/10 rounded-full text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+              title={t("delete_photo")}
+            >
+              <RiDeleteBinLine size={20} />
+            </button>
+          )}
           <button
             onClick={handleDownload}
             disabled={downloading}
