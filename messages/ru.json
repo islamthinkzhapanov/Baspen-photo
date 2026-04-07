@@ -189,7 +189,8 @@
     "learning": "Обучение",
     "admin": "Админ-панель",
     "events_photographer": "Мои съёмки",
-    "more": "Ещё"
+    "more": "Ещё",
+    "profile": "Профиль"
   },
   "events": {
     "title": "Мои проекты",
@@ -213,6 +214,7 @@
     "commission_terms": "Платформа: 20% · Вы получаете: 80% от каждой продажи",
     "published": "Опубликован",
     "draft": "Черновик",
+    "preview": "Предпросмотр",
     "publish": "Опубликовать",
     "unpublish": "Снять с публикации",
     "photos": "Фото",
@@ -743,5 +745,33 @@
     "camera_keys_desc": "2 активных ключа",
     "security": "Безопасность",
     "security_desc": "Двухфакторная аутентификация"
+  },
+  "profile": {
+    "title": "Профиль",
+    "subtitle": "Управление личными данными и безопасностью",
+    "personal_info": "Личные данные",
+    "name": "Имя",
+    "email": "Email",
+    "phone": "Телефон",
+    "phone_placeholder": "Введите номер телефона",
+    "change_password": "Изменить пароль",
+    "change_password_desc": "Обновите пароль для защиты аккаунта",
+    "current_password": "Текущий пароль",
+    "new_password": "Новый пароль",
+    "confirm_password": "Подтвердите пароль",
+    "update_password": "Обновить пароль",
+    "password_mismatch": "Пароли не совпадают",
+    "password_too_short": "Минимум 8 символов",
+    "password_updated": "Пароль обновлён",
+    "sessions": "Активные сессии",
+    "sessions_desc": "Устройства, с которых выполнен вход",
+    "current_session": "Текущая сессия",
+    "danger_zone": "Опасная зона",
+    "delete_account": "Удалить аккаунт",
+    "delete_account_desc": "Удаление аккаунта необратимо. Все данные будут потеряны.",
+    "delete_confirm": "Вы уверены? Это действие нельзя отменить.",
+    "member_since": "Дата регистрации",
+    "role": "Роль",
+    "notifications": "Уведомления"
   }
 }

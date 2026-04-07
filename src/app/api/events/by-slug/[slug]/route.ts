@@ -1,20 +1,39 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { events, photos, albums } from "@/lib/db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 
 // GET /api/events/by-slug/[slug] — public event data
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const { searchParams } = new URL(request.url);
+  const isPreview = searchParams.get("preview") === "true";
 
-  const [event] = await db
-    .select()
-    .from(events)
-    .where(and(eq(events.slug, slug), eq(events.isPublished, true)))
-    .limit(1);
+  let event;
+
+  if (isPreview) {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const [found] = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.slug, slug), eq(events.ownerId, session.user.id)))
+      .limit(1);
+    event = found;
+  } else {
+    const [found] = await db
+      .select()
+      .from(events)
+      .where(and(eq(events.slug, slug), eq(events.isPublished, true)))
+      .limit(1);
+    event = found;
+  }
 
   if (!event) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

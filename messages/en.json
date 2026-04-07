@@ -186,7 +186,8 @@
     "learning": "Learning",
     "admin": "Admin Panel",
     "events_photographer": "My Assignments",
-    "more": "More"
+    "more": "More",
+    "profile": "Profile"
   },
   "events": {
     "title": "My Projects",
@@ -210,6 +211,7 @@
     "commission_terms": "Platform: 20% · You receive: 80% of each sale",
     "published": "Published",
     "draft": "Draft",
+    "preview": "Preview",
     "publish": "Publish",
     "unpublish": "Unpublish",
     "photos": "Photos",
@@ -740,5 +742,33 @@
     "camera_keys_desc": "2 active keys",
     "security": "Security",
     "security_desc": "Two-factor authentication"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your personal information and security",
+    "personal_info": "Personal information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "phone_placeholder": "Enter phone number",
+    "change_password": "Change password",
+    "change_password_desc": "Update your password to keep your account secure",
+    "current_password": "Current password",
+    "new_password": "New password",
+    "confirm_password": "Confirm password",
+    "update_password": "Update password",
+    "password_mismatch": "Passwords do not match",
+    "password_too_short": "Minimum 8 characters",
+    "password_updated": "Password updated",
+    "sessions": "Active sessions",
+    "sessions_desc": "Devices where you are signed in",
+    "current_session": "Current session",
+    "danger_zone": "Danger zone",
+    "delete_account": "Delete account",
+    "delete_account_desc": "Deleting your account is permanent. All data will be lost.",
+    "delete_confirm": "Are you sure? This action cannot be undone.",
+    "member_since": "Member since",
+    "role": "Role",
+    "notifications": "Notifications"
   }
 }

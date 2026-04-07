@@ -43,6 +43,8 @@ import {
   Tab,
   TabPanels,
   TabPanel,
+  Dialog,
+  DialogPanel,
 } from "@tremor/react";
 import { Switch } from "@/components/ui/switch";
 import { LineChart } from "@/components/charts";
@@ -451,9 +453,15 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           )}
         </div>
         {!event.isPublished && (
-          <p className="text-xs text-amber-600 mt-2 sm:mt-0 sm:ml-auto">
-            Черновик — ссылка видна только вам
-          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={RiEyeLine}
+            className="text-xs sm:text-sm mt-2 sm:mt-0 sm:ml-auto text-amber-600 border-amber-300 hover:bg-amber-50"
+            onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
+          >
+            {t("preview")}
+          </Button>
         )}
       </div>
 
@@ -911,59 +919,62 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       )}
 
       {/* QR Code Modal */}
-      {qrOpen && qrDataUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setQrOpen(false)} />
-          <div className="relative bg-bg border border-border rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">QR-код</h3>
-              <button
-                onClick={() => setQrOpen(false)}
-                className="p-1 rounded-lg hover:bg-bg-secondary transition-colors cursor-pointer"
-              >
-                <RiCloseLine size={20} />
-              </button>
-            </div>
-            <div className="flex justify-center mb-4">
-              <img src={qrDataUrl} alt="QR Code" className="w-[300px] h-[300px]" />
-            </div>
-            <p className="text-xs text-text-secondary text-center truncate mb-2">
-              {publicUrl}
-            </p>
-            {!event.isPublished && (
-              <p className="text-xs text-amber-600 text-center mb-4">
-                Черновик — ссылка видна только вам
-              </p>
-            )}
-            {event.isPublished && <div className="mb-4" />}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(publicUrl);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
-                  hover:bg-bg-secondary transition-colors cursor-pointer
-                  flex items-center justify-center gap-2"
-              >
-                {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
-                {copied ? t("copied") : t("copy_link")}
-              </button>
-              <a
-                href={qrDataUrl}
-                download={`qr-${event.slug}.png`}
-                className="flex-1 h-10 rounded-xl bg-primary text-white text-sm font-medium
-                  hover:bg-primary/90 transition-colors cursor-pointer
-                  flex items-center justify-center gap-2"
-              >
-                <RiDownloadLine size={16} />
-                {tc("download")}
-              </a>
-            </div>
+      <Dialog open={qrOpen && !!qrDataUrl} onClose={() => setQrOpen(false)}>
+        <DialogPanel className="max-w-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-tremor-title font-semibold">QR-код</h3>
+            <button
+              onClick={() => setQrOpen(false)}
+              className="p-1 rounded-tremor-default hover:bg-tremor-background-muted transition-colors cursor-pointer"
+            >
+              <RiCloseLine size={20} />
+            </button>
           </div>
-        </div>
-      )}
+          <div className="flex justify-center mb-4">
+            <img src={qrDataUrl!} alt="QR Code" className="w-[300px] h-[300px]" />
+          </div>
+          <p className="text-tremor-label text-tremor-content text-center truncate mb-2">
+            {publicUrl}
+          </p>
+          {!event.isPublished && (
+            <div className="flex justify-center mb-4">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={RiEyeLine}
+                className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
+              >
+                {t("preview")}
+              </Button>
+            </div>
+          )}
+          {event.isPublished && <div className="mb-4" />}
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              icon={copied ? RiCheckLine : RiFileCopyLine}
+              onClick={() => {
+                navigator.clipboard.writeText(publicUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              {copied ? t("copied") : t("copy_link")}
+            </Button>
+            <a
+              href={qrDataUrl!}
+              download={`qr-${event.slug}.png`}
+              className="flex-1"
+            >
+              <Button variant="primary" icon={RiDownloadLine} className="w-full">
+                {tc("download")}
+              </Button>
+            </a>
+          </div>
+        </DialogPanel>
+      </Dialog>
     </div>
   );
 }

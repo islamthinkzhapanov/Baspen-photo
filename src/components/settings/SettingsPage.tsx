@@ -2,57 +2,28 @@
 
 import { useTranslations } from "next-intl";
 import {
-  RiUserLine,
   RiNotification3Line,
   RiBankCardLine,
   RiGlobalLine,
+  RiKey2Line,
   RiShieldLine,
-  RiCameraLine,
   RiArrowRightSLine,
-  RiLogoutBoxRLine,
 } from "@remixicon/react";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Card,
-  TextInput,
   Select,
   SelectItem,
   Button,
 } from "@tremor/react";
 import { Switch } from "@/components/ui/switch";
 
-// --- Component ---
-
 export function SettingsPage() {
-  const t = useTranslations();
-  const { data: session } = useSession();
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
 
-  const defaultProfile = {
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
-    phone: "",
-    avatar: null as string | null,
-    language: "ru",
-    timezone: "Asia/Almaty",
-  };
-
-  const [profile, setProfile] = useState(defaultProfile);
-  const initializedRef = useRef(false);
-
-  useEffect(() => {
-    if (session?.user && !initializedRef.current) {
-      setProfile({
-        name: session.user.name || "",
-        email: session.user.email || "",
-        phone: "",
-        avatar: null,
-        language: "ru",
-        timezone: "Asia/Almaty",
-      });
-      initializedRef.current = true;
-    }
-  }, [session]);
+  const [language, setLanguage] = useState("ru");
+  const [timezone, setTimezone] = useState("Asia/Almaty");
 
   const initialNotifications = {
     email_purchases: true,
@@ -62,88 +33,33 @@ export function SettingsPage() {
   };
   const [notifications, setNotifications] = useState(initialNotifications);
 
-  const hasChanges =
-    profile.name !== (session?.user?.name || "") ||
-    profile.email !== (session?.user?.email || "") ||
-    JSON.stringify(notifications) !== JSON.stringify(initialNotifications);
-
   const notificationItems = [
-    { key: "email_purchases", label: t("settings.notif_purchases"), desc: t("settings.notif_purchases_desc") },
-    { key: "email_uploads", label: t("settings.notif_uploads"), desc: t("settings.notif_uploads_desc") },
-    { key: "push_searches", label: t("settings.notif_searches"), desc: t("settings.notif_searches_desc") },
-    { key: "push_withdrawals", label: t("settings.notif_withdrawals"), desc: t("settings.notif_withdrawals_desc") },
+    { key: "email_purchases", label: t("notif_purchases"), desc: t("notif_purchases_desc") },
+    { key: "email_uploads", label: t("notif_uploads"), desc: t("notif_uploads_desc") },
+    { key: "push_searches", label: t("notif_searches"), desc: t("notif_searches_desc") },
+    { key: "push_withdrawals", label: t("notif_withdrawals"), desc: t("notif_withdrawals_desc") },
   ];
 
   const quickLinks = [
-    { icon: RiBankCardLine, label: t("settings.payment_data"), desc: t("settings.payment_data_desc") },
-    { icon: RiCameraLine, label: t("settings.camera_keys"), desc: t("settings.camera_keys_desc") },
-    { icon: RiShieldLine, label: t("settings.security"), desc: t("settings.security_desc") },
+    { key: "payment", icon: RiBankCardLine, label: t("payment_data"), desc: t("payment_data_desc") },
+    { key: "camera", icon: RiKey2Line, label: t("camera_keys"), desc: t("camera_keys_desc") },
+    { key: "security", icon: RiShieldLine, label: t("security"), desc: t("security_desc") },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-display">{t("settings.title")}</h1>
-        <p className="text-sm text-text-secondary mt-1">{t("settings.subtitle")}</p>
+        <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
+        <p className="text-sm text-text-secondary mt-1">{t("subtitle")}</p>
       </div>
-
-      {/* Profile Section */}
-      <Card className="p-5">
-        <div className="flex items-start gap-4 mb-5">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
-            {profile.name.charAt(0)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold">{profile.name}</p>
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text transition-colors cursor-pointer"
-              >
-                <RiLogoutBoxRLine size={16} />
-                {t("auth.logout")}
-              </button>
-            </div>
-            <p className="text-sm text-text-secondary">{profile.email}</p>
-            <p className="text-xs text-primary mt-0.5 capitalize">
-              {t("settings.role_user")}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-text-secondary block mb-1">{t("settings.name")}</label>
-            <TextInput
-              value={profile.name}
-              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="text-xs text-text-secondary block mb-1">{t("settings.email")}</label>
-            <TextInput
-              type="email"
-              value={profile.email}
-              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="text-xs text-text-secondary block mb-1">{t("settings.phone")}</label>
-            <TextInput
-              value={profile.phone}
-              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-            />
-          </div>
-        </div>
-      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Notifications */}
-        <Card className="p-5">
+        <Card className="p-5 lg:col-span-1">
           <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <RiNotification3Line size={16} className="text-text-secondary" />
-            {t("settings.notifications")}
+            {t("notifications")}
           </h2>
 
           <div className="space-y-3">
@@ -168,22 +84,19 @@ export function SettingsPage() {
         </Card>
 
         {/* Preferences */}
-        <Card className="p-5">
+        <Card className="p-5 lg:col-span-1">
           <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <RiGlobalLine size={16} className="text-text-secondary" />
-            {t("settings.preferences")}
+            {t("preferences")}
           </h2>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium">{t("settings.language")}</p>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium mb-1.5">{t("language")}</p>
               <Select
-                value={profile.language}
-                onValueChange={(val) => setProfile({ ...profile, language: val })}
+                value={language}
+                onValueChange={setLanguage}
                 enableClear={false}
-                className="w-auto"
               >
                 <SelectItem value="ru">Русский</SelectItem>
                 <SelectItem value="kz">Қазақша</SelectItem>
@@ -191,55 +104,42 @@ export function SettingsPage() {
               </Select>
             </div>
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium">{t("settings.timezone")}</p>
-              </div>
+            <div>
+              <p className="text-sm font-medium mb-1.5">{t("timezone")}</p>
               <Select
-                value={profile.timezone}
-                onValueChange={(val) => setProfile({ ...profile, timezone: val })}
+                value={timezone}
+                onValueChange={setTimezone}
                 enableClear={false}
-                className="w-auto"
               >
                 <SelectItem value="Asia/Almaty">Алматы (UTC+6)</SelectItem>
                 <SelectItem value="Asia/Aqtau">Актау (UTC+5)</SelectItem>
                 <SelectItem value="Europe/Moscow">Москва (UTC+3)</SelectItem>
               </Select>
             </div>
-
           </div>
         </Card>
 
-        {/* Quick Links */}
-        <Card className="p-0 overflow-hidden">
-          {quickLinks.map((item, i) => {
-            const Icon = item.icon;
-            return (
+        {/* Quick links */}
+        <Card className="p-5 lg:col-span-1">
+          <div className="space-y-1">
+            {quickLinks.map(({ key, icon: Icon, label, desc }) => (
               <button
-                key={i}
-                className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer"
+                key={key}
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-bg-secondary transition-colors text-left cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Icon size={16} className="text-text-secondary" />
+                <div className="w-10 h-10 rounded-lg bg-bg-secondary flex items-center justify-center shrink-0">
+                  <Icon size={18} className="text-text-secondary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{item.label}</p>
-                  <p className="text-xs text-text-secondary">{item.desc}</p>
+                  <p className="text-sm font-medium">{label}</p>
+                  <p className="text-xs text-text-secondary">{desc}</p>
                 </div>
-                <RiArrowRightSLine size={16} className="text-text-secondary" />
+                <RiArrowRightSLine size={18} className="text-text-secondary shrink-0" />
               </button>
-            );
-          })}
+            ))}
+          </div>
         </Card>
       </div>
-
-      {/* Save */}
-      {hasChanges && (
-        <div className="flex justify-end">
-          <Button>{t("common.save")}</Button>
-        </div>
-      )}
-
     </div>
   );
 }

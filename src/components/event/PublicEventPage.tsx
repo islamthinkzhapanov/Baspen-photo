@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 
 function fmt(n: number) {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -210,6 +211,8 @@ export function PublicEventPage({
 }) {
   const hideBranding = embedConfig ? !embedConfig.showBranding : false;
   const t = useTranslations("public");
+  const searchParams = useSearchParams();
+  const isPreview = searchParams.get("preview") === "true";
   const [view, setView] = useState<View>("landing");
   const [showCamera, setShowCamera] = useState(false);
   const [showNumberSearch, setShowNumberSearch] = useState(false);
@@ -219,9 +222,12 @@ export function PublicEventPage({
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
   const { data: eventData } = useQuery({
-    queryKey: ["public-event", slug],
+    queryKey: ["public-event", slug, isPreview],
     queryFn: async () => {
-      const res = await fetch(`/api/events/by-slug/${slug}`);
+      const url = isPreview
+        ? `/api/events/by-slug/${slug}?preview=true`
+        : `/api/events/by-slug/${slug}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Not found");
       return res.json();
     },

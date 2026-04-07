@@ -177,7 +177,8 @@
     "billing": "Жазылым",
     "learning": "Оқыту",
     "admin": "Әкімші тақтасы",
-    "more": "Тағы"
+    "more": "Тағы",
+    "profile": "Профиль"
   },
   "events": {
     "title": "Менің жобаларым",
@@ -672,5 +673,33 @@
     "camera_keys_desc": "2 белсенді кілт",
     "security": "Қауіпсіздік",
     "security_desc": "Екі факторлы аутентификация"
+  },
+  "profile": {
+    "title": "Профиль",
+    "subtitle": "Жеке деректер мен қауіпсіздікті басқару",
+    "personal_info": "Жеке деректер",
+    "name": "Аты",
+    "email": "Email",
+    "phone": "Телефон",
+    "phone_placeholder": "Телефон нөмірін енгізіңіз",
+    "change_password": "Құпия сөзді өзгерту",
+    "change_password_desc": "Аккаунт қауіпсіздігі үшін құпия сөзді жаңартыңыз",
+    "current_password": "Ағымдағы құпия сөз",
+    "new_password": "Жаңа құпия сөз",
+    "confirm_password": "Құпия сөзді растаңыз",
+    "update_password": "Құпия сөзді жаңарту",
+    "password_mismatch": "Құпия сөздер сәйкес келмейді",
+    "password_too_short": "Кемінде 8 таңба",
+    "password_updated": "Құпия сөз жаңартылды",
+    "sessions": "Белсенді сеанстар",
+    "sessions_desc": "Кірген құрылғылар",
+    "current_session": "Ағымдағы сеанс",
+    "danger_zone": "Қауіпті аймақ",
+    "delete_account": "Аккаунтты жою",
+    "delete_account_desc": "Аккаунтты жою қайтарымсыз. Барлық деректер жоғалады.",
+    "delete_confirm": "Сенімдісіз бе? Бұл әрекетті кері қайтару мүмкін емес.",
+    "member_since": "Тіркелу күні",
+    "role": "Рөл",
+    "notifications": "Хабарламалар"
   }
 }

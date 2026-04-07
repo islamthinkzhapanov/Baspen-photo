@@ -11,6 +11,7 @@ import {
   RiStackLine,
   RiSettings3Line,
   RiShieldLine,
+  RiUserLine,
 } from "@remixicon/react";
 import { useState } from "react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -26,6 +27,7 @@ const primaryTabs = [
 const overflowItems = [
   { key: "billing", href: "/billing", icon: RiStackLine },
   { key: "settings", href: "/settings", icon: RiSettings3Line },
+  { key: "profile", href: "/profile", icon: RiUserLine },
 ] as const;
 
 const adminItem = { key: "admin", href: "/admin/users", icon: RiShieldLine } as const;

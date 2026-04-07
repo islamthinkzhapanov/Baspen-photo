@@ -107,8 +107,15 @@ export function EventsPage() {
         })}
       </div>
 
-      {/* Filters + Search */}
+      {/* Search + Filters */}
       <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
+        <TextInput
+          icon={RiSearchLine}
+          placeholder={t("search_placeholder")}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="sm:max-w-xs"
+        />
         <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 w-fit">
           {filterTabs.map((tab) => (
             <button
@@ -124,13 +131,6 @@ export function EventsPage() {
             </button>
           ))}
         </div>
-        <TextInput
-          icon={RiSearchLine}
-          placeholder={t("search_placeholder")}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="sm:max-w-xs"
-        />
         <Link href="/events/new" className="sm:ml-auto inline-block">
           <Button icon={() => <RiAddLine size={16} />} className="w-full sm:w-auto">
             {t("create")}
