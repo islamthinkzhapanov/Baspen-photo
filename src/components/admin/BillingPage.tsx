@@ -134,13 +134,14 @@ export function BillingPage() {
         </button>
       </Card>
 
-      {/* Usage cards — always 3 in a row */}
-      <div className="grid grid-cols-3 gap-3">
-        {usageItems.map((item) => {
+      {/* Usage cards — 2 top + 1 bottom */}
+      <div className="grid grid-cols-2 gap-3">
+        {usageItems.map((item, i) => {
           const Icon = item.icon;
           const percent = Math.round((item.used / item.max) * 100);
+          const isLast = i === usageItems.length - 1;
           return (
-            <Card key={item.label} className="p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
+            <Card key={item.label} className={`p-3 sm:p-4 flex flex-col gap-2 sm:gap-3 ${isLast ? "col-span-2" : ""}`}>
               <div className="flex items-center justify-between">
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${item.color}`}>
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
