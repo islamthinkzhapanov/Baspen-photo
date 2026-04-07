@@ -11,12 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
 import {
   RiMapPinLine,
-  RiPercentLine,
-  RiImageLine,
   RiDownloadLine,
   RiDropLine,
-
-  RiInformationLine,
+  RiShoppingCartLine,
 } from "@remixicon/react";
 
 interface EventFormProps {
@@ -55,8 +52,11 @@ export function EventForm({ event }: EventFormProps) {
     event?.date ? new Date(event.date).toISOString().slice(11, 16) : ""
   );
   const [location, setLocation] = useState(event?.location || "");
-  const [pricingMode, setPricingMode] = useState(event?.pricingMode || "commission");
+  const [pricingMode] = useState(event?.pricingMode || "commission");
   const [freeDownload, setFreeDownload] = useState(event?.settings?.freeDownload ?? false);
+  const [photoSalesEnabled, setPhotoSalesEnabled] = useState(
+    (event?.settings?.pricePerPhoto ?? 0) > 0 || event?.settings?.watermarkEnabled === true
+  );
   const [watermarkEnabled, setWatermarkEnabled] = useState(event?.settings?.watermarkEnabled ?? true);
   const [pricePerPhoto, setPricePerPhoto] = useState(event?.settings?.pricePerPhoto || 0);
   const [packageDiscount, setPackageDiscount] = useState(event?.settings?.packageDiscount || 0);
@@ -91,9 +91,9 @@ export function EventForm({ event }: EventFormProps) {
       pricingMode: pricingMode as "exclusive" | "commission",
       settings: {
         freeDownload,
-        watermarkEnabled,
-        pricePerPhoto,
-        packageDiscount,
+        watermarkEnabled: photoSalesEnabled ? watermarkEnabled : false,
+        pricePerPhoto: photoSalesEnabled ? pricePerPhoto : 0,
+        packageDiscount: photoSalesEnabled ? packageDiscount : 0,
       },
     };
 
@@ -213,59 +213,7 @@ export function EventForm({ event }: EventFormProps) {
         </div>
       </section>
 
-      {/* Section 3: Pricing Model */}
-      <section className="rounded-xl bg-bg-secondary p-5">
-        <label className="block text-sm font-medium text-text mb-3">
-          {t("pricing_mode")}
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setPricingMode("commission")}
-            className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all cursor-pointer ${
-              pricingMode === "commission"
-                ? "border-primary bg-blue-50/60 shadow-sm"
-                : "border-border hover:border-border-active bg-white"
-            }`}
-          >
-            <RiPercentLine className={`w-6 h-6 ${pricingMode === "commission" ? "text-primary" : "text-text-secondary"}`} />
-            <span className={`text-sm font-medium ${pricingMode === "commission" ? "text-primary" : "text-text"}`}>
-              {t("commission")}
-            </span>
-            <span className={`text-xs leading-relaxed ${pricingMode === "commission" ? "text-primary/70" : "text-text-secondary"}`}>
-              {t("commission_desc")}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPricingMode("exclusive")}
-            className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-5 text-center transition-all cursor-pointer ${
-              pricingMode === "exclusive"
-                ? "border-primary bg-blue-50/60 shadow-sm"
-                : "border-border hover:border-border-active bg-white"
-            }`}
-          >
-            <RiImageLine className={`w-6 h-6 ${pricingMode === "exclusive" ? "text-primary" : "text-text-secondary"}`} />
-            <span className={`text-sm font-medium ${pricingMode === "exclusive" ? "text-primary" : "text-text"}`}>
-              {t("exclusive")}
-            </span>
-            <span className={`text-xs leading-relaxed ${pricingMode === "exclusive" ? "text-primary/70" : "text-text-secondary"}`}>
-              {t("exclusive_desc")}
-            </span>
-          </button>
-        </div>
-
-        {/* Pricing terms info */}
-        <div className="mt-3 flex items-start gap-2.5 rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-2.5">
-          <RiInformationLine className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <span className="text-xs text-primary/80 leading-relaxed">
-            {pricingMode === "commission" ? t("commission_terms") : t("exclusive_terms")}
-          </span>
-        </div>
-      </section>
-
-      {/* Section 4: Settings */}
+      {/* Section 3: Settings */}
       <section className="rounded-xl bg-bg-secondary p-5">
         <div className="space-y-4">
           {/* Free Download Toggle */}
@@ -277,45 +225,56 @@ export function EventForm({ event }: EventFormProps) {
             <Switch checked={freeDownload} onChange={setFreeDownload} />
           </div>
 
-          {/* Watermark Toggle */}
+          {/* Photo Sales Toggle */}
           <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white">
             <div className="flex items-center gap-3">
-              <RiDropLine className="w-4.5 h-4.5 text-text-secondary" />
-              <span className="text-sm font-medium text-text">{t("watermark")}</span>
+              <RiShoppingCartLine className="w-4.5 h-4.5 text-text-secondary" />
+              <span className="text-sm font-medium text-text">{t("photo_sales")}</span>
             </div>
-            <Switch checked={watermarkEnabled} onChange={setWatermarkEnabled} />
+            <Switch checked={photoSalesEnabled} onChange={setPhotoSalesEnabled} />
           </div>
 
-          {/* Pricing fields — only relevant when not free */}
-          {!freeDownload && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              <div>
-                <label htmlFor="pricePerPhoto" className="block text-sm font-medium text-text mb-1.5">
-                  {t("price_per_photo")}
-                </label>
-                <NumberInput
-                  id="pricePerPhoto"
-                  name="pricePerPhoto"
-                  min={0}
-                  value={pricePerPhoto}
-                  onValueChange={setPricePerPhoto}
-                />
+          {/* Watermark + Pricing — only when photo sales enabled */}
+          {photoSalesEnabled && (
+            <div className="space-y-4 pl-3 border-l-2 border-primary/20">
+              {/* Watermark Toggle */}
+              <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white">
+                <div className="flex items-center gap-3">
+                  <RiDropLine className="w-4.5 h-4.5 text-text-secondary" />
+                  <span className="text-sm font-medium text-text">{t("watermark")}</span>
+                </div>
+                <Switch checked={watermarkEnabled} onChange={setWatermarkEnabled} />
               </div>
-              <div>
-                <label htmlFor="packageDiscount" className="block text-sm font-medium text-text mb-1.5">
-                  {t("package_discount")}
-                </label>
-                <NumberInput
-                  id="packageDiscount"
-                  name="packageDiscount"
-                  min={0}
-                  max={100}
-                  value={packageDiscount}
-                  onValueChange={setPackageDiscount}
-                />
-                <p className="text-xs text-text-secondary mt-1">
-                  {t("package_discount_hint")}
-                </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="pricePerPhoto" className="block text-sm font-medium text-text mb-1.5">
+                    {t("price_per_photo")}
+                  </label>
+                  <NumberInput
+                    id="pricePerPhoto"
+                    name="pricePerPhoto"
+                    min={0}
+                    value={pricePerPhoto}
+                    onValueChange={setPricePerPhoto}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="packageDiscount" className="block text-sm font-medium text-text mb-1.5">
+                    {t("package_discount")}
+                  </label>
+                  <NumberInput
+                    id="packageDiscount"
+                    name="packageDiscount"
+                    min={0}
+                    max={100}
+                    value={packageDiscount}
+                    onValueChange={setPackageDiscount}
+                  />
+                  <p className="text-xs text-text-secondary mt-1">
+                    {t("package_discount_hint")}
+                  </p>
+                </div>
               </div>
             </div>
           )}

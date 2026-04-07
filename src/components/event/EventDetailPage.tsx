@@ -206,6 +206,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
+  const [photoSalesToggle, setPhotoSalesToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
   const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
   const [settingsSlug, setSettingsSlug] = useState<string | undefined>();
@@ -240,6 +241,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       setSettingsSlug(event.slug);
       setSettingsDescription(event.description || "");
       setFreeDownloadToggle(!!event.settings?.freeDownload);
+      setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
       setWatermarkToggle(event.settings?.watermarkEnabled !== false);
       setSettingsPrice(event.settings?.pricePerPhoto || 0);
       setSettingsDiscount(event.settings?.packageDiscount || 0);
@@ -265,9 +267,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
         description: settingsDescription || undefined,
         settings: {
           freeDownload: freeDownloadToggle,
-          watermarkEnabled: watermarkToggle,
-          pricePerPhoto: settingsPrice,
-          packageDiscount: settingsDiscount,
+          watermarkEnabled: photoSalesToggle ? watermarkToggle : false,
+          pricePerPhoto: photoSalesToggle ? settingsPrice : 0,
+          packageDiscount: photoSalesToggle ? settingsDiscount : 0,
         },
       },
       {
@@ -775,7 +777,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 </Card>
 
                 <Card className="p-5 space-y-4">
-                  <h3 className="text-sm font-semibold">Продажи</h3>
+                  <h3 className="text-sm font-semibold">Настройки</h3>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm">{t("free_download")}</p>
@@ -788,23 +790,35 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm">{t("watermark")}</p>
-                      <p className="text-xs text-text-secondary">Водяной знак на превью</p>
+                      <p className="text-sm">{t("photo_sales")}</p>
+                      <p className="text-xs text-text-secondary">Продажа фотографий участникам</p>
                     </div>
                     <Switch
-                      checked={watermarkToggle}
-                      onChange={setWatermarkToggle}
+                      checked={photoSalesToggle}
+                      onChange={setPhotoSalesToggle}
                     />
                   </div>
-                  {!freeDownloadToggle && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
-                        <NumberInput value={settingsPrice ?? (event.settings?.pricePerPhoto || 0)} onValueChange={setSettingsPrice} className="w-40" />
+                  {photoSalesToggle && (
+                    <div className="space-y-4 pl-3 border-l-2 border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm">{t("watermark")}</p>
+                          <p className="text-xs text-text-secondary">Водяной знак на превью</p>
+                        </div>
+                        <Switch
+                          checked={watermarkToggle}
+                          onChange={setWatermarkToggle}
+                        />
                       </div>
-                      <div>
-                        <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
-                        <NumberInput value={settingsDiscount ?? (event.settings?.packageDiscount || 0)} onValueChange={setSettingsDiscount} className="w-40" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
+                          <NumberInput value={settingsPrice ?? (event.settings?.pricePerPhoto || 0)} onValueChange={setSettingsPrice} className="w-40" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
+                          <NumberInput value={settingsDiscount ?? (event.settings?.packageDiscount || 0)} onValueChange={setSettingsDiscount} className="w-40" />
+                        </div>
                       </div>
                     </div>
                   )}

@@ -232,6 +232,7 @@
     "delete_confirm": "Delete project \"{name}\"?",
     "settings": "Settings",
     "free_download": "Free download",
+    "photo_sales": "Photo sales",
     "watermark": "Watermark",
     "price_per_photo": "Price per photo",
     "package_discount": "Package discount (%)",

@@ -235,6 +235,7 @@
     "delete_confirm": "Удалить проект «{name}»?",
     "settings": "Настройки",
     "free_download": "Бесплатное скачивание",
+    "photo_sales": "Продажа фотографий",
     "watermark": "Водяной знак",
     "price_per_photo": "Цена за фото",
     "package_discount": "Скидка на пакет (%)",
