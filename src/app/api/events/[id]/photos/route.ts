@@ -28,7 +28,7 @@ export async function GET(
     .where(eq(photos.eventId, id))
     .orderBy(desc(photos.createdAt));
 
-  return NextResponse.json(eventPhotos);
+  return NextResponse.json({ photos: eventPhotos });
 }
 
 // POST /api/events/[id]/photos — register uploaded photo (after S3 upload)
