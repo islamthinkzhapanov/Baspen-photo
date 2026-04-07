@@ -305,7 +305,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
       {/* Tabs */}
       <TabGroup>
-        <TabList className="overflow-x-auto flex-nowrap whitespace-nowrap [&>button]:shrink-0">
+        <TabList className="overflow-x-auto overflow-y-hidden flex-nowrap whitespace-nowrap [&>button]:shrink-0">
           {[
             { icon: RiImageLine, label: t("photos"), show: true },
             { icon: RiGroupLine, label: t("team"), show: true },
