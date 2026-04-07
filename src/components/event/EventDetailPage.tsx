@@ -17,6 +17,7 @@ import {
   RiSearchLine,
   RiDownloadLine,
   RiEyeLine,
+  RiDeleteBinLine,
   RiArrowUpLine,
   RiCalendarLine,
   RiMapPinLine,
@@ -40,7 +41,7 @@ import {
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
 import { useEvent, useEventMembers } from "@/hooks/useEvents";
-import { useEventPhotos, useUploadPhotos } from "@/hooks/usePhotos";
+import { useEventPhotos, useUploadPhotos, useDeletePhoto } from "@/hooks/usePhotos";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
 
 // --- Component ---
@@ -57,7 +58,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadPhotos = useUploadPhotos(eventId);
+  const deleteMutation = useDeletePhoto(eventId);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
@@ -244,8 +247,19 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                         ) : (
                           <RiImageLine size={24} className="text-gray-300" />
                         )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                          <RiEyeLine size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setLightboxIndex(index); }}
+                            className="p-2 bg-white/90 hover:bg-white rounded-full text-gray-800 transition-colors cursor-pointer"
+                          >
+                            <RiEyeLine size={18} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(photo.id); }}
+                            className="p-2 bg-white/90 hover:bg-white rounded-full text-red-500 transition-colors cursor-pointer"
+                          >
+                            <RiDeleteBinLine size={18} />
+                          </button>
                         </div>
                       </div>
                     );
@@ -446,7 +460,59 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           currentIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onChange={setLightboxIndex}
+          onDelete={(photoId) => setDeleteConfirmId(photoId)}
         />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-base font-semibold text-text mb-1">
+              Удалить это фото?
+            </h3>
+            <p className="text-sm text-text-secondary mb-5">
+              Это действие нельзя отменить.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
+                  hover:bg-bg-secondary transition-colors cursor-pointer"
+              >
+                {tc("cancel")}
+              </button>
+              <button
+                onClick={() => {
+                  deleteMutation.mutate(deleteConfirmId, {
+                    onSuccess: () => {
+                      if (lightboxIndex !== null) {
+                        const displayedPhotos = photos.slice(0, 12);
+                        const deletedIndex = displayedPhotos.findIndex(
+                          (p: { id: string }) => p.id === deleteConfirmId
+                        );
+                        if (displayedPhotos.length <= 1) {
+                          setLightboxIndex(null);
+                        } else if (
+                          deletedIndex <= lightboxIndex &&
+                          lightboxIndex > 0
+                        ) {
+                          setLightboxIndex(lightboxIndex - 1);
+                        }
+                      }
+                      setDeleteConfirmId(null);
+                    },
+                  });
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex-1 h-10 rounded-xl bg-red-500 text-white text-sm font-medium
+                  hover:bg-red-600 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
