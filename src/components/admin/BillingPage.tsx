@@ -71,12 +71,12 @@ const plans = [
   },
 ];
 
-const eventPricing = [
-  { photos: "2 500", price: "200 000" },
-  { photos: "5 000", price: "250 000" },
-  { photos: "7 500", price: "300 000" },
-  { photos: "15 000", price: "400 000" },
-  { photos: "15 001+", price: "500 000" },
+const eventPackages = [
+  { photos: "2 500", price: "200 000", perPhoto: "80" },
+  { photos: "5 000", price: "250 000", perPhoto: "50" },
+  { photos: "7 500", price: "300 000", perPhoto: "40", popular: true },
+  { photos: "15 000", price: "400 000", perPhoto: "27" },
+  { photos: "15 001+", price: "500 000", perPhoto: "~33" },
 ];
 
 // --- Component ---
@@ -227,35 +227,46 @@ export function BillingPage() {
         </div>
       </div>
 
-      {/* Event Pricing Table */}
+      {/* Event Photo Packages */}
       <div>
-        <h2 className="text-lg font-semibold mb-1">Эксклюзивный пакет</h2>
-        <p className="text-sm text-text-secondary mb-4">
-          Оплата за мероприятие в зависимости от количества фото
+        <h2 className="text-lg font-semibold mb-1">Пакеты фотографий</h2>
+        <p className="text-sm text-text-secondary mb-5">
+          Разовая покупка — выберите нужный объём фото для мероприятия
         </p>
 
-        <div className="border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-bg-secondary/50">
-                <th className="text-left px-5 py-3 font-medium text-text-secondary text-xs uppercase tracking-wider">Кол-во фото</th>
-                <th className="text-right px-5 py-3 font-medium text-text-secondary text-xs uppercase tracking-wider">Стоимость</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eventPricing.map((row, i) => (
-                <tr
-                  key={i}
-                  className="border-t border-border"
-                >
-                  <td className="px-5 py-3">До {row.photos} фото</td>
-                  <td className="px-5 py-3 text-right font-medium tabular-nums">
-                    {row.price} ₸
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {eventPackages.map((pkg, i) => (
+            <div
+              key={i}
+              className={`relative flex flex-col items-center rounded-xl border p-5 text-center transition-shadow hover:shadow-md cursor-pointer ${
+                pkg.popular
+                  ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
+                  : "border-border"
+              }`}
+            >
+              {pkg.popular && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  Выгодный
+                </span>
+              )}
+
+              <p className="text-xs text-text-secondary mb-1">до</p>
+              <p className="text-2xl font-bold tabular-nums leading-tight">{pkg.photos}</p>
+              <p className="text-xs text-text-secondary mb-4">фото</p>
+
+              <p className="text-lg font-semibold tabular-nums">{pkg.price} ₸</p>
+              <p className="text-[11px] text-text-secondary mt-0.5 mb-4">
+                ~{pkg.perPhoto} ₸ / фото
+              </p>
+
+              <Button
+                className="w-full"
+                variant={pkg.popular ? "primary" : "secondary"}
+              >
+                Купить
+              </Button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

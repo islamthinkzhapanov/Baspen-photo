@@ -14,6 +14,7 @@ import {
   RiDownloadLine,
   RiDropLine,
   RiShoppingCartLine,
+  RiHashtag,
 } from "@remixicon/react";
 
 interface EventFormProps {
@@ -30,6 +31,7 @@ interface EventFormProps {
       watermarkEnabled?: boolean;
       pricePerPhoto?: number;
       packageDiscount?: number;
+      bibSearchEnabled?: boolean;
     } | null;
   };
 }
@@ -60,6 +62,7 @@ export function EventForm({ event }: EventFormProps) {
   const [watermarkEnabled, setWatermarkEnabled] = useState(event?.settings?.watermarkEnabled ?? true);
   const [pricePerPhoto, setPricePerPhoto] = useState(event?.settings?.pricePerPhoto || 0);
   const [packageDiscount, setPackageDiscount] = useState(event?.settings?.packageDiscount || 0);
+  const [bibSearchEnabled, setBibSearchEnabled] = useState(event?.settings?.bibSearchEnabled ?? false);
 
   function generateSlug(title: string) {
     return title
@@ -94,6 +97,7 @@ export function EventForm({ event }: EventFormProps) {
         watermarkEnabled: photoSalesEnabled ? watermarkEnabled : false,
         pricePerPhoto: photoSalesEnabled ? pricePerPhoto : 0,
         packageDiscount: photoSalesEnabled ? packageDiscount : 0,
+        bibSearchEnabled,
       },
     };
 
@@ -223,6 +227,18 @@ export function EventForm({ event }: EventFormProps) {
               <span className="text-sm font-medium text-text">{t("free_download")}</span>
             </div>
             <Switch checked={freeDownload} onChange={setFreeDownload} />
+          </div>
+
+          {/* Bib Number Search Toggle */}
+          <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white">
+            <div className="flex items-center gap-3">
+              <RiHashtag className="w-4.5 h-4.5 text-text-secondary" />
+              <div>
+                <span className="text-sm font-medium text-text">{t("bib_search")}</span>
+                <p className="text-xs text-text-secondary">{t("bib_search_hint")}</p>
+              </div>
+            </div>
+            <Switch checked={bibSearchEnabled} onChange={setBibSearchEnabled} />
           </div>
 
           {/* Photo Sales Toggle */}

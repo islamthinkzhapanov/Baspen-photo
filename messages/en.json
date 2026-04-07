@@ -232,6 +232,8 @@
     "delete_confirm": "Delete project \"{name}\"?",
     "settings": "Settings",
     "free_download": "Free download",
+    "bib_search": "Number search",
+    "bib_search_hint": "For sports events",
     "photo_sales": "Photo sales",
     "watermark": "Watermark",
     "price_per_photo": "Price per photo",

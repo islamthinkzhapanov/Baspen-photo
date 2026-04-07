@@ -18,6 +18,7 @@ export const createEventSchema = z.object({
       watermarkEnabled: z.boolean().optional(),
       pricePerPhoto: z.number().min(0).optional(),
       packageDiscount: z.number().min(0).max(100).optional(),
+      bibSearchEnabled: z.boolean().optional(),
     })
     .optional(),
 });

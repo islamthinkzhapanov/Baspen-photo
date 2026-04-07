@@ -219,6 +219,8 @@
     "delete_confirm": "«{name}» жобасын жою керек пе?",
     "settings": "Баптаулар",
     "free_download": "Тегін жүктеу",
+    "bib_search": "Нөмір бойынша іздеу",
+    "bib_search_hint": "Спорттық іс-шаралар үшін",
     "photo_sales": "Фотосуреттерді сату",
     "watermark": "Су таңбасы",
     "price_per_photo": "Фото бағасы",

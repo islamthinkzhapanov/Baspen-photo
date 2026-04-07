@@ -193,6 +193,7 @@ export const events = pgTable(
       pricePerPhoto?: number;
       packageDiscount?: number;
       commissionPercent?: number;
+      bibSearchEnabled?: boolean;
     }>(),
     geofence: jsonb("geofence").$type<{
       lat: number;

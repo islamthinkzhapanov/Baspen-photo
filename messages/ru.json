@@ -235,6 +235,8 @@
     "delete_confirm": "Удалить проект «{name}»?",
     "settings": "Настройки",
     "free_download": "Бесплатное скачивание",
+    "bib_search": "Поиск по номеру",
+    "bib_search_hint": "Для спортивных мероприятий",
     "photo_sales": "Продажа фотографий",
     "watermark": "Водяной знак",
     "price_per_photo": "Цена за фото",

@@ -27,6 +27,7 @@ import {
   RiCheckboxBlankLine,
   RiCheckboxFill,
   RiCloseLine,
+  RiHashtag,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
@@ -208,6 +209,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
   const [photoSalesToggle, setPhotoSalesToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
+  const [bibSearchToggle, setBibSearchToggle] = useState(false);
   const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
   const [settingsSlug, setSettingsSlug] = useState<string | undefined>();
   const [settingsDescription, setSettingsDescription] = useState<string | undefined>();
@@ -245,6 +247,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       setWatermarkToggle(event.settings?.watermarkEnabled !== false);
       setSettingsPrice(event.settings?.pricePerPhoto || 0);
       setSettingsDiscount(event.settings?.packageDiscount || 0);
+      setBibSearchToggle(!!event.settings?.bibSearchEnabled);
       setSettingsInitialized(true);
     }
   }, [event, settingsInitialized]);
@@ -256,7 +259,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     freeDownloadToggle !== !!event.settings?.freeDownload ||
     watermarkToggle !== (event.settings?.watermarkEnabled !== false) ||
     settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
-    settingsDiscount !== (event.settings?.packageDiscount || 0)
+    settingsDiscount !== (event.settings?.packageDiscount || 0) ||
+    bibSearchToggle !== !!event.settings?.bibSearchEnabled
   ) : false;
 
   function handleSaveSettings() {
@@ -270,6 +274,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           watermarkEnabled: photoSalesToggle ? watermarkToggle : false,
           pricePerPhoto: photoSalesToggle ? settingsPrice : 0,
           packageDiscount: photoSalesToggle ? settingsDiscount : 0,
+          bibSearchEnabled: bibSearchToggle,
         },
       },
       {
@@ -796,6 +801,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     <Switch
                       checked={photoSalesToggle}
                       onChange={setPhotoSalesToggle}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm">{t("bib_search")}</p>
+                      <p className="text-xs text-text-secondary">{t("bib_search_hint")}</p>
+                    </div>
+                    <Switch
+                      checked={bibSearchToggle}
+                      onChange={setBibSearchToggle}
                     />
                   </div>
                   {photoSalesToggle && (

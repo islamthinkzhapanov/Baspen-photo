@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 function fmt(n: number) {
@@ -20,11 +20,14 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiLoader4Line,
-  RiImageAddLine,
+  RiErrorWarningLine,
 } from "@remixicon/react";
 import { Button } from "@tremor/react";
 import { ShineBorder } from "@/components/ui/shine-border";
 import { useQuery } from "@tanstack/react-query";
+import { useFaceSearch, type SearchPhoto } from "@/hooks/useSearch";
+import { useRealtimeMatches } from "@/hooks/useRealtimeMatches";
+import { SelfieCamera } from "@/components/selfie/SelfieCamera";
 
 // Color palette for placeholder photos
 const photoColors = [
@@ -49,157 +52,6 @@ export interface EmbedConfig {
 
 type View = "landing" | "searching" | "results";
 
-// --- Camera Component ---
-
-function CameraView({
-  onCapture,
-  onClose,
-  onPickPhoto,
-  labels,
-}: {
-  onCapture: () => void;
-  onClose: () => void;
-  onPickPhoto: () => void;
-  labels: { placeface: string; cameraError: string; retry: string };
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [cameraReady, setCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState(false);
-
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-  }, []);
-
-  const startCamera = useCallback(async () => {
-    setCameraError(false);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(() => setCameraError(true));
-      }
-    } catch {
-      setCameraError(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [startCamera, stopCamera]);
-
-  function handleCapture() {
-    stopCamera();
-    onCapture();
-  }
-
-  function handleClose() {
-    stopCamera();
-    onClose();
-  }
-
-  /* 9:16 story size — explicit height to avoid Safari aspect-ratio bugs */
-  const modalWidth = "min(380px, 90vw)";
-  const modalHeight = "min(675px, 85vh)";
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      {/* Modal card */}
-      <div
-        className="relative bg-black rounded-3xl overflow-hidden shadow-2xl"
-        style={{ width: modalWidth, height: modalHeight }}
-      >
-        {/* Video — fills entire card */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          onPlaying={() => setCameraReady(true)}
-          className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
-        />
-
-        {/* Loading state */}
-        {!cameraReady && !cameraError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black rounded-3xl">
-            <span className="animate-spin inline-flex"><RiLoader4Line size={32} className="text-white/40" /></span>
-          </div>
-        )}
-
-        {/* Error state */}
-        {cameraError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black rounded-3xl">
-            <div className="text-center px-6">
-              <RiCameraLine size={48} className="text-white/30 mx-auto mb-3" />
-              <p className="text-white/60 text-sm mb-4">{labels.cameraError}</p>
-              <button
-                onClick={startCamera}
-                className="px-5 py-2 bg-white/10 rounded-full text-white text-sm hover:bg-white/20"
-              >
-                {labels.retry}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Close button — top right */}
-        <button
-          onClick={handleClose}
-          className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
-        >
-          <RiCloseLine size={16} className="text-white" />
-        </button>
-
-        {/* Instruction text — top center */}
-        <div className="absolute top-4 left-0 right-0 z-10 text-center px-10">
-          <p className="text-white text-sm font-medium leading-snug drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-            {labels.placeface}
-          </p>
-        </div>
-
-        {/* Dashed oval guide — centered, explicit size */}
-        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center"
-          style={{ paddingBottom: "80px" }}
-        >
-          <div
-            className="border-[2px] border-dashed border-white/50 rounded-[50%]"
-            style={{ width: "70%", height: "65%" }}
-          />
-        </div>
-
-        {/* Bottom bar — capture + gallery, positioned at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center py-4 bg-gradient-to-t from-black/40 to-transparent">
-          {/* Capture button */}
-          <button
-            onClick={handleCapture}
-            disabled={!cameraReady}
-            className="w-[60px] h-[60px] rounded-full border-[3px] border-white/80 flex items-center justify-center
-              active:scale-95 transition-all disabled:opacity-30"
-          >
-            <div className="w-[48px] h-[48px] rounded-full bg-white" />
-          </button>
-
-          {/* Gallery pick button */}
-          <button
-            onClick={() => { stopCamera(); onPickPhoto(); }}
-            className="absolute right-4 w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center hover:bg-white/25"
-          >
-            <RiImageAddLine size={16} className="text-white" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- Main Component ---
 
 export function PublicEventPage({
@@ -221,6 +73,14 @@ export function PublicEventPage({
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
+  // --- Real search state ---
+  const [matchedPhotos, setMatchedPhotos] = useState<SearchPhoto[]>([]);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [numberSearchQuery, setNumberSearchQuery] = useState("");
+
+  const faceSearch = useFaceSearch();
+
   const { data: eventData } = useQuery({
     queryKey: ["public-event", slug, isPreview],
     queryFn: async () => {
@@ -233,6 +93,26 @@ export function PublicEventPage({
     },
   });
 
+  // Number search via API
+  const { data: numberData } = useQuery({
+    queryKey: ["search", "number", eventData?.event?.id, numberSearchQuery],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/search/number?eventId=${eventData.event.id}&number=${encodeURIComponent(numberSearchQuery)}`
+      );
+      if (!res.ok) throw new Error("Search failed");
+      return res.json() as Promise<{ photos: SearchPhoto[]; total: number }>;
+    },
+    enabled: !!eventData?.event?.id && !!numberSearchQuery && numberSearchQuery.length >= 1,
+  });
+
+  // Realtime match updates after face search
+  const { newPhotos } = useRealtimeMatches({
+    eventId: eventData?.event?.id || "",
+    sessionToken,
+    enabled: !!sessionToken && view === "results",
+  });
+
   const event = eventData?.event || {
     title: "",
     description: "",
@@ -240,8 +120,15 @@ export function PublicEventPage({
     location: "",
     photoCount: 0,
     participantCount: 0,
+    settings: null as Record<string, unknown> | null,
   };
-  const searchResults = eventData?.photos || [];
+
+  const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
+
+  // Combine matched photos with realtime new matches
+  const searchResults: SearchPhoto[] = numberSearchQuery
+    ? (numberData?.photos || [])
+    : [...newPhotos.filter((np) => !matchedPhotos.some((mp) => mp.id === np.id)), ...matchedPhotos];
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -252,14 +139,44 @@ export function PublicEventPage({
     });
   }
 
-  function simulateSearch() {
+  async function handleFaceSearch(blob: Blob) {
     setShowCamera(false);
+    setSearchError(null);
     setView("searching");
-    setTimeout(() => setView("results"), 1500);
+    setNumberSearchQuery("");
+    try {
+      const result = await faceSearch.mutateAsync({
+        file: blob,
+        eventId: event.id,
+        sessionToken: sessionToken || undefined,
+      });
+      setMatchedPhotos(result.photos);
+      setSessionToken(result.sessionToken);
+      if (result.photos.length === 0) {
+        setSearchError("no_results");
+        setView("landing");
+      } else {
+        setView("results");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      if (msg === "no_face_detected") {
+        setSearchError("no_face_detected");
+      } else {
+        setSearchError(msg);
+      }
+      setView("landing");
+    }
   }
 
-  function openCamera() {
-    setShowCamera(true);
+  function handleNumberSearch() {
+    const num = bibNumber.join("");
+    if (!num) return;
+    setShowNumberSearch(false);
+    setSearchError(null);
+    setMatchedPhotos([]);
+    setNumberSearchQuery(num);
+    setView("results");
   }
 
   // --- Searching View ---
@@ -295,19 +212,21 @@ export function PublicEventPage({
             </button>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => openCamera()}
+                onClick={() => setShowCamera(true)}
                 className="p-2 hover:bg-bg-secondary rounded-lg text-text-secondary"
                 title={t("search_by_face")}
               >
                 <RiCameraLine size={16} />
               </button>
-              <button
-                onClick={() => setShowNumberSearch(true)}
-                className="p-2 hover:bg-bg-secondary rounded-lg text-text-secondary"
-                title={t("search_by_number")}
-              >
-                <RiHashtag size={16} />
-              </button>
+              {bibSearchEnabled && (
+                <button
+                  onClick={() => setShowNumberSearch(true)}
+                  className="p-2 hover:bg-bg-secondary rounded-lg text-text-secondary"
+                  title={t("search_by_number")}
+                >
+                  <RiHashtag size={16} />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -333,9 +252,10 @@ export function PublicEventPage({
 
           {/* Masonry Grid */}
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-            {searchResults.map((photo: { id: string; width: number | null; height: number | null; watermarkedPath: string | null; thumbnailPath: string | null }, index: number) => {
+            {searchResults.map((photo, index) => {
               const isLiked = likes.has(photo.id);
               const staggerDelay = Math.min(index * 40, 400);
+              const imgSrc = photo.watermarked_path || photo.thumbnail_path;
               return (
                 <div
                   key={photo.id}
@@ -360,9 +280,9 @@ export function PublicEventPage({
                     )}
 
                     {/* Photo content */}
-                    {photo.watermarkedPath || photo.thumbnailPath ? (
+                    {imgSrc ? (
                       <img
-                        src={photo.watermarkedPath || photo.thumbnailPath || undefined}
+                        src={imgSrc}
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover"
                       />
@@ -470,9 +390,9 @@ export function PublicEventPage({
               }}
             >
               <div className="w-full h-full flex items-center justify-center relative">
-                {searchResults[lightbox].watermarkedPath || searchResults[lightbox].thumbnailPath ? (
+                {searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path ? (
                   <img
-                    src={searchResults[lightbox].watermarkedPath || searchResults[lightbox].thumbnailPath}
+                    src={searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path || undefined}
                     alt=""
                     className="w-full h-full object-contain"
                   />
@@ -628,24 +548,40 @@ export function PublicEventPage({
           было закрыто аксессуарами
         </p>
 
+        {/* Search error */}
+        {searchError && (
+          <div className="flex items-center gap-2 px-4 py-3 mb-4 mx-6 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+            <RiErrorWarningLine size={18} className="shrink-0" />
+            <span>
+              {searchError === "no_face_detected"
+                ? "Лицо не обнаружено. Попробуйте ещё раз"
+                : searchError === "no_results"
+                ? "Совпадений не найдено"
+                : `Ошибка: ${searchError}`}
+            </span>
+          </div>
+        )}
+
         {/* Search buttons */}
         <div className="flex flex-col gap-[14px] w-full max-w-[400px] px-6">
           <button
-            onClick={() => openCamera()}
+            onClick={() => setShowCamera(true)}
             className="flex items-center justify-center gap-2 w-full py-4 px-[14px] bg-[#005ff9] text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
           >
             <img src="/icon-face.svg" alt="" className="w-[18px] h-[18px]" />
             {t("search_by_face")}
           </button>
-          <button
-            onClick={() => setShowNumberSearch(true)}
-            className="flex items-center justify-center gap-2 w-full py-4 px-[14px] border rounded-[6px] text-[15px] tracking-[-0.3px] transition-colors bg-white border-[rgba(0,16,61,0.12)] text-[#08304c] hover:bg-gray-50"
-            style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
-          >
-            <img src="/icon-number.svg" alt="" className="w-[18px] h-[18px]" />
-            {t("search_by_number")}
-          </button>
+          {bibSearchEnabled && (
+            <button
+              onClick={() => setShowNumberSearch(true)}
+              className="flex items-center justify-center gap-2 w-full py-4 px-[14px] border rounded-[6px] text-[15px] tracking-[-0.3px] transition-colors bg-white border-[rgba(0,16,61,0.12)] text-[#08304c] hover:bg-gray-50"
+              style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
+            >
+              <img src="/icon-number.svg" alt="" className="w-[18px] h-[18px]" />
+              {t("search_by_number")}
+            </button>
+          )}
         </div>
 
         {/* Footer */}
@@ -661,15 +597,10 @@ export function PublicEventPage({
 
       {/* Camera modal overlay */}
       {showCamera && (
-        <CameraView
-          onCapture={simulateSearch}
+        <SelfieCamera
+          onCapture={(blob) => handleFaceSearch(blob)}
           onClose={() => setShowCamera(false)}
-          onPickPhoto={simulateSearch}
-          labels={{
-            placeface: t("place_face"),
-            cameraError: t("camera_error"),
-            retry: t("retry"),
-          }}
+          isSearching={faceSearch.isPending}
         />
       )}
 
@@ -720,7 +651,7 @@ export function PublicEventPage({
               </div>
 
               <button
-                onClick={() => { setShowNumberSearch(false); simulateSearch(); }}
+                onClick={handleNumberSearch}
                 className="w-full py-4 bg-[#005ff9] text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
                 style={{ fontWeight: 510 }}
               >
