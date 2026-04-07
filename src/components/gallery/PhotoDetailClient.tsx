@@ -7,7 +7,6 @@ import {
   RiDownloadLine,
   RiShareLine,
   RiArrowLeftLine,
-  RiHeartLine,
   RiLoader4Line,
   RiCloseLine,
 } from "@remixicon/react";
@@ -130,9 +129,6 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
           >
             <RiInformationLine size={20} />
           </button>
-          <button className="p-2 hover:bg-white/10 rounded-full">
-            <RiHeartLine size={20} />
-          </button>
           <button
             onClick={handleShare}
             className="p-2 hover:bg-white/10 rounded-full"
@@ -149,6 +145,18 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
             ) : (
               <RiDownloadLine size={20} />
             )}
+          </button>
+          <button
+            onClick={() => {
+              if (event) {
+                router.push(`/e/${event.slug}`);
+              } else {
+                router.back();
+              }
+            }}
+            className="p-2 hover:bg-white/10 rounded-full"
+          >
+            <RiCloseLine size={20} />
           </button>
         </div>
       </div>
