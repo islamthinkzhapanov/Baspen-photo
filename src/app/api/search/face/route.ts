@@ -5,7 +5,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { detectFaces } from "@/lib/face-detection/client";
 import { nanoid } from "nanoid";
 
-const SIMILARITY_THRESHOLD = 0.55;
+const SIMILARITY_THRESHOLD = 0.4;
 const MAX_RESULTS = 200;
 
 /**
