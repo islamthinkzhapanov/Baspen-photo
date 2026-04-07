@@ -5,6 +5,7 @@ import { photos, events } from "@/lib/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { enqueuePhotoProcessing } from "@/lib/queue/photo-queue";
 import { getEventAccess } from "@/lib/event-auth";
+import { getDownloadUrl } from "@/lib/storage/s3";
 
 // GET /api/events/[id]/photos — list photos for event
 export async function GET(
@@ -28,7 +29,23 @@ export async function GET(
     .where(eq(photos.eventId, id))
     .orderBy(desc(photos.createdAt));
 
-  return NextResponse.json({ photos: eventPhotos });
+  // Generate presigned URLs for photos without thumbnails
+  const photosWithUrls = await Promise.all(
+    eventPhotos.map(async (photo) => {
+      if (photo.thumbnailPath || photo.watermarkedPath) {
+        return photo;
+      }
+      // Fallback: generate presigned URL from original
+      try {
+        const previewUrl = await getDownloadUrl(photo.storagePath, 3600);
+        return { ...photo, thumbnailPath: previewUrl };
+      } catch {
+        return photo;
+      }
+    })
+  );
+
+  return NextResponse.json({ photos: photosWithUrls });
 }
 
 // POST /api/events/[id]/photos — register uploaded photo (after S3 upload)
