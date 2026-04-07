@@ -61,6 +61,7 @@ const PHOTOS_PER_PAGE = 100;
 interface Photo {
   id: string;
   thumbnailPath: string | null;
+  publicPath?: string | null;
   watermarkedPath?: string | null;
   storagePath: string;
   originalFilename: string | null;

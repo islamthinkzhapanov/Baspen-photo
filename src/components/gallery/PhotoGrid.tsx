@@ -9,6 +9,7 @@ import { RiImageLine, RiEyeLine, RiDeleteBinLine } from "@remixicon/react";
 interface Photo {
   id: string;
   thumbnailPath: string | null;
+  publicPath?: string | null;
   storagePath: string;
   originalFilename: string | null;
   width: number | null;

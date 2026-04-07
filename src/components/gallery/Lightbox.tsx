@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 interface Photo {
   id: string;
   thumbnailPath: string | null;
+  publicPath?: string | null;
   storagePath: string;
   originalFilename: string | null;
 }
@@ -167,7 +168,7 @@ export function Lightbox({ photos, currentIndex, onClose, onChange, onDelete }: 
 
       {/* Image */}
       <img
-        src={photo.thumbnailPath || ""}
+        src={photo.publicPath || photo.thumbnailPath || ""}
         alt={photo.originalFilename || ""}
         className="max-h-[85vh] max-w-[90vw] object-contain"
       />
