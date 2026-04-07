@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { validateApiKey } from "@/lib/api-key";
-import { getUploadUrl } from "@/lib/storage/s3";
+import { getUploadUrl, s3, bucket } from "@/lib/storage/s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@/lib/db";
 import { photos, events } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -130,22 +131,17 @@ async function handleDirectUpload(
   const ext = file.name.split(".").pop() || "jpg";
   const key = `events/${eventId}/originals/${nanoid()}.${ext}`;
 
-  // Upload to S3 via presigned URL
-  const uploadUrl = await getUploadUrl(key, file.type, 300);
+  // Upload to S3 directly
   const arrayBuffer = await file.arrayBuffer();
 
-  const s3Response = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: arrayBuffer,
-  });
-
-  if (!s3Response.ok) {
-    return NextResponse.json(
-      { error: "Failed to upload to storage" },
-      { status: 500 }
-    );
-  }
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: Buffer.from(arrayBuffer),
+      ContentType: file.type,
+    })
+  );
 
   // Create photo record
   const photoId = crypto.randomUUID();

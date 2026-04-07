@@ -16,6 +16,17 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
+// Public client for generating presigned URLs that browsers can reach
+const s3Public = new S3Client({
+  endpoint: process.env.S3_PUBLIC_ENDPOINT || process.env.S3_ENDPOINT!,
+  region: process.env.S3_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY!,
+    secretAccessKey: process.env.S3_SECRET_KEY!,
+  },
+  forcePathStyle: true,
+});
+
 const bucket = process.env.S3_BUCKET || "baspen-photos";
 
 export async function getUploadUrl(
@@ -28,7 +39,7 @@ export async function getUploadUrl(
     Key: key,
     ContentType: contentType,
   });
-  return getSignedUrl(s3, command, { expiresIn });
+  return getSignedUrl(s3Public, command, { expiresIn });
 }
 
 export async function getDownloadUrl(key: string, expiresIn = 3600) {
@@ -36,7 +47,7 @@ export async function getDownloadUrl(key: string, expiresIn = 3600) {
     Bucket: bucket,
     Key: key,
   });
-  return getSignedUrl(s3, command, { expiresIn });
+  return getSignedUrl(s3Public, command, { expiresIn });
 }
 
 export async function deleteObject(key: string) {
@@ -52,4 +63,4 @@ export function getPublicUrl(key: string) {
   return `${process.env.S3_PUBLIC_URL}/${key}`;
 }
 
-export { s3, bucket };
+export { s3, s3Public, bucket };

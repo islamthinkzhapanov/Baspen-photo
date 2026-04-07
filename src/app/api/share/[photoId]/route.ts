@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { photos, events, sponsorBlocks } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { generateShareFrame } from "@/lib/share-frame";
-import { s3, bucket } from "@/lib/storage/s3";
+import { s3, s3Public, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -52,16 +52,16 @@ export async function GET(
   // Check if share image already cached
   const shareKey = photo.storagePath.replace("/originals/", "/share/");
   try {
-    const url = await getSignedUrl(
-      s3,
-      new GetObjectCommand({ Bucket: bucket, Key: shareKey }),
-      { expiresIn: 3600 }
-    );
     // If the object exists, return it
     const headRes = await s3.send(
       new GetObjectCommand({ Bucket: bucket, Key: shareKey })
     );
     if (headRes.Body) {
+      const url = await getSignedUrl(
+        s3Public,
+        new GetObjectCommand({ Bucket: bucket, Key: shareKey }),
+        { expiresIn: 3600 }
+      );
       return NextResponse.json({ url, cached: true });
     }
   } catch {
@@ -115,7 +115,7 @@ export async function GET(
   );
 
   const url = await getSignedUrl(
-    s3,
+    s3Public,
     new GetObjectCommand({ Bucket: bucket, Key: shareKey }),
     { expiresIn: 3600 }
   );
