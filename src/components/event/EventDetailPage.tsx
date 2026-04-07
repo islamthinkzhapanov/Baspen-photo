@@ -21,7 +21,8 @@ import {
   RiCalendarLine,
   RiMapPinLine,
 } from "@remixicon/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
+import { Lightbox } from "@/components/gallery/Lightbox";
 import {
   Card,
   Badge,
@@ -56,6 +57,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadPhotos = useUploadPhotos(eventId);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
@@ -219,20 +221,35 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               {/* Photo Grid */}
               {photos.length > 0 ? (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {photos.slice(0, 12).map((photo: { id: string }, index: number) => (
-                    <div
-                      key={photo.id}
-                      className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
-                    >
-                      <RiImageLine size={24} className="text-gray-300" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <RiEyeLine size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {photos.slice(0, 12).map((photo: { id: string; thumbnailPath: string | null; watermarkedPath?: string | null; storagePath: string; originalFilename: string | null; status?: string }, index: number) => {
+                    const thumbUrl = photo.thumbnailPath || photo.watermarkedPath;
+                    const isProcessing = photo.status === "processing" || photo.status === "uploading";
+                    return (
+                      <div
+                        key={photo.id}
+                        className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
+                        onClick={() => setLightboxIndex(index)}
+                      >
+                        {thumbUrl ? (
+                          <img
+                            src={thumbUrl}
+                            alt={photo.originalFilename || `Photo ${index + 1}`}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : isProcessing ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="w-5 h-5 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
+                            <span className="text-[10px] text-gray-400">Обработка</span>
+                          </div>
+                        ) : (
+                          <RiImageLine size={24} className="text-gray-300" />
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <RiEyeLine size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
                       </div>
-                      <span className="absolute bottom-1 right-1 text-[10px] text-gray-400">
-                        #{index + 1}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -421,6 +438,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           )}
         </TabPanels>
       </TabGroup>
+
+      {/* Lightbox */}
+      {lightboxIndex !== null && (
+        <Lightbox
+          photos={photos.slice(0, 12)}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onChange={setLightboxIndex}
+        />
+      )}
     </div>
   );
 }
