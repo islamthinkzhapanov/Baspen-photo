@@ -119,43 +119,42 @@ export function BillingPage() {
         </p>
       </div>
 
-      {/* Current Plan + Usage */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Current plan card */}
-        <Card className="bg-primary text-white p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <RiVipCrownLine size={18} className="opacity-80" />
-            <span className="text-sm opacity-80">{t("current_plan")}</span>
-          </div>
-          <p className="text-2xl font-bold">{currentPlan.name}</p>
-          <p className="text-sm opacity-80 mt-1">
-            {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
-          </p>
-          <button className="mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors">
-            {t("cancel_subscription")}
-          </button>
-        </Card>
+      {/* Current Plan */}
+      <Card className="bg-primary text-white p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <RiVipCrownLine size={18} className="opacity-80" />
+          <span className="text-sm opacity-80">{t("current_plan")}</span>
+        </div>
+        <p className="text-2xl font-bold">{currentPlan.name}</p>
+        <p className="text-sm opacity-80 mt-1">
+          {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
+        </p>
+        <button className="mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors">
+          {t("cancel_subscription")}
+        </button>
+      </Card>
 
-        {/* Usage cards */}
+      {/* Usage cards — always 3 in a row */}
+      <div className="grid grid-cols-3 gap-3">
         {usageItems.map((item) => {
           const Icon = item.icon;
           const percent = Math.round((item.used / item.max) * 100);
           return (
-            <Card key={item.label} className="p-4 flex flex-col gap-3">
+            <Card key={item.label} className="p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
               <div className="flex items-center justify-between">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${item.color}`}>
-                  <Icon size={20} />
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${item.color}`}>
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <Badge color={percent > 80 ? "red" : percent > 50 ? "amber" : "green"} size="xs">
                   {percent}%
                 </Badge>
               </div>
               <div>
-                <p className="text-2xl font-bold">
+                <p className="text-lg sm:text-2xl font-bold">
                   {item.used.toLocaleString("ru-RU")}
-                  <span className="text-sm font-normal text-text-secondary"> / {item.max.toLocaleString("ru-RU")}</span>
+                  <span className="text-[10px] sm:text-sm font-normal text-text-secondary"> / {item.max.toLocaleString("ru-RU")}</span>
                 </p>
-                <p className="text-xs text-text-secondary mt-0.5">{item.label}</p>
+                <p className="text-[10px] sm:text-xs text-text-secondary mt-0.5 line-clamp-1">{item.label}</p>
               </div>
               {/* Progress bar */}
               <div className="w-full h-1.5 bg-bg-secondary rounded-full overflow-hidden">
