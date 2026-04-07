@@ -13,7 +13,6 @@ import {
   RiCloseLine,
   RiLoader4Line,
 } from "@remixicon/react";
-import { useSession } from "next-auth/react";
 import { useEvent } from "@/hooks/useEvents";
 import { useEventPhotos, useDeletePhoto, useProcessingStatus } from "@/hooks/usePhotos";
 import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
@@ -36,14 +35,12 @@ const PHOTOS_PER_PAGE = 100;
 function PhotoLightbox({
   photos,
   currentIndex,
-  userId,
   onClose,
   onChange,
   onDelete,
 }: {
   photos: Photo[];
   currentIndex: number;
-  userId: string;
   onClose: () => void;
   onChange: (index: number) => void;
   onDelete: (photoId: string) => void;
@@ -77,7 +74,6 @@ function PhotoLightbox({
 
   if (!photo) return null;
 
-  const isMyPhoto = photo.uploadedBy === userId;
   const imageUrl = photo.watermarkedPath || photo.thumbnailPath;
 
   const handleDelete = () => {
@@ -99,15 +95,13 @@ function PhotoLightbox({
           })}
         </span>
         <div className="flex items-center gap-1">
-          {isMyPhoto && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer text-red-400 hover:text-red-300"
-              title={t("delete_photo")}
-            >
-              <RiDeleteBinLine size={20} />
-            </button>
-          )}
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer text-red-400 hover:text-red-300"
+            title={t("delete_photo")}
+          >
+            <RiDeleteBinLine size={20} />
+          </button>
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
@@ -325,7 +319,6 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const { data: session } = useSession();
   const { data: event, isLoading: eventLoading } = useEvent(eventId);
   const { data: allPhotos, isLoading: photosLoading } = useEventPhotos(eventId);
   const deleteMutation = useDeletePhoto(eventId);
@@ -372,8 +365,6 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
       </div>
     );
   }
-
-  const userId = session?.user?.id ?? "";
 
   return (
     <div>
@@ -440,8 +431,21 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
                     ) : (
                       <RiImageLine size={24} className="text-gray-300" />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2">
-                      <RiEyeLine size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePhotoClick(idx); }}
+                        className="p-2 bg-white/90 hover:bg-white rounded-full text-gray-800 transition-colors cursor-pointer"
+                        title={t("view")}
+                      >
+                        <RiEyeLine size={18} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
+                        className="p-2 bg-white/90 hover:bg-white rounded-full text-red-500 transition-colors cursor-pointer"
+                        title={t("delete_photo")}
+                      >
+                        <RiDeleteBinLine size={18} />
+                      </button>
                     </div>
                   </div>
                 );
@@ -474,7 +478,6 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
         <PhotoLightbox
           photos={pagePhotos}
           currentIndex={lightboxIndex}
-          userId={userId}
           onClose={() => setLightboxIndex(null)}
           onChange={setLightboxIndex}
           onDelete={handleDelete}
