@@ -8,7 +8,7 @@ import {
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { sql } from "drizzle-orm";
-import { detectFaces } from "../../src/lib/compreface/client";
+import { detectFaces } from "../../src/lib/face-detection/client";
 import {
   generateWatermarkedImage,
   type WatermarkConfig,

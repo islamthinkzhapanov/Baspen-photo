@@ -30,25 +30,7 @@ services:
     volumes:
       - miniodata:/data
 
-  compreface:
-    image: exadel/compreface:latest
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    depends_on:
-      - compreface-postgres
-
-  compreface-postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: frs
-      POSTGRES_USER: frs
-      POSTGRES_PASSWORD: frs_dev
-    volumes:
-      - compreface_pgdata:/var/lib/postgresql/data
-
-  bib-detector:
+  ml-service:
     build: ./bib-detector
     restart: unless-stopped
     ports:
@@ -58,9 +40,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 6G
 
 volumes:
   pgdata:
   miniodata:
-  compreface_pgdata:

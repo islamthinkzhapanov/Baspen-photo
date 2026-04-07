@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { photos, events, participants } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
-import { detectFaces } from "@/lib/compreface/client";
+import { detectFaces } from "@/lib/face-detection/client";
 import { nanoid } from "nanoid";
 
 const SIMILARITY_THRESHOLD = 0.55;
