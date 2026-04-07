@@ -170,7 +170,7 @@ export function UsersPage() {
                 <TableCell>
                   {user.status === "invited" ? (
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
                         {t("status_invited")}
                       </span>
                       <button
@@ -182,7 +182,7 @@ export function UsersPage() {
                       </button>
                     </div>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800">
                       {t("status_active")}
                     </span>
                   )}

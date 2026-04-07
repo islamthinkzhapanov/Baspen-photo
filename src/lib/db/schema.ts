@@ -540,7 +540,6 @@ export const embedWidgets = pgTable(
       .references(() => events.id, { onDelete: "cascade" }),
     customDomain: text("custom_domain"),
     config: jsonb("config").$type<{
-      theme?: "light" | "dark";
       showBranding?: boolean;
       showSponsors?: boolean;
       maxWidth?: number;

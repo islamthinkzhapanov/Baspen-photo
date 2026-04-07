@@ -11,7 +11,6 @@ export default async function EmbedPage({
   const sp = await searchParams;
 
   const embedConfig = {
-    theme: (sp.theme as string) === "dark" ? ("dark" as const) : ("light" as const),
     showBranding: sp.branding !== "false",
     showSponsors: sp.sponsors !== "false",
   };

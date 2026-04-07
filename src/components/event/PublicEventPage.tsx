@@ -110,7 +110,6 @@ const photoColors = [
 ];
 
 export interface EmbedConfig {
-  theme: "light" | "dark";
   showBranding: boolean;
   showSponsors: boolean;
 }
@@ -277,7 +276,6 @@ export function PublicEventPage({
   slug: string;
   embedConfig?: EmbedConfig;
 }) {
-  const isDark = embedConfig?.theme === "dark";
   const hideBranding = embedConfig ? !embedConfig.showBranding : false;
   const t = useTranslations("public");
   const [view, setView] = useState<View>("landing");
@@ -312,11 +310,11 @@ export function PublicEventPage({
   // --- Searching View ---
   if (view === "searching") {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-gray-950 text-white" : "bg-bg"}`}>
+      <div className={`min-h-screen flex items-center justify-center bg-bg`}>
         <div className="text-center" style={{ opacity: 0, animation: "fade-in 0.4s ease-out forwards" }}>
           <span className="animate-spin inline-flex mx-auto mb-3"><RiLoader4Line size={40} className="text-primary" /></span>
-          <p className={`font-medium ${isDark ? "text-gray-300" : "text-text-secondary"}`}>{t("searching")}</p>
-          <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-text-secondary"}`} style={{ opacity: 0, animation: "fade-in-up 0.4s ease-out 0.2s forwards" }}>
+          <p className={`font-medium text-text-secondary`}>{t("searching")}</p>
+          <p className={`text-xs mt-1 text-text-secondary`} style={{ opacity: 0, animation: "fade-in-up 0.4s ease-out 0.2s forwards" }}>
             Анализируем {fmt(event.photoCount)} фото...
           </p>
         </div>
@@ -329,9 +327,9 @@ export function PublicEventPage({
     const likedCount = likes.size;
 
     return (
-      <div className={`min-h-screen ${isDark ? "bg-gray-950 text-white" : "bg-bg"}`}>
+      <div className={`min-h-screen bg-bg`}>
         {/* Header */}
-        <div className={`sticky top-0 z-30 backdrop-blur border-b ${isDark ? "bg-gray-900/90 border-gray-800" : "bg-white/90 border-border"}`}>
+        <div className={`sticky top-0 z-30 backdrop-blur border-b bg-white/90 border-border`}>
           <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <button
               onClick={() => setView("landing")}
@@ -466,7 +464,7 @@ export function PublicEventPage({
 
         {/* Footer */}
         {!hideBranding && (
-          <div className={`text-center py-6 text-xs ${isDark ? "text-gray-600" : "text-text-secondary"}`}>
+          <div className={`text-center py-6 text-xs text-text-secondary`}>
             {t("powered_by")}
           </div>
         )}
@@ -567,7 +565,7 @@ export function PublicEventPage({
     "linear-gradient(90deg, rgba(38,192,255,0.4) 0%, rgba(230,0,194,0.4) 20%, rgba(255,73,78,0.4) 40%, rgba(255,161,62,0.4) 60%, rgba(255,200,55,0.4) 80%, rgba(0,204,61,0.4) 100%)";
 
   return (
-    <div className={`relative h-screen flex items-center justify-center overflow-hidden ${isDark ? "bg-gray-950" : "bg-white"}`}>
+    <div className={`relative h-screen flex items-center justify-center overflow-hidden bg-white`}>
       {/* Background container with gradient + rainbow beams */}
       <div
         className="absolute inset-0 overflow-hidden"
@@ -620,7 +618,7 @@ export function PublicEventPage({
         borderWidth={3}
         duration={10}
         color={["#26c0ff", "#e600c2", "#ff494e", "#ffa13e", "#ffc837", "#00cc3d"]}
-        className={`relative z-10 w-full max-w-[600px] rounded-t-[24px] overflow-hidden ${isDark ? "bg-gray-900" : "bg-[#fcfcfc]"}`}
+        className={`relative z-10 w-full max-w-[600px] rounded-t-[24px] overflow-hidden bg-[#fcfcfc]`}
       >
         <div
           className="w-full flex flex-col items-center pb-[120px]"
@@ -633,17 +631,14 @@ export function PublicEventPage({
               src="/logo-baspen.svg"
               alt="Baspen"
               className="h-[24px] w-auto"
-              style={{ filter: isDark
-                ? "brightness(0) saturate(100%) invert(85%)"
-                : "brightness(0) saturate(100%) invert(15%) sepia(20%) saturate(800%) hue-rotate(175deg)"
-              }}
+              style={{ filter: "brightness(0) saturate(100%) invert(15%) sepia(20%) saturate(800%) hue-rotate(175deg)" }}
             />
           </div>
         )}
         {hideBranding && <div className="mt-[50px] mb-[80px]" />}
 
         {/* Headline */}
-        <div className={`text-center px-6 mb-6 ${isDark ? "text-gray-100" : "text-[#2c2d2e]"}`}>
+        <div className={`text-center px-6 mb-6 text-[#2c2d2e]`}>
           <p
             className="text-[28px] sm:text-[42px] leading-none tracking-[-1px]"
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
@@ -665,7 +660,7 @@ export function PublicEventPage({
         </div>
 
         {/* Subtitle */}
-        <p className={`text-[15px] text-center leading-[18px] tracking-[-0.3px] mb-10 px-6 ${isDark ? "text-gray-500" : "text-[#7b7b7b]"}`}>
+        <p className={`text-[15px] text-center leading-[18px] tracking-[-0.3px] mb-10 px-6 text-[#7b7b7b]`}>
           Используйте поиск по номеру, если ваше лицо
           <br />
           было закрыто аксессуарами
@@ -683,11 +678,7 @@ export function PublicEventPage({
           </button>
           <button
             onClick={() => setShowNumberSearch(true)}
-            className={`flex items-center justify-center gap-2 w-full py-4 px-[14px] border rounded-[6px] text-[15px] tracking-[-0.3px] transition-colors ${
-              isDark
-                ? "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700"
-                : "bg-white border-[rgba(0,16,61,0.12)] text-[#08304c] hover:bg-gray-50"
-            }`}
+            className="flex items-center justify-center gap-2 w-full py-4 px-[14px] border rounded-[6px] text-[15px] tracking-[-0.3px] transition-colors bg-white border-[rgba(0,16,61,0.12)] text-[#08304c] hover:bg-gray-50"
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
           >
             <img src="/icon-number.svg" alt="" className="w-[18px] h-[18px]" />
@@ -698,7 +689,7 @@ export function PublicEventPage({
         {/* Footer */}
         {!hideBranding && (
           <div className="mt-auto pb-6 pt-8">
-            <p className={`text-[15px] text-center tracking-[-0.3px] ${isDark ? "text-gray-600" : "text-[rgba(8,48,76,0.7)]"}`}>
+            <p className={`text-[15px] text-center tracking-[-0.3px] text-[rgba(8,48,76,0.7)]`}>
               {new Date().getFullYear()}. All rights reserved
             </p>
           </div>

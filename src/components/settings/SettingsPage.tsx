@@ -37,7 +37,6 @@ const demoProfile = {
 export function SettingsPage() {
   const t = useTranslations();
   const [profile, setProfile] = useState(demoProfile);
-  const [darkMode, setDarkMode] = useState(false);
   const initialNotifications = {
     email_purchases: true,
     email_uploads: false,
@@ -48,7 +47,6 @@ export function SettingsPage() {
 
   const hasChanges =
     JSON.stringify(profile) !== JSON.stringify(demoProfile) ||
-    darkMode !== false ||
     JSON.stringify(notifications) !== JSON.stringify(initialNotifications);
 
   const notificationItems = [
@@ -191,17 +189,6 @@ export function SettingsPage() {
               </Select>
             </div>
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium">{t("settings.dark_mode")}</p>
-                <p className="text-xs text-text-secondary">{t("settings.dark_mode_soon")}</p>
-              </div>
-              <Switch
-                checked={darkMode}
-                onChange={setDarkMode}
-                disabled
-              />
-            </div>
           </div>
         </Card>
 

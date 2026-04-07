@@ -11,8 +11,6 @@ import {
   TextInput,
   NumberInput,
   Switch,
-  Select,
-  SelectItem,
 } from "@tremor/react";
 
 export function WidgetSection({
@@ -28,9 +26,6 @@ export function WidgetSection({
   const saveWidget = useSaveWidget(eventId);
   const [copied, setCopied] = useState(false);
 
-  const [theme, setTheme] = useState<"light" | "dark">(
-    widget?.config?.theme || "light"
-  );
   const [showBranding, setShowBranding] = useState(
     widget?.config?.showBranding ?? true
   );
@@ -46,7 +41,7 @@ export function WidgetSection({
 
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : "";
-  const embedUrl = `${baseUrl}/embed/${eventSlug}?theme=${theme}&branding=${showBranding}&sponsors=${showSponsors}`;
+  const embedUrl = `${baseUrl}/embed/${eventSlug}?branding=${showBranding}&sponsors=${showSponsors}`;
 
   const embedCode = useMemo(
     () =>
@@ -65,7 +60,7 @@ export function WidgetSection({
     saveWidget.mutate(
       {
         customDomain: customDomain || undefined,
-        config: { theme, showBranding, showSponsors, maxWidth },
+        config: { showBranding, showSponsors, maxWidth },
       },
       {
         onSuccess: () => toast.success(tc("success")),
@@ -84,18 +79,6 @@ export function WidgetSection({
       <div className="space-y-4">
         {/* Config */}
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-sm text-text-secondary block mb-1">
-              {t("theme")}
-            </label>
-            <Select
-              value={theme}
-              onValueChange={(v) => setTheme(v as "light" | "dark")}
-            >
-              <SelectItem value="light">{t("theme_light")}</SelectItem>
-              <SelectItem value="dark">{t("theme_dark")}</SelectItem>
-            </Select>
-          </div>
           <div>
             <label className="text-sm text-text-secondary block mb-1">
               {t("max_width")}

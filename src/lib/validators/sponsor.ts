@@ -14,7 +14,6 @@ export const createWidgetSchema = z.object({
   customDomain: z.string().max(255).optional(),
   config: z
     .object({
-      theme: z.enum(["light", "dark"]).default("light"),
       showBranding: z.boolean().default(true),
       showSponsors: z.boolean().default(true),
       maxWidth: z.number().int().min(300).max(1920).optional(),
