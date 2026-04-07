@@ -270,7 +270,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
             </span>
           </div>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm">
             {t("copy_link")}
           </Button>
@@ -305,7 +305,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
       {/* Tabs */}
       <TabGroup>
-        <TabList>
+        <TabList className="overflow-x-auto">
           {[
             { icon: RiImageLine, label: t("photos"), show: true },
             { icon: RiGroupLine, label: t("team"), show: true },
@@ -372,7 +372,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     e.preventDefault();
                     setInviteEmail("");
                   }}
-                  className="flex gap-2"
+                  className="flex flex-col sm:flex-row gap-2"
                 >
                   <TextInput
                     type="email"
@@ -381,12 +381,14 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     placeholder={t("invite_email")}
                     className="flex-1"
                   />
-                  <span className="flex items-center px-3 py-2 border border-tremor-border rounded-tremor-default text-sm">
-                    {t("role_photographer")}
-                  </span>
-                  <Button type="submit" icon={RiUserAddLine} size="sm">
-                    {t("invite_member")}
-                  </Button>
+                  <div className="flex gap-2">
+                    <span className="flex items-center px-3 py-2 border border-tremor-border rounded-tremor-default text-sm">
+                      {t("role_photographer")}
+                    </span>
+                    <Button type="submit" icon={RiUserAddLine} size="sm">
+                      {t("invite_member")}
+                    </Button>
+                  </div>
                 </form>
               )}
 
@@ -434,15 +436,15 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
                 <Card className="p-5">
                   <h3 className="text-sm font-semibold mb-4">Воронка</h3>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center justify-between gap-2 sm:gap-6 sm:justify-start">
                     {[
                       { label: "Посетители", value: event.participants + event.searches },
                       { label: "Искали фото", value: event.searches },
                       { label: "Скачали", value: event.downloads },
                     ].map((step, i) => (
-                      <div key={step.label} className="flex items-center gap-4">
+                      <div key={step.label} className="flex items-center gap-2 sm:gap-4">
                         <div className="text-center">
-                          <p className="text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
+                          <p className="text-lg sm:text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
                           <p className="text-xs text-text-secondary">{step.label}</p>
                         </div>
                         {i < 2 && <span className="text-text-secondary">→</span>}

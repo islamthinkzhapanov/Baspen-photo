@@ -10,7 +10,7 @@ import {
   RiFullscreenLine,
   RiLoader4Line,
 } from "@remixicon/react";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface Photo {
@@ -41,6 +41,8 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
     if (currentIndex > 0) onChange(currentIndex - 1);
   }, [currentIndex, onChange]);
 
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -50,6 +52,23 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose, goNext, goPrev]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStart.current) return;
+      const dx = e.changedTouches[0].clientX - touchStart.current.x;
+      const dy = e.changedTouches[0].clientY - touchStart.current.y;
+      touchStart.current = null;
+      if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+      if (dx < 0) goNext();
+      else goPrev();
+    },
+    [goNext, goPrev]
+  );
 
   const handleDownload = useCallback(async () => {
     if (!photo) return;
@@ -90,7 +109,7 @@ export function Lightbox({ photos, currentIndex, onClose, onChange }: Props) {
   if (!photo) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 text-white z-10">
         <span className="text-sm">

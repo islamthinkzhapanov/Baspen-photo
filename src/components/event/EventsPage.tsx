@@ -138,18 +138,16 @@ export function EventsPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
-                  <Icon size={20} />
-                </div>
+            <Card key={stat.label} className="p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
+                <Icon size={18} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
                 <p className="text-xs text-text-secondary mt-0.5">{stat.label}</p>
               </div>
             </Card>
@@ -158,7 +156,7 @@ export function EventsPage() {
       </div>
 
       {/* Filters + Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
         <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 w-fit">
           {filterTabs.map((tab) => (
             <button
@@ -179,10 +177,10 @@ export function EventsPage() {
           placeholder={t("search_placeholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs"
+          className="sm:max-w-xs"
         />
-        <Link href="/events/new" className="sm:ml-auto">
-          <Button icon={() => <RiAddLine size={16} />}>
+        <Link href="/events/new" className="sm:ml-auto inline-block">
+          <Button icon={() => <RiAddLine size={16} />} className="w-full sm:w-auto">
             {t("create")}
           </Button>
         </Link>
@@ -206,7 +204,7 @@ export function EventsPage() {
         </Card>
       ) : (
         <Card className="p-0 overflow-hidden">
-          <Table>
+          <Table className="min-w-[500px]">
             <TableHead>
               <TableRow>
                 <TableHeaderCell>{t("col_project")}</TableHeaderCell>
