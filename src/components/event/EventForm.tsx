@@ -170,30 +170,32 @@ export function EventForm({ event }: EventFormProps) {
 
       {/* Section 2: Date & Location */}
       <section className="rounded-xl bg-bg-secondary p-5">
-        <div className="grid grid-cols-[1fr_auto_1.5fr] gap-3 items-end">
-          <div>
-            <label className="block text-sm font-medium text-text mb-1.5">
-              {t("event_date")}
-            </label>
-            <DatePicker
-              value={eventDate}
-              onValueChange={setEventDate}
-              placeholder="дд.мм.гггг"
-              displayFormat="dd.MM.yyyy"
-              locale={ru}
-              enableClear={true}
-              enableYearNavigation
-              weekStartsOn={1}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-text mb-1.5">
-              &nbsp;
-            </label>
-            <TimePicker
-              value={eventTime}
-              onChange={setEventTime}
-            />
+        <div className="space-y-3">
+          <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">
+                {t("event_date")}
+              </label>
+              <DatePicker
+                value={eventDate}
+                onValueChange={setEventDate}
+                placeholder="дд.мм.гггг"
+                displayFormat="dd.MM.yyyy"
+                locale={ru}
+                enableClear={true}
+                enableYearNavigation
+                weekStartsOn={1}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">
+                &nbsp;
+              </label>
+              <TimePicker
+                value={eventTime}
+                onChange={setEventTime}
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-text mb-1.5">
