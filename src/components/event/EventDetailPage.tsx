@@ -21,7 +21,7 @@ import {
   RiCalendarLine,
   RiMapPinLine,
 } from "@remixicon/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Card,
   Badge,
@@ -39,7 +39,7 @@ import {
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
 import { useEvent, useEventMembers } from "@/hooks/useEvents";
-import { useEventPhotos } from "@/hooks/usePhotos";
+import { useEventPhotos, useUploadPhotos } from "@/hooks/usePhotos";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
 
 // --- Component ---
@@ -53,6 +53,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [inviteEmail, setInviteEmail] = useState("");
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadPhotos = useUploadPhotos(eventId);
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
@@ -192,7 +195,22 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <TabPanel>
             <div className="space-y-4">
               {/* Upload Zone */}
-              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer">
+              <div
+                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/40 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) uploadPhotos.mutate(files);
+                    e.target.value = "";
+                  }}
+                />
                 <RiUploadLine size={32} className="text-text-secondary mx-auto mb-2" />
                 <p className="text-sm font-medium">Перетащите фото сюда</p>
                 <p className="text-xs text-text-secondary mt-1">JPG, PNG, WebP до 50 МБ</p>
