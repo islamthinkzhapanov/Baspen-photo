@@ -3,8 +3,6 @@
 import { useTranslations } from "next-intl";
 import {
   RiLockLine,
-  RiEyeLine,
-  RiEyeOffLine,
   RiDeleteBinLine,
   RiShieldLine,
   RiSmartphoneLine,
@@ -49,9 +47,6 @@ export function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-
   // Delete account
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -162,37 +157,19 @@ export function ProfilePage() {
           <div className="mt-4 space-y-3 max-w-md">
             <div>
               <label className="text-xs text-text-secondary block mb-1">{t("current_password")}</label>
-              <div className="relative">
-                <TextInput
-                  type={showCurrent ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
-                >
-                  {showCurrent ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
-                </button>
-              </div>
+              <TextInput
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
             </div>
             <div>
               <label className="text-xs text-text-secondary block mb-1">{t("new_password")}</label>
-              <div className="relative">
-                <TextInput
-                  type={showNew ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
-                >
-                  {showNew ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
-                </button>
-              </div>
+              <TextInput
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
             </div>
             <div>
               <label className="text-xs text-text-secondary block mb-1">{t("confirm_password")}</label>

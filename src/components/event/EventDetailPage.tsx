@@ -451,18 +451,18 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               {event.isPublished ? t("unpublish") : t("publish")}
             </Button>
           )}
+          {!event.isPublished && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={RiEyeLine}
+              className="text-xs sm:text-sm text-amber-600 border-amber-300 hover:bg-amber-50"
+              onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
+            >
+              {t("preview")}
+            </Button>
+          )}
         </div>
-        {!event.isPublished && (
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={RiEyeLine}
-            className="text-xs sm:text-sm mt-2 sm:mt-0 sm:ml-auto text-amber-600 border-amber-300 hover:bg-amber-50"
-            onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
-          >
-            {t("preview")}
-          </Button>
-        )}
       </div>
 
       {/* Stat Cards */}
