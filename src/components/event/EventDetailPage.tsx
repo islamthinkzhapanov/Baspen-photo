@@ -268,7 +268,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
-                        {(m.name || m.email).charAt(0).toUpperCase()}
+                        {(m.name || m.email || "?").charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="text-sm font-medium">{m.name || m.email}</p>
