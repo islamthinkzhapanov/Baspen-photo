@@ -554,7 +554,16 @@
     "cancel": "Болдырмау",
     "delete": "Жою",
     "processing_status": "Өңдеу: {total} ішінен {ready}",
-    "failed": "қатемен"
+    "failed": "қатемен",
+    "select": "Таңдау",
+    "select_all_page": "Беттегінің бәрін таңдау",
+    "deselect_all": "Таңдауды алу",
+    "delete_all": "Барлығын жою",
+    "delete_selected": "Жою ({count})",
+    "delete_all_confirm": "Барлық {count} фотоны жоясыз ба?",
+    "delete_selected_confirm": "{count} таңдалған фотоны жоясыз ба?",
+    "delete_bulk_desc": "Бұл әрекетті кері қайтару мүмкін емес. Барлық таңдалған фотолар біржолата жойылады.",
+    "view": "Қарау"
   },
   "camera": {
     "title": "Камера API кілттері",

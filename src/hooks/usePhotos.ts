@@ -23,7 +23,10 @@ export function useEventPhotos(eventId: string) {
   });
 }
 
-export function useUploadPhotos(eventId: string) {
+export function useUploadPhotos(
+  eventId: string,
+  onProgress?: (done: number, total: number) => void
+) {
   const qc = useQueryClient();
 
   return useMutation({
@@ -31,6 +34,9 @@ export function useUploadPhotos(eventId: string) {
       const BATCH_SIZE = 50;
       const CONCURRENT_UPLOADS = 5;
       const allResults: PromiseSettledResult<unknown>[] = [];
+      let completed = 0;
+
+      onProgress?.(0, files.length);
 
       // Process files in batches of BATCH_SIZE for presigned URLs
       for (let i = 0; i < files.length; i += BATCH_SIZE) {
@@ -69,7 +75,7 @@ export function useUploadPhotos(eventId: string) {
             headers: { "Content-Type": urlInfo.type! },
           });
 
-          return fetchJson(`/api/events/${eventId}/photos`, {
+          const result = await fetchJson(`/api/events/${eventId}/photos`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -79,6 +85,10 @@ export function useUploadPhotos(eventId: string) {
               fileSize: batch[fileIdx].size,
             }),
           });
+
+          completed++;
+          onProgress?.(completed, files.length);
+          return result;
         };
 
         // Upload with concurrency limit
@@ -118,6 +128,30 @@ export function useDeletePhoto(eventId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] });
       qc.invalidateQueries({ queryKey: ["events", eventId] });
+    },
+  });
+}
+
+export function useBulkDeletePhotos(eventId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { photoIds?: string[]; all?: boolean }) => {
+      const res = await fetch(`/api/events/${eventId}/photos/bulk-delete`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] });
+      qc.invalidateQueries({ queryKey: ["events", eventId] });
+      qc.invalidateQueries({ queryKey: ["events"] });
     },
   });
 }

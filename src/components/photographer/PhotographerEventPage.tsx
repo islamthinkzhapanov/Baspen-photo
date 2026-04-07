@@ -12,9 +12,12 @@ import {
   RiArrowRightSLine,
   RiCloseLine,
   RiLoader4Line,
+  RiCheckboxLine,
+  RiCheckboxBlankLine,
+  RiCheckboxFill,
 } from "@remixicon/react";
 import { useEvent } from "@/hooks/useEvents";
-import { useEventPhotos, useDeletePhoto, useProcessingStatus } from "@/hooks/usePhotos";
+import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos, useProcessingStatus } from "@/hooks/usePhotos";
 import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
 
 interface Photo {
@@ -310,6 +313,57 @@ function ProcessingBar({ eventId }: { eventId: string }) {
   );
 }
 
+/* ─── Delete Confirmation Modal ─── */
+
+function DeleteConfirmModal({
+  title,
+  description,
+  onCancel,
+  onConfirm,
+  isPending,
+  t,
+}: {
+  title: string;
+  description: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  isPending: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-bg rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+        <h3 className="text-base font-semibold text-text mb-1">{title}</h3>
+        <p className="text-sm text-text-secondary mb-5">{description}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isPending}
+            className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
+              hover:bg-bg-secondary transition-colors cursor-pointer
+              disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("cancel")}
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="flex-1 h-10 rounded-xl bg-red-500 text-white text-sm font-medium
+              hover:bg-red-600 transition-colors cursor-pointer
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2"
+          >
+            {isPending && (
+              <RiLoader4Line size={16} className="animate-spin" />
+            )}
+            {t("delete")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 
 export function PhotographerEventPage({ eventId }: { eventId: string }) {
@@ -319,9 +373,15 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  // Selection state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmAction, setConfirmAction] = useState<"selected" | "all" | null>(null);
+
   const { data: event, isLoading: eventLoading } = useEvent(eventId);
   const { data: allPhotos, isLoading: photosLoading } = useEventPhotos(eventId);
   const deleteMutation = useDeletePhoto(eventId);
+  const bulkDeleteMutation = useBulkDeletePhotos(eventId);
 
   const photos: Photo[] = allPhotos ?? [];
   const readyPhotos = photos.filter((p: Photo) => p.status === "ready");
@@ -332,6 +392,10 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
   );
 
   const handlePhotoClick = (pageIndex: number) => {
+    if (selectionMode) {
+      toggleSelect(pagePhotos[pageIndex].id);
+      return;
+    }
     setLightboxIndex(pageIndex);
   };
 
@@ -347,6 +411,60 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
         }
       },
     });
+  };
+
+  // Selection helpers
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllOnPage = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      pagePhotos.forEach((p) => next.add(p.id));
+      return next;
+    });
+  };
+
+  const deselectAll = () => {
+    setSelectedIds(new Set());
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const allOnPageSelected = pagePhotos.length > 0 && pagePhotos.every((p) => selectedIds.has(p.id));
+
+  const handleBulkDelete = () => {
+    if (confirmAction === "all") {
+      bulkDeleteMutation.mutate(
+        { all: true },
+        {
+          onSuccess: () => {
+            setConfirmAction(null);
+            exitSelectionMode();
+            setCurrentPage(1);
+          },
+        }
+      );
+    } else if (confirmAction === "selected") {
+      bulkDeleteMutation.mutate(
+        { photoIds: Array.from(selectedIds) },
+        {
+          onSuccess: () => {
+            setConfirmAction(null);
+            exitSelectionMode();
+          },
+        }
+      );
+    }
   };
 
   if (eventLoading || photosLoading) {
@@ -399,13 +517,74 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
         {/* Processing status */}
         <ProcessingBar eventId={eventId} />
 
-        {/* Photo count badge */}
+        {/* Photo count + actions */}
         {readyPhotos.length > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text">
               <RiImageLine size={16} className="text-text-secondary" />
               {t("uploaded_count", { count: readyPhotos.length.toLocaleString("ru-RU") })}
             </span>
+
+            <div className="flex items-center gap-2">
+              {!selectionMode ? (
+                <>
+                  <button
+                    onClick={() => setSelectionMode(true)}
+                    className="h-8 px-3 text-xs font-medium rounded-lg border border-border
+                      hover:bg-bg-secondary transition-colors cursor-pointer
+                      flex items-center gap-1.5"
+                  >
+                    <RiCheckboxLine size={14} />
+                    {t("select")}
+                  </button>
+                  <button
+                    onClick={() => setConfirmAction("all")}
+                    className="h-8 px-3 text-xs font-medium rounded-lg border border-red-200
+                      text-red-500 hover:bg-red-50 transition-colors cursor-pointer
+                      flex items-center gap-1.5"
+                  >
+                    <RiDeleteBinLine size={14} />
+                    {t("delete_all")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={allOnPageSelected ? deselectAll : selectAllOnPage}
+                    className="h-8 px-3 text-xs font-medium rounded-lg border border-border
+                      hover:bg-bg-secondary transition-colors cursor-pointer
+                      flex items-center gap-1.5"
+                  >
+                    {allOnPageSelected ? (
+                      <RiCheckboxFill size={14} className="text-primary" />
+                    ) : (
+                      <RiCheckboxBlankLine size={14} />
+                    )}
+                    {allOnPageSelected ? t("deselect_all") : t("select_all_page")}
+                  </button>
+
+                  {selectedIds.size > 0 && (
+                    <button
+                      onClick={() => setConfirmAction("selected")}
+                      className="h-8 px-3 text-xs font-medium rounded-lg
+                        bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer
+                        flex items-center gap-1.5"
+                    >
+                      <RiDeleteBinLine size={14} />
+                      {t("delete_selected", { count: selectedIds.size })}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={exitSelectionMode}
+                    className="h-8 px-3 text-xs font-medium rounded-lg border border-border
+                      hover:bg-bg-secondary transition-colors cursor-pointer"
+                  >
+                    {t("cancel")}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
 
@@ -415,11 +594,13 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
               {pagePhotos.map((photo, idx) => {
                 const thumbUrl = photo.thumbnailPath || photo.watermarkedPath;
+                const isSelected = selectedIds.has(photo.id);
                 return (
                   <div
                     key={photo.id}
                     onClick={() => handlePhotoClick(idx)}
-                    className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
+                    className={`aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer
+                      ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}`}
                   >
                     {thumbUrl ? (
                       <img
@@ -431,22 +612,42 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
                     ) : (
                       <RiImageLine size={24} className="text-gray-300" />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handlePhotoClick(idx); }}
-                        className="p-2 bg-white/90 hover:bg-white rounded-full text-gray-800 transition-colors cursor-pointer"
-                        title={t("view")}
-                      >
-                        <RiEyeLine size={18} />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
-                        className="p-2 bg-white/90 hover:bg-white rounded-full text-red-500 transition-colors cursor-pointer"
-                        title={t("delete_photo")}
-                      >
-                        <RiDeleteBinLine size={18} />
-                      </button>
-                    </div>
+
+                    {/* Selection checkbox */}
+                    {selectionMode && (
+                      <div className="absolute top-1.5 left-1.5 z-10">
+                        {isSelected ? (
+                          <RiCheckboxFill size={22} className="text-primary drop-shadow-md" />
+                        ) : (
+                          <RiCheckboxBlankLine size={22} className="text-white drop-shadow-md" />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Hover overlay (only when not in selection mode) */}
+                    {!selectionMode && (
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handlePhotoClick(idx); }}
+                          className="p-2 bg-white/90 hover:bg-white rounded-full text-gray-800 transition-colors cursor-pointer"
+                          title={t("view")}
+                        >
+                          <RiEyeLine size={18} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
+                          className="p-2 bg-white/90 hover:bg-white rounded-full text-red-500 transition-colors cursor-pointer"
+                          title={t("delete_photo")}
+                        >
+                          <RiDeleteBinLine size={18} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Dim overlay for selected photos */}
+                    {selectionMode && isSelected && (
+                      <div className="absolute inset-0 bg-primary/10" />
+                    )}
                   </div>
                 );
               })}
@@ -481,6 +682,22 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
           onClose={() => setLightboxIndex(null)}
           onChange={setLightboxIndex}
           onDelete={handleDelete}
+        />
+      )}
+
+      {/* Bulk delete confirmation */}
+      {confirmAction && (
+        <DeleteConfirmModal
+          title={
+            confirmAction === "all"
+              ? t("delete_all_confirm", { count: readyPhotos.length })
+              : t("delete_selected_confirm", { count: selectedIds.size })
+          }
+          description={t("delete_bulk_desc")}
+          onCancel={() => setConfirmAction(null)}
+          onConfirm={handleBulkDelete}
+          isPending={bulkDeleteMutation.isPending}
+          t={t}
         />
       )}
     </div>

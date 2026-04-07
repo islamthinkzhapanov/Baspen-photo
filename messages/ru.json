@@ -621,7 +621,16 @@
     "cancel": "Отмена",
     "delete": "Удалить",
     "processing_status": "Обработка: {ready} из {total}",
-    "failed": "с ошибкой"
+    "failed": "с ошибкой",
+    "select": "Выбрать",
+    "select_all_page": "Выбрать все на странице",
+    "deselect_all": "Снять выделение",
+    "delete_all": "Удалить все",
+    "delete_selected": "Удалить ({count})",
+    "delete_all_confirm": "Удалить все {count} фото?",
+    "delete_selected_confirm": "Удалить {count} выбранных фото?",
+    "delete_bulk_desc": "Это действие нельзя отменить. Все выбранные фото будут удалены навсегда.",
+    "view": "Просмотр"
   },
   "camera": {
     "title": "API-ключи камеры",

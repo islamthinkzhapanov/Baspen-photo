@@ -618,7 +618,16 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "processing_status": "Processing: {ready} of {total}",
-    "failed": "failed"
+    "failed": "failed",
+    "select": "Select",
+    "select_all_page": "Select all on page",
+    "deselect_all": "Deselect all",
+    "delete_all": "Delete all",
+    "delete_selected": "Delete ({count})",
+    "delete_all_confirm": "Delete all {count} photos?",
+    "delete_selected_confirm": "Delete {count} selected photos?",
+    "delete_bulk_desc": "This action cannot be undone. All selected photos will be permanently deleted.",
+    "view": "View"
   },
   "camera": {
     "title": "Camera API Keys",
