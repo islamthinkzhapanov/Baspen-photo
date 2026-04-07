@@ -18,6 +18,7 @@ interface FaceSearchResult {
   photos: SearchPhoto[];
   sessionToken: string;
   total: number;
+  error?: string;
 }
 
 interface NumberSearchResult {

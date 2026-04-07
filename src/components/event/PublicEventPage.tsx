@@ -150,6 +150,11 @@ export function PublicEventPage({
         eventId: event.id,
         sessionToken: sessionToken || undefined,
       });
+      if (result.error === "no_face_detected") {
+        setSearchError("no_face_detected");
+        setView("landing");
+        return;
+      }
       setMatchedPhotos(result.photos);
       setSessionToken(result.sessionToken);
       if (result.photos.length === 0) {
