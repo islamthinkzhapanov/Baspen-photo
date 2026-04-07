@@ -185,8 +185,8 @@
     "billing": "Subscription",
     "learning": "Learning",
     "admin": "Admin Panel",
-    "events_photographer": "My Assignments"
-
+    "events_photographer": "My Assignments",
+    "more": "More"
   },
   "events": {
     "title": "My Projects",
@@ -430,7 +430,8 @@
       "finance": "Finance",
       "plans": "Plans",
       "metrics": "Metrics",
-      "audit": "Audit"
+      "audit": "Audit",
+      "more": "More"
     },
     "back_to_dashboard": "Back to dashboard",
     "users_title": "All Users",

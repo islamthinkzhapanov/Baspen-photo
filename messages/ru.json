@@ -188,7 +188,8 @@
     "billing": "Подписка",
     "learning": "Обучение",
     "admin": "Админ-панель",
-    "events_photographer": "Мои съёмки"
+    "events_photographer": "Мои съёмки",
+    "more": "Ещё"
   },
   "events": {
     "title": "Мои проекты",
@@ -432,7 +433,8 @@
       "finance": "Финансы",
       "plans": "Тарифы",
       "metrics": "Метрики",
-      "audit": "Аудит"
+      "audit": "Аудит",
+      "more": "Ещё"
     },
     "back_to_dashboard": "Назад в дашборд",
     "users_title": "Все пользователи",
