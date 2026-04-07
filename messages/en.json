@@ -177,7 +177,7 @@
     "footer_copyright": "© {year} Baspen. All rights reserved."
   },
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Statistics",
     "events": "Projects",
     "settings": "Settings",
     "cards": "Cards",

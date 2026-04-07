@@ -7,7 +7,7 @@ import {
   RiBankCardLine,
   RiSettings3Line,
   RiGraduationCapLine,
-  RiDashboardLine,
+  RiBarChartBoxLine,
   RiStackLine,
   RiShieldLine,
   RiSideBarLine,
@@ -15,8 +15,8 @@ import {
 import { useSidebar } from "./SidebarContext";
 import { useUserRole } from "@/hooks/useUserRole";
 
-const navItems: readonly { key: string; href: string; icon: typeof RiDashboardLine }[] = [
-  { key: "dashboard", href: "/dashboard", icon: RiDashboardLine },
+const navItems: readonly { key: string; href: string; icon: typeof RiBarChartBoxLine }[] = [
+  { key: "dashboard", href: "/dashboard", icon: RiBarChartBoxLine },
   { key: "events", href: "/events", icon: RiFolderOpenLine },
   { key: "payments", href: "/payments", icon: RiBankCardLine },
   { key: "billing", href: "/billing", icon: RiStackLine },

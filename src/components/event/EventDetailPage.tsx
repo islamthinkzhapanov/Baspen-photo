@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
-  RiArrowLeftLine,
+
   RiFileCopyLine,
   RiCheckLine,
   RiQrCodeLine,
@@ -26,8 +26,10 @@ import {
   RiCheckboxLine,
   RiCheckboxBlankLine,
   RiCheckboxFill,
+  RiCloseLine,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
+import QRCode from "qrcode";
 import { Lightbox } from "@/components/gallery/Lightbox";
 import {
   Card,
@@ -36,16 +38,17 @@ import {
   TextInput,
   Textarea,
   NumberInput,
-  Switch,
   TabGroup,
   TabList,
   Tab,
   TabPanels,
   TabPanel,
 } from "@tremor/react";
+import { Switch } from "@/components/ui/switch";
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
-import { useEvent, useEventMembers } from "@/hooks/useEvents";
+import { toast } from "sonner";
+import { useEvent, useEventMembers, useUpdateEvent } from "@/hooks/useEvents";
 import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos, useProcessingStatus } from "@/hooks/usePhotos";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
 import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
@@ -200,10 +203,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const tp = useTranslations("photographer");
   const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
+  const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
+  const [settingsSlug, setSettingsSlug] = useState<string | undefined>();
+  const [settingsDescription, setSettingsDescription] = useState<string | undefined>();
+  const [settingsPrice, setSettingsPrice] = useState<number | undefined>();
+  const [settingsDiscount, setSettingsDiscount] = useState<number | undefined>();
+  const [settingsInitialized, setSettingsInitialized] = useState(false);
 
+  const updateMutation = useUpdateEvent(eventId);
   const deleteMutation = useDeletePhoto(eventId);
   const bulkDeleteMutation = useBulkDeletePhotos(eventId);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -214,11 +223,59 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmAction, setConfirmAction] = useState<"selected" | "all" | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
   const { data: photosData } = useEventPhotos(eventId);
   const { data: analytics } = useEventAnalytics(eventId);
+
+  // Initialize settings state from event data
+  useEffect(() => {
+    if (event && !settingsInitialized) {
+      setSettingsTitle(event.title);
+      setSettingsSlug(event.slug);
+      setSettingsDescription(event.description || "");
+      setFreeDownloadToggle(!!event.settings?.freeDownload);
+      setWatermarkToggle(event.settings?.watermarkEnabled !== false);
+      setSettingsPrice(event.settings?.pricePerPhoto || 0);
+      setSettingsDiscount(event.settings?.packageDiscount || 0);
+      setSettingsInitialized(true);
+    }
+  }, [event, settingsInitialized]);
+
+  const settingsDirty = settingsInitialized && event ? (
+    settingsTitle !== event.title ||
+    settingsSlug !== event.slug ||
+    settingsDescription !== (event.description || "") ||
+    freeDownloadToggle !== !!event.settings?.freeDownload ||
+    watermarkToggle !== (event.settings?.watermarkEnabled !== false) ||
+    settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
+    settingsDiscount !== (event.settings?.packageDiscount || 0)
+  ) : false;
+
+  function handleSaveSettings() {
+    updateMutation.mutate(
+      {
+        title: settingsTitle,
+        slug: settingsSlug,
+        description: settingsDescription || undefined,
+        settings: {
+          freeDownload: freeDownloadToggle,
+          watermarkEnabled: watermarkToggle,
+          pricePerPhoto: settingsPrice,
+          packageDiscount: settingsDiscount,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success(tc("success"));
+          setSettingsInitialized(false);
+        },
+      }
+    );
+  }
 
   if (!event) {
     return (
@@ -243,6 +300,12 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function openQr() {
+    const url = await QRCode.toDataURL(publicUrl, { width: 300, margin: 2 });
+    setQrDataUrl(url);
+    setQrOpen(true);
   }
 
   const statIcons: Record<string, typeof RiImageLine> = {
@@ -325,14 +388,17 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
   return (
     <div className="max-w-[1000px] w-full">
-      {/* Back */}
-      <Link
-        href="/events"
-        className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text mb-4"
-      >
-        <RiArrowLeftLine size={16} />
-        {tc("back")}
-      </Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm mb-4">
+        <Link
+          href="/events"
+          className="text-text-secondary hover:text-text transition-colors"
+        >
+          {t("title")}
+        </Link>
+        <span className="text-text-secondary">/</span>
+        <span className="text-text font-medium truncate max-w-[300px]">{event.title}</span>
+      </nav>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
@@ -369,15 +435,26 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm" className="text-xs sm:text-sm">
             {t("copy_link")}
           </Button>
-          <Button variant="secondary" icon={RiQrCodeLine} size="sm" className="text-xs sm:text-sm">
+          <Button variant="secondary" onClick={openQr} icon={RiQrCodeLine} size="sm" className="text-xs sm:text-sm">
             QR
           </Button>
           {!isPhotographer && (
-            <Button icon={event.isPublished ? RiGlobalLine : RiGlobalLine} size="sm" className="text-xs sm:text-sm">
+            <Button
+              icon={RiGlobalLine}
+              size="sm"
+              className="text-xs sm:text-sm"
+              loading={updateMutation.isPending}
+              onClick={() => updateMutation.mutate({ isPublished: !event.isPublished })}
+            >
               {event.isPublished ? t("unpublish") : t("publish")}
             </Button>
           )}
         </div>
+        {!event.isPublished && (
+          <p className="text-xs text-amber-600 mt-2 sm:mt-0 sm:ml-auto">
+            Черновик — ссылка видна только вам
+          </p>
+        )}
       </div>
 
       {/* Stat Cards */}
@@ -577,45 +654,30 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {/* Team Tab */}
           <TabPanel>
             <div className="space-y-4">
-              {!isPhotographer && (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setInviteEmail("");
-                  }}
-                  className="flex flex-col sm:flex-row gap-2"
-                >
-                  <TextInput
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder={t("invite_email")}
-                    className="flex-1"
-                  />
-                  <div className="flex gap-2">
-                    <span className="flex items-center px-3 py-2 border border-tremor-border rounded-tremor-default text-sm">
-                      {t("role_photographer")}
-                    </span>
-                    <Button type="submit" icon={RiUserAddLine} size="sm">
-                      {t("invite_member")}
-                    </Button>
-                  </div>
-                </form>
-              )}
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-text-secondary">
+                  {t("team")}
+                </h3>
+                {!isPhotographer && (
+                  <Button icon={RiUserAddLine} size="sm" onClick={() => {/* TODO: open invite modal */}}>
+                    {t("invite_member")}
+                  </Button>
+                )}
+              </div>
 
               <div className="space-y-2">
-                {(members as { id: string; name: string | null; email: string; role: string }[]).map((m) => (
+                {(members as { id: string; role: string; user: { id: string; name: string | null; email: string; image: string | null } }[]).map((m) => (
                   <Card
                     key={m.id}
                     className="flex items-center justify-between py-3 px-4"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
-                        {(m.name || m.email || "?").charAt(0).toUpperCase()}
+                        {(m.user.name || m.user.email || "?").charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{m.name || m.email}</p>
-                        {m.name && <p className="text-xs text-text-secondary">{m.email}</p>}
+                        <p className="text-sm font-medium">{m.user.name || m.user.email}</p>
+                        {m.user.name && <p className="text-xs text-text-secondary">{m.user.email}</p>}
                       </div>
                     </div>
                     <Badge color={m.role === "owner" ? "blue" : "amber"}>
@@ -687,18 +749,20 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               <div className="space-y-6">
                 <Card className="p-5 space-y-4">
                   <h3 className="text-sm font-semibold">Основное</h3>
-                  <div>
-                    <label className="text-xs text-text-secondary block mb-1">{t("event_name")}</label>
-                    <TextInput defaultValue={event.title} />
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-secondary block mb-1">{t("slug")}</label>
-                    <TextInput defaultValue={event.slug} />
-                    <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">{t("event_name")}</label>
+                      <TextInput value={settingsTitle ?? event.title} onChange={(e) => setSettingsTitle(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">{t("slug")}</label>
+                      <TextInput value={settingsSlug ?? event.slug} onChange={(e) => setSettingsSlug(e.target.value)} />
+                      <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
-                    <Textarea defaultValue={event.description || ""} rows={3} />
+                    <Textarea value={settingsDescription ?? (event.description || "")} onChange={(e) => setSettingsDescription(e.target.value)} rows={3} />
                   </div>
                 </Card>
 
@@ -725,22 +789,26 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     />
                   </div>
                   {!freeDownloadToggle && (
-                    <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
-                        <NumberInput defaultValue={event.pricePerPhoto || 0} className="w-40" />
+                        <NumberInput value={settingsPrice ?? (event.settings?.pricePerPhoto || 0)} onValueChange={setSettingsPrice} className="w-40" />
                       </div>
                       <div>
                         <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
-                        <NumberInput defaultValue={event.packageDiscount || 0} className="w-40" />
+                        <NumberInput value={settingsDiscount ?? (event.settings?.packageDiscount || 0)} onValueChange={setSettingsDiscount} className="w-40" />
                       </div>
-                    </>
+                    </div>
                   )}
                 </Card>
 
-                <div className="flex justify-end">
-                  <Button>{tc("save")}</Button>
-                </div>
+                {settingsDirty && (
+                  <div className="flex justify-end">
+                    <Button onClick={handleSaveSettings} disabled={updateMutation.isPending}>
+                      {updateMutation.isPending ? "..." : tc("save")}
+                    </Button>
+                  </div>
+                )}
               </div>
             </TabPanel>
           )}
@@ -837,6 +905,61 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 )}
                 {tp("delete")}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {qrOpen && qrDataUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setQrOpen(false)} />
+          <div className="relative bg-bg border border-border rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">QR-код</h3>
+              <button
+                onClick={() => setQrOpen(false)}
+                className="p-1 rounded-lg hover:bg-bg-secondary transition-colors cursor-pointer"
+              >
+                <RiCloseLine size={20} />
+              </button>
+            </div>
+            <div className="flex justify-center mb-4">
+              <img src={qrDataUrl} alt="QR Code" className="w-[300px] h-[300px]" />
+            </div>
+            <p className="text-xs text-text-secondary text-center truncate mb-2">
+              {publicUrl}
+            </p>
+            {!event.isPublished && (
+              <p className="text-xs text-amber-600 text-center mb-4">
+                Черновик — ссылка видна только вам
+              </p>
+            )}
+            {event.isPublished && <div className="mb-4" />}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(publicUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
+                  hover:bg-bg-secondary transition-colors cursor-pointer
+                  flex items-center justify-center gap-2"
+              >
+                {copied ? <RiCheckLine size={16} /> : <RiFileCopyLine size={16} />}
+                {copied ? t("copied") : t("copy_link")}
+              </button>
+              <a
+                href={qrDataUrl}
+                download={`qr-${event.slug}.png`}
+                className="flex-1 h-10 rounded-xl bg-primary text-white text-sm font-medium
+                  hover:bg-primary/90 transition-colors cursor-pointer
+                  flex items-center justify-center gap-2"
+              >
+                <RiDownloadLine size={16} />
+                {tc("download")}
+              </a>
             </div>
           </div>
         </div>

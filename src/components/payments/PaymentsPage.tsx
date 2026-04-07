@@ -15,8 +15,9 @@ import {
   RiRefundLine,
   RiLoader4Line,
 } from "@remixicon/react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import * as XLSX from "xlsx";
 import {
   Card,
   Button,
@@ -63,7 +64,6 @@ function formatDate(iso: string, locale: string) {
 export function PaymentsPage() {
   const t = useTranslations("payments");
   const [filter, setFilter] = useState<"all" | "completed" | "pending">("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isLoading, error } = useQuery<PaymentsData>({
     queryKey: ["payments"],
@@ -80,12 +80,6 @@ export function PaymentsPage() {
   const filtered = transactions.filter((tx) => {
     if (filter === "completed" && tx.status !== "completed") return false;
     if (filter === "pending" && tx.status !== "pending") return false;
-    if (
-      searchQuery &&
-      !tx.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !tx.event.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
     return true;
   });
 
@@ -111,6 +105,21 @@ export function PaymentsPage() {
       icon: RiRefundLine,
     },
   };
+
+  const exportToExcel = useCallback(() => {
+    const rows = filtered.map((tx) => ({
+      [t("col_transaction")]: tx.description,
+      [t("col_date")]: formatDate(tx.date, "ru-RU"),
+      [t("col_project")]: tx.event,
+      [t("col_method")]: tx.method,
+      [t("col_amount")]: tx.amount,
+      [t("col_status")]: statusConfig[tx.status].label,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, t("title"));
+    XLSX.writeFile(wb, `payments_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }, [filtered, t, statusConfig]);
 
   const filterTabs = [
     { key: "all" as const, label: t("filter_all") },
@@ -211,23 +220,12 @@ export function PaymentsPage() {
             </button>
           ))}
         </div>
-        <div className="relative max-w-xs">
-          <RiSearchLine
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
-          />
-          <input
-            type="text"
-            placeholder={t("search_placeholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-bg placeholder:text-text-secondary focus:outline-none focus:border-border-active transition-colors"
-          />
-        </div>
         <Button
           className="sm:ml-auto"
           variant="secondary"
           icon={() => <RiDownloadLine size={16} />}
+          onClick={exportToExcel}
+          disabled={filtered.length === 0}
         >
           {t("export")}
         </Button>

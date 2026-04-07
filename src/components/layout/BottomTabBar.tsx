@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  RiDashboardLine,
+  RiBarChartBoxLine,
   RiFolderOpenLine,
   RiBankCardLine,
   RiGraduationCapLine,
@@ -17,7 +17,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MoreSheet } from "./MoreSheet";
 
 const primaryTabs = [
-  { key: "dashboard", href: "/dashboard", icon: RiDashboardLine },
+  { key: "dashboard", href: "/dashboard", icon: RiBarChartBoxLine },
   { key: "events", href: "/events", icon: RiFolderOpenLine },
   { key: "payments", href: "/payments", icon: RiBankCardLine },
   { key: "learning", href: "/learning", icon: RiGraduationCapLine },

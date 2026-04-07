@@ -6,13 +6,11 @@ import {
   RiVipCrownLine,
   RiFlashlightLine,
   RiBuilding2Line,
-  RiCalendarLine,
   RiImageLine,
+  RiCalendarLine,
   RiHardDriveLine,
-  RiStarLine,
-  RiArrowRightSLine,
 } from "@remixicon/react";
-import { Card, Button, Badge } from "@tremor/react";
+import { Card, Button } from "@tremor/react";
 
 // --- Demo data ---
 
@@ -37,8 +35,13 @@ const plans = [
     maxPhotosPerEvent: 500,
     maxStorageGb: 5,
     icon: RiFlashlightLine,
-    color: "bg-emerald-50 text-emerald-600",
-    features: ["Базовое распознавание лиц", "Водяные знаки", "Email-поддержка"],
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    features: [
+      "Базовое распознавание лиц",
+      "Водяные знаки",
+      "Email-поддержка",
+    ],
   },
   {
     id: "pro",
@@ -48,7 +51,8 @@ const plans = [
     maxPhotosPerEvent: 50000,
     maxStorageGb: 100,
     icon: RiVipCrownLine,
-    color: "bg-primary/10 text-primary",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
     popular: true,
     features: [
       "Приоритетное распознавание",
@@ -66,7 +70,8 @@ const plans = [
     maxPhotosPerEvent: 200000,
     maxStorageGb: 1000,
     icon: RiBuilding2Line,
-    color: "bg-violet-50 text-violet-600",
+    color: "text-violet-600",
+    bgColor: "bg-violet-50",
     features: [
       "Безлимит мероприятий",
       "Кастомный домен",
@@ -76,6 +81,14 @@ const plans = [
       "Персональный менеджер",
     ],
   },
+];
+
+const eventPricing = [
+  { photos: "2 500", price: "200 000" },
+  { photos: "5 000", price: "250 000" },
+  { photos: "7 500", price: "300 000" },
+  { photos: "15 000", price: "400 000" },
+  { photos: "15 001+", price: "500 000" },
 ];
 
 // --- Component ---
@@ -89,26 +102,32 @@ export function BillingPage() {
       label: t("limit_photos", { count: currentPlan.maxPhotosPerEvent.toLocaleString("ru-RU") }),
       used: currentPlan.usedPhotos,
       max: currentPlan.maxPhotosPerEvent,
-      color: "bg-amber-50 text-amber-600",
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-50",
+      barColor: "bg-amber-500",
     },
     {
       icon: RiCalendarLine,
       label: t("limit_events", { count: currentPlan.maxEvents }),
       used: currentPlan.usedEvents,
       max: currentPlan.maxEvents,
-      color: "bg-primary/10 text-primary",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
+      barColor: "bg-primary",
     },
     {
       icon: RiHardDriveLine,
       label: t("limit_storage", { gb: currentPlan.maxStorageGb }),
       used: currentPlan.usedStorageGb,
       max: currentPlan.maxStorageGb,
-      color: "bg-emerald-50 text-emerald-600",
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-50",
+      barColor: "bg-emerald-500",
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-5xl">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
@@ -119,157 +138,161 @@ export function BillingPage() {
         </p>
       </div>
 
-      {/* Current Plan */}
-      <Card className="bg-primary text-white p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <RiVipCrownLine size={18} className="opacity-80" />
-          <span className="text-sm opacity-80">{t("current_plan")}</span>
-        </div>
-        <p className="text-2xl font-bold">{currentPlan.name}</p>
-        <p className="text-sm opacity-80 mt-1">
-          {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
-        </p>
-        <button className="mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors">
-          {t("cancel_subscription")}
-        </button>
-      </Card>
-
-      {/* Usage cards — 2 top + 1 bottom */}
-      <div className="grid grid-cols-2 gap-3">
-        {usageItems.map((item, i) => {
-          const Icon = item.icon;
-          const percent = Math.round((item.used / item.max) * 100);
-          const isLast = i === usageItems.length - 1;
-          return (
-            <Card key={item.label} className={`p-3 sm:p-4 flex flex-col gap-2 sm:gap-3 ${isLast ? "col-span-2" : ""}`}>
-              <div className="flex items-center justify-between">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${item.color}`}>
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <Badge color={percent > 80 ? "red" : percent > 50 ? "amber" : "green"} size="xs">
-                  {percent}%
-                </Badge>
+      {/* Current Plan Card */}
+      <Card className="p-0 overflow-hidden border-0 shadow-sm">
+        <div className="bg-gradient-to-r from-primary to-blue-500 p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <RiVipCrownLine size={16} className="opacity-80" />
+                <span className="text-sm opacity-80">{t("current_plan")}</span>
               </div>
-              <div>
-                <p className="text-lg sm:text-2xl font-bold">
-                  {item.used.toLocaleString("ru-RU")}
-                  <span className="text-[10px] sm:text-sm font-normal text-text-secondary"> / {item.max.toLocaleString("ru-RU")}</span>
-                </p>
-                <p className="text-[10px] sm:text-xs text-text-secondary mt-0.5 line-clamp-1">{item.label}</p>
-              </div>
-              {/* Progress bar */}
-              <div className="w-full h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    percent > 80 ? "bg-red-500" : percent > 50 ? "bg-amber-500" : "bg-success"
-                  }`}
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Available Plans */}
-      <div>
-        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <RiStarLine size={16} className="text-text-secondary" />
-          {t("available_plans")}
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {plans.map((plan) => {
-          const isCurrent = plan.name === currentPlan.name;
-          const PlanIcon = plan.icon;
-          return (
-            <Card
-              key={plan.id}
-              className={`p-5 space-y-4 relative transition-colors ${
-                isCurrent
-                  ? "border-primary bg-primary/5"
-                  : "hover:border-border-active"
-              }`}
-            >
-              {plan.popular && (
-                <Badge color="blue" size="xs" className="absolute -top-2.5 left-4">
-                  Популярный
-                </Badge>
-              )}
-
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${plan.color}`}>
-                  <PlanIcon size={20} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">{plan.name}</h3>
-                </div>
-              </div>
-
-              <p className="text-2xl font-bold">
-                {plan.priceMonthly === 0 ? (
-                  <span className="text-success">{t("free")}</span>
-                ) : (
-                  <>
-                    {plan.priceMonthly.toLocaleString("ru-RU")}
-                    <span className="text-sm font-normal text-text-secondary"> {t("kzt_month")}</span>
-                  </>
-                )}
+              <p className="text-3xl font-bold">{currentPlan.name}</p>
+              <p className="text-sm opacity-80 mt-1">
+                {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
               </p>
+            </div>
+            <button className="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 transition-colors w-fit">
+              {t("cancel_subscription")}
+            </button>
+          </div>
+        </div>
 
-              {/* Limits */}
-              <div className="space-y-2 text-sm text-text-secondary border-t border-border pt-3">
-                <p>{plan.maxEvents === -1 ? "Безлимит мероприятий" : t("limit_events", { count: plan.maxEvents })}</p>
-                <p>{t("limit_photos", { count: plan.maxPhotosPerEvent.toLocaleString("ru-RU") })}</p>
-                <p>{t("limit_storage", { gb: plan.maxStorageGb })}</p>
+        {/* Usage bars inline */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+          {usageItems.map((item) => {
+            const Icon = item.icon;
+            const percent = Math.round((item.used / item.max) * 100);
+            return (
+              <div key={item.label} className="p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.iconBg}`}>
+                    <Icon size={16} className={item.iconColor} />
+                  </div>
+                  <span className="text-xs text-text-secondary">{item.label}</span>
+                </div>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-xl font-bold">{item.used.toLocaleString("ru-RU")}</span>
+                  <span className="text-xs text-text-secondary">/ {item.max.toLocaleString("ru-RU")}</span>
+                </div>
+                <div className="w-full h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${item.barColor}`}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
               </div>
+            );
+          })}
+        </div>
+      </Card>
 
-              {/* Features */}
-              <ul className="space-y-2 text-sm">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <RiCheckLine size={16} className="text-success flex-shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
+      {/* Plans */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">{t("available_plans")}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {plans.map((plan) => {
+            const isCurrent = plan.name === currentPlan.name;
+            const PlanIcon = plan.icon;
+            return (
+              <Card
+                key={plan.id}
+                className={`p-0 overflow-hidden relative transition-all ${
+                  isCurrent ? "ring-2 ring-primary" : "hover:shadow-md"
+                }`}
+              >
+                {plan.popular && (
+                  <div className="bg-primary text-white text-xs font-medium text-center py-1.5">
+                    {t("popular") ?? "Популярный"}
+                  </div>
+                )}
 
-              {isCurrent ? (
-                <Button variant="secondary" className="w-full opacity-60 cursor-default" disabled>
-                  {t("current")}
-                </Button>
-              ) : (
-                <Button className="w-full">{t("select_plan")}</Button>
-              )}
-            </Card>
-          );
-        })}
+                <div className="p-5 space-y-5">
+                  {/* Plan header */}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.bgColor}`}>
+                      <PlanIcon size={20} className={plan.color} />
+                    </div>
+                    <h3 className="text-lg font-bold">{plan.name}</h3>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    {plan.priceMonthly === 0 ? (
+                      <span className="text-2xl font-bold text-success">{t("free")}</span>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold">
+                          {plan.priceMonthly.toLocaleString("ru-RU")}
+                        </span>
+                        <span className="text-sm text-text-secondary">{t("kzt_month")}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Limits */}
+                  <div className="space-y-1.5 text-sm text-text-secondary py-3 border-y border-border">
+                    <p>{plan.maxEvents === -1 ? "Безлимит мероприятий" : t("limit_events", { count: plan.maxEvents })}</p>
+                    <p>{t("limit_photos", { count: plan.maxPhotosPerEvent.toLocaleString("ru-RU") })}</p>
+                    <p>{t("limit_storage", { gb: plan.maxStorageGb })}</p>
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-2 text-sm">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <RiCheckLine size={16} className="text-success flex-shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  {isCurrent ? (
+                    <Button variant="secondary" className="w-full" disabled>
+                      {t("current")}
+                    </Button>
+                  ) : (
+                    <Button className="w-full">{t("select_plan")}</Button>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Quick Info Bar */}
-      <Card className="p-0 overflow-hidden">
-        <button className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer">
-          <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
-            <RiVipCrownLine size={16} className="text-text-secondary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Сравнение тарифов</p>
-            <p className="text-xs text-text-secondary">Подробная таблица всех возможностей</p>
-          </div>
-          <RiArrowRightSLine size={16} className="text-text-secondary" />
-        </button>
-        <button className="flex items-center gap-3 w-full px-5 py-4 text-left hover:bg-bg-secondary transition-colors border-b border-border last:border-0 cursor-pointer">
-          <div className="w-9 h-9 rounded-lg bg-bg-secondary flex items-center justify-center flex-shrink-0">
-            <RiCalendarLine size={16} className="text-text-secondary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">История платежей</p>
-            <p className="text-xs text-text-secondary">Все счета и чеки</p>
-          </div>
-          <RiArrowRightSLine size={16} className="text-text-secondary" />
-        </button>
-      </Card>
+      {/* Event Pricing Table */}
+      <div>
+        <h2 className="text-lg font-semibold mb-1">Эксклюзивный пакет</h2>
+        <p className="text-sm text-text-secondary mb-4">
+          Оплата за мероприятие в зависимости от количества фото
+        </p>
+
+        <Card className="p-0 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-bg-secondary">
+                <th className="text-left px-5 py-3 font-medium text-text-secondary">Кол-во фото</th>
+                <th className="text-right px-5 py-3 font-medium text-text-secondary">Стоимость</th>
+              </tr>
+            </thead>
+            <tbody>
+              {eventPricing.map((row, i) => (
+                <tr
+                  key={i}
+                  className="border-t border-border hover:bg-bg-secondary/50 transition-colors"
+                >
+                  <td className="px-5 py-3">До {row.photos} фото</td>
+                  <td className="px-5 py-3 text-right font-semibold tabular-nums">
+                    {row.price} ₸
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      </div>
     </div>
   );
 }

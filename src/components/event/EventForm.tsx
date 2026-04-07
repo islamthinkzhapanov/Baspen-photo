@@ -15,7 +15,7 @@ import {
   RiImageLine,
   RiDownloadLine,
   RiDropLine,
-  RiArrowLeftLine,
+
   RiInformationLine,
 } from "@remixicon/react";
 

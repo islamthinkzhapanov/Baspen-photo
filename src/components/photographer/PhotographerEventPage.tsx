@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   RiImageLine,
   RiCalendarLine,
@@ -486,6 +487,18 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
 
   return (
     <div>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm mb-4">
+        <Link
+          href="/events"
+          className="text-text-secondary hover:text-text transition-colors"
+        >
+          {t("title")}
+        </Link>
+        <span className="text-text-secondary">/</span>
+        <span className="text-text font-medium truncate max-w-[300px]">{event.title}</span>
+      </nav>
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold font-display">{event.title}</h1>
