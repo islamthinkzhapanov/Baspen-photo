@@ -12,6 +12,7 @@ const loginSchema = z.object({
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   debug: process.env.NODE_ENV === "development",
   adapter: DrizzleAdapter(db),
   session: { strategy: "jwt" },
