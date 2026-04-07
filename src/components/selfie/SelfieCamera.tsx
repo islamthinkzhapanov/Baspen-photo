@@ -29,8 +29,8 @@ export function SelfieCamera({ onCapture, onClose, isSearching }: Props) {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 1920 },
+          width: { ideal: 720 },
+          height: { ideal: 960 },
         },
         audio: false,
       });
@@ -106,115 +106,120 @@ export function SelfieCamera({ onCapture, onClose, isSearching }: Props) {
   }, [onCapture]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
-      {/* Full-screen camera video */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className={`absolute inset-0 w-full h-full object-cover ${
-          facingMode === "user" ? "scale-x-[-1]" : ""
-        }`}
-      />
-
-      {/* Oval face mask overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        <svg
-          viewBox="0 0 100 177"
-          preserveAspectRatio="xMidYMid slice"
-          className="w-full h-full"
-        >
-          <defs>
-            <mask id="faceMask">
-              <rect width="100" height="177" fill="white" />
-              <ellipse cx="50" cy="72" rx="24" ry="33" fill="black" />
-            </mask>
-          </defs>
-          <rect
-            width="100"
-            height="177"
-            fill="rgba(0,0,0,0.45)"
-            mask="url(#faceMask)"
-          />
-          <ellipse
-            cx="50"
-            cy="72"
-            rx="24"
-            ry="33"
-            fill="none"
-            stroke="rgba(255,255,255,0.7)"
-            strokeWidth="0.4"
-            strokeDasharray="2 1.5"
-          />
-        </svg>
-      </div>
-
-      {/* Instruction text */}
-      <div className="relative z-10 pt-[env(safe-area-inset-top,20px)] mt-4">
-        <p className="text-white text-center text-[15px] font-medium px-6 drop-shadow-lg">
-          Поместите лицо внутри разметки
-          <br />и сделайте снимок
-        </p>
-      </div>
-
-      {/* Close button — top right */}
-      <button
-        onClick={onClose}
-        className="absolute top-[env(safe-area-inset-top,20px)] right-4 mt-3 z-20 w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white hover:bg-black/60"
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Camera card — Instagram-like aspect ratio */}
+      <div className="relative w-full max-w-[450px] rounded-[24px] overflow-hidden bg-black"
+        style={{ aspectRatio: "450/700" }}
       >
-        <RiCloseLine size={24} />
-      </button>
+        {/* Camera video */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`absolute inset-0 w-full h-full object-cover ${
+            facingMode === "user" ? "scale-x-[-1]" : ""
+          }`}
+        />
 
-      {/* Camera error */}
-      {cameraError && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80">
-          <div className="text-center text-white p-6">
-            <div className="flex justify-center mb-4">
-              <RiCameraLine size={48} className="opacity-50" />
+        {/* Oval face mask overlay */}
+        <div className="absolute inset-0 pointer-events-none">
+          <svg
+            viewBox="0 0 450 700"
+            preserveAspectRatio="xMidYMid slice"
+            className="w-full h-full"
+          >
+            <defs>
+              <mask id="faceMask">
+                <rect width="450" height="700" fill="white" />
+                <ellipse cx="225" cy="310" rx="150" ry="210" fill="black" />
+              </mask>
+            </defs>
+            <rect
+              width="450"
+              height="700"
+              fill="rgba(0,0,0,0.45)"
+              mask="url(#faceMask)"
+            />
+            <ellipse
+              cx="225"
+              cy="310"
+              rx="150"
+              ry="210"
+              fill="none"
+              stroke="rgba(255,255,255,0.8)"
+              strokeWidth="2"
+              strokeDasharray="10 6"
+            />
+          </svg>
+        </div>
+
+        {/* Instruction text */}
+        <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-6">
+          <p className="text-white text-center text-[15px] font-medium leading-[20px]">
+            Поместите лицо внутри разметки
+            <br />и сделайте снимок
+          </p>
+        </div>
+
+        {/* Close button — top right */}
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-5 z-20 w-8 h-8 flex items-center justify-center text-white/80 hover:text-white"
+        >
+          <RiCloseLine size={28} />
+        </button>
+
+        {/* Camera error */}
+        {cameraError && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 rounded-[24px]">
+            <div className="text-center text-white p-6">
+              <div className="flex justify-center mb-4">
+                <RiCameraLine size={48} className="opacity-50" />
+              </div>
+              <p className="mb-4">{cameraError}</p>
+              <button
+                onClick={startCamera}
+                className="px-4 py-2 bg-white/10 rounded-full hover:bg-white/20"
+              >
+                {t("retry")}
+              </button>
             </div>
-            <p className="mb-4">{cameraError}</p>
+          </div>
+        )}
+
+        {/* Bottom controls */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 pb-6">
+          <div className="flex items-center justify-center gap-6 px-6">
+            {/* Spacer */}
+            <div className="w-10" />
+
+            {/* Capture button */}
             <button
-              onClick={startCamera}
-              className="px-4 py-2 bg-white/10 rounded-full hover:bg-white/20"
+              onClick={capture}
+              disabled={!cameraReady || isSearching}
+              className="w-[70px] h-[70px] rounded-full border-[4px] border-white flex items-center justify-center
+                disabled:opacity-50 transition-all active:scale-95"
             >
-              {t("retry")}
+              {isSearching ? (
+                <span className="animate-spin inline-flex text-white"><RiLoader4Line size={24} /></span>
+              ) : (
+                <div className="w-[56px] h-[56px] rounded-full bg-white" />
+              )}
+            </button>
+
+            {/* Gallery upload button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-10 h-10 rounded-[10px] bg-white/20 backdrop-blur flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+            >
+              <RiImageAddLine size={20} />
             </button>
           </div>
         </div>
-      )}
-
-      {/* Bottom controls */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 pb-[env(safe-area-inset-bottom,20px)] mb-8">
-        <div className="flex items-center justify-center gap-8 px-6">
-          {/* Spacer for centering */}
-          <div className="w-12" />
-
-          {/* Capture button */}
-          <button
-            onClick={capture}
-            disabled={!cameraReady || isSearching}
-            className="w-[72px] h-[72px] rounded-full border-[4px] border-white flex items-center justify-center
-              disabled:opacity-50 transition-all active:scale-95"
-          >
-            {isSearching ? (
-              <span className="animate-spin inline-flex text-white"><RiLoader4Line size={28} /></span>
-            ) : (
-              <div className="w-[58px] h-[58px] rounded-full bg-white" />
-            )}
-          </button>
-
-          {/* Gallery upload button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-12 h-12 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white hover:bg-white/25 transition-colors"
-          >
-            <RiImageAddLine size={22} />
-          </button>
-        </div>
       </div>
 
-      {/* Hidden file input for gallery */}
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
