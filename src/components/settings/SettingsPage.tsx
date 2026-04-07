@@ -11,8 +11,8 @@ import {
   RiArrowRightSLine,
   RiLogoutBoxRLine,
 } from "@remixicon/react";
-import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   TextInput,
@@ -21,22 +21,39 @@ import {
   Button,
 } from "@tremor/react";
 import { Switch } from "@/components/ui/switch";
-// --- Demo data ---
-
-const demoProfile = {
-  name: "Арман Сериков",
-  email: "arman@baspen.kz",
-  phone: "+7 707 123 45 67",
-  avatar: null,
-  language: "ru",
-  timezone: "Asia/Almaty",
-};
 
 // --- Component ---
 
 export function SettingsPage() {
   const t = useTranslations();
-  const [profile, setProfile] = useState(demoProfile);
+  const { data: session } = useSession();
+
+  const defaultProfile = {
+    name: session?.user?.name || "",
+    email: session?.user?.email || "",
+    phone: "",
+    avatar: null as string | null,
+    language: "ru",
+    timezone: "Asia/Almaty",
+  };
+
+  const [profile, setProfile] = useState(defaultProfile);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (session?.user && !initializedRef.current) {
+      setProfile({
+        name: session.user.name || "",
+        email: session.user.email || "",
+        phone: "",
+        avatar: null,
+        language: "ru",
+        timezone: "Asia/Almaty",
+      });
+      initializedRef.current = true;
+    }
+  }, [session]);
+
   const initialNotifications = {
     email_purchases: true,
     email_uploads: false,
@@ -46,7 +63,8 @@ export function SettingsPage() {
   const [notifications, setNotifications] = useState(initialNotifications);
 
   const hasChanges =
-    JSON.stringify(profile) !== JSON.stringify(demoProfile) ||
+    profile.name !== (session?.user?.name || "") ||
+    profile.email !== (session?.user?.email || "") ||
     JSON.stringify(notifications) !== JSON.stringify(initialNotifications);
 
   const notificationItems = [

@@ -26,20 +26,6 @@ function computeFromDate(period: string): string | undefined {
   return undefined;
 }
 
-const DEMO_FINANCE = {
-  photoSalesRevenue: 1284000,
-  photoSalesOrders: 342,
-  subscriptionMonthlyRevenue: 198000,
-  activeSubscriptions: 18,
-  topEvents: [
-    { eventId: "e1", eventTitle: "Almaty Marathon 2026", revenue: "485000", orderCount: 128 },
-    { eventId: "e5", eventTitle: "Ironman Astana 70.3", revenue: "312000", orderCount: 89 },
-    { eventId: "e8", eventTitle: "Run The Silk Road", revenue: "198500", orderCount: 56 },
-    { eventId: "e2", eventTitle: "Nauryz Festival", revenue: "164000", orderCount: 43 },
-    { eventId: "e3", eventTitle: "Tech Conference KZ", revenue: "78000", orderCount: 18 },
-    { eventId: "e4", eventTitle: "Корпоратив Kaspi", revenue: "46500", orderCount: 8 },
-  ],
-};
 
 export function AdminFinancePage() {
   const t = useTranslations("admin");
@@ -48,8 +34,7 @@ export function AdminFinancePage() {
 
   const from = computeFromDate(period);
 
-  const { data: apiData } = useAdminFinance(from);
-  const data = apiData ?? DEMO_FINANCE;
+  const { data } = useAdminFinance(from);
 
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat("ru-KZ", {

@@ -24,40 +24,9 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
-const DEMO_METRICS = {
-  totals: {
-    users: 48,
-    events: 24,
-    photos: 24800,
-    participants: 3291,
-    orders: 342,
-    activeSubscriptions: 18,
-  },
-  monthGrowth: {
-    newUsers: 12,
-    newEvents: 6,
-    newPhotos: 8400,
-  },
-  storage: { totalBytes: 36_507_222_016 },
-  charts: {
-    usersPerDay: [
-      { date: "28 мар", count: 3 },
-      { date: "29 мар", count: 5 },
-      { date: "30 мар", count: 2 },
-      { date: "31 мар", count: 7 },
-      { date: "1 апр", count: 4 },
-      { date: "2 апр", count: 9 },
-      { date: "3 апр", count: 6 },
-      { date: "4 апр", count: 5 },
-      { date: "5 апр", count: 8 },
-    ],
-  },
-};
-
 export function MetricsPage() {
   const t = useTranslations("admin");
-  const { data: apiData } = useAdminMetrics();
-  const data = apiData ?? DEMO_METRICS;
+  const { data } = useAdminMetrics();
 
   const totals = data?.totals || {};
   const growth = data?.monthGrowth || {};

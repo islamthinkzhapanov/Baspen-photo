@@ -25,83 +25,35 @@ import {
   TableCell,
   TextInput,
 } from "@tremor/react";
-// --- Demo data ---
-
-const demoEvents = [
-  {
-    id: "1",
-    title: "Almaty Marathon 2026",
-    date: "2026-03-30",
-    location: "Алматы, пр. Абая",
-    photoCount: 4200,
-    isPublished: true,
-    cover: null,
-    searches: 1580,
-    participants: 320,
-    pricingMode: "commission",
-  },
-  {
-    id: "2",
-    title: "Nauryz Festival",
-    date: "2026-03-22",
-    location: "Астана, EXPO",
-    photoCount: 3100,
-    isPublished: true,
-    cover: null,
-    searches: 890,
-    participants: 245,
-    pricingMode: "exclusive",
-  },
-  {
-    id: "3",
-    title: "Tech Conference KZ",
-    date: "2026-03-15",
-    location: "Алматы, Rixos",
-    photoCount: 2800,
-    isPublished: false,
-    cover: null,
-    searches: 520,
-    participants: 180,
-    pricingMode: "commission",
-  },
-  {
-    id: "4",
-    title: "Корпоратив Kaspi",
-    date: "2026-03-08",
-    location: "Алматы, The Ritz",
-    photoCount: 1580,
-    isPublished: true,
-    cover: null,
-    searches: 210,
-    participants: 95,
-    pricingMode: "exclusive",
-  },
-  {
-    id: "5",
-    title: "Свадьба Арман & Айгуль",
-    date: "2026-04-12",
-    location: "Алматы, Tau House",
-    photoCount: 0,
-    isPublished: false,
-    cover: null,
-    searches: 0,
-    participants: 0,
-    pricingMode: "exclusive",
-  },
-];
+import { useEvents } from "@/hooks/useEvents";
 
 // --- Component ---
+
+type Event = {
+  id: string;
+  title: string;
+  date: string | null;
+  location: string | null;
+  photoCount: number;
+  isPublished: boolean;
+  cover: string | null;
+  searches: number;
+  participants: number;
+  pricingMode: string;
+};
 
 export function EventsPage() {
   const t = useTranslations("events");
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
 
-  const filtered = demoEvents.filter((event) => {
+  const { data: events = [] } = useEvents();
+
+  const filtered = (events as Event[]).filter((event) => {
     if (
       searchQuery &&
       !event.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !event.location.toLowerCase().includes(searchQuery.toLowerCase())
+      !(event.location || "").toLowerCase().includes(searchQuery.toLowerCase())
     )
       return false;
 
@@ -112,12 +64,12 @@ export function EventsPage() {
   });
 
   // --- Aggregated stats ---
-  const totalPhotos = demoEvents.reduce((sum, e) => sum + e.photoCount, 0);
-  const totalSearches = demoEvents.reduce((sum, e) => sum + e.searches, 0);
-  const totalParticipants = demoEvents.reduce((sum, e) => sum + e.participants, 0);
+  const totalPhotos = (events as Event[]).reduce((sum, e) => sum + (e.photoCount || 0), 0);
+  const totalSearches = (events as Event[]).reduce((sum, e) => sum + (e.searches || 0), 0);
+  const totalParticipants = (events as Event[]).reduce((sum, e) => sum + (e.participants || 0), 0);
 
   const statCards = [
-    { label: t("total_projects"), value: demoEvents.length, icon: RiCameraLine, color: "bg-primary/10 text-primary" },
+    { label: t("total_projects"), value: (events as Event[]).length, icon: RiCameraLine, color: "bg-primary/10 text-primary" },
     { label: t("total_photos"), value: totalPhotos.toLocaleString("ru-RU"), icon: RiImageLine, color: "bg-emerald-50 text-emerald-600" },
     { label: t("total_searches"), value: totalSearches.toLocaleString("ru-RU"), icon: RiEyeLine, color: "bg-amber-50 text-amber-600" },
     { label: t("total_participants"), value: totalParticipants.toLocaleString("ru-RU"), icon: RiGroupLine, color: "bg-violet-50 text-violet-600" },
@@ -187,7 +139,7 @@ export function EventsPage() {
       </div>
 
       {/* Table */}
-      {demoEvents.length === 0 ? (
+      {(events as Event[]).length === 0 ? (
         <Card className="p-12">
           <div className="text-center max-w-md mx-auto">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -229,33 +181,37 @@ export function EventsPage() {
                           <p className="font-medium group-hover:text-primary transition-colors truncate">
                             {event.title}
                           </p>
-                          <div className="flex items-center gap-1 text-xs text-text-secondary">
-                            <RiMapPinLine size={12} />
-                            <span className="truncate">{event.location}</span>
-                          </div>
+                          {event.location && (
+                            <div className="flex items-center gap-1 text-xs text-text-secondary">
+                              <RiMapPinLine size={12} />
+                              <span className="truncate">{event.location}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </Link>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    <div className="flex items-center gap-1.5 text-text-secondary">
-                      <RiCalendarLine size={14} />
-                      <span className="text-sm">
-                        {new Date(event.date).toLocaleDateString("ru-RU", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </span>
-                    </div>
+                    {event.date && (
+                      <div className="flex items-center gap-1.5 text-text-secondary">
+                        <RiCalendarLine size={14} />
+                        <span className="text-sm">
+                          {new Date(event.date).toLocaleDateString("ru-RU", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {event.photoCount.toLocaleString("ru-RU")}
+                    {(event.photoCount || 0).toLocaleString("ru-RU")}
                   </TableCell>
                   <TableCell className="text-right tabular-nums hidden sm:table-cell">
-                    {event.searches.toLocaleString("ru-RU")}
+                    {(event.searches || 0).toLocaleString("ru-RU")}
                   </TableCell>
                   <TableCell className="text-right tabular-nums hidden sm:table-cell">
-                    {event.participants}
+                    {event.participants || 0}
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge color={event.isPublished ? "green" : "gray"} size="xs">

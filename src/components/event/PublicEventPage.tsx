@@ -23,75 +23,7 @@ import {
 } from "@remixicon/react";
 import { Button } from "@tremor/react";
 import { ShineBorder } from "@/components/ui/shine-border";
-
-// --- Demo data ---
-
-const demoEventsBySlug: Record<
-  string,
-  {
-    title: string;
-    description: string;
-    date: string;
-    location: string;
-    photoCount: number;
-    participantCount: number;
-    bannerGradient: [string, string];
-  }
-> = {
-  "almaty-marathon-2026": {
-    title: "Almaty Marathon 2026",
-    description: "Ежегодный марафон — 42 км, 21 км, 10 км, 5 км",
-    date: "2026-03-30",
-    location: "Алматы, пр. Абая",
-    photoCount: 4200,
-    participantCount: 2800,
-    bannerGradient: ["#005FF9", "#00C6FB"],
-  },
-  "nauryz-festival": {
-    title: "Nauryz Festival",
-    description: "Празднование Наурыза — концерты, конкурсы, национальная кухня",
-    date: "2026-03-22",
-    location: "Астана, EXPO",
-    photoCount: 3100,
-    participantCount: 1500,
-    bannerGradient: ["#F97316", "#FACC15"],
-  },
-  "tech-conf-kz": {
-    title: "Tech Conference KZ",
-    description: "IT-конференция для разработчиков и стартапов Казахстана",
-    date: "2026-03-15",
-    location: "Алматы, Rixos",
-    photoCount: 2800,
-    participantCount: 600,
-    bannerGradient: ["#8B5CF6", "#EC4899"],
-  },
-};
-
-const defaultEvent = {
-  title: "Almaty Marathon 2026",
-  description: "Ежегодный марафон — 42 км, 21 км, 10 км, 5 км",
-  date: "2026-03-30",
-  location: "Алматы, пр. Абая",
-  photoCount: 4200,
-  participantCount: 2800,
-  bannerGradient: ["#005FF9", "#00C6FB"] as [string, string],
-};
-
-// Simulated search results — varied aspect ratios for masonry
-const demoResults = [
-  { id: "r1", w: 4, h: 5, bib: "1247", liked: false },
-  { id: "r2", w: 3, h: 2, bib: "1247", liked: false },
-  { id: "r3", w: 4, h: 3, bib: "1247", liked: false },
-  { id: "r4", w: 3, h: 4, bib: "1247", liked: false },
-  { id: "r5", w: 4, h: 3, bib: "1247", liked: false },
-  { id: "r6", w: 3, h: 2, bib: "1247", liked: false },
-  { id: "r7", w: 4, h: 5, bib: "1247", liked: false },
-  { id: "r8", w: 3, h: 2, bib: "1247", liked: false },
-  { id: "r9", w: 4, h: 3, bib: "1247", liked: false },
-  { id: "r10", w: 3, h: 4, bib: "1247", liked: false },
-  { id: "r11", w: 4, h: 3, bib: "1247", liked: false },
-  { id: "r12", w: 3, h: 2, bib: "1247", liked: false },
-];
+import { useQuery } from "@tanstack/react-query";
 
 // Color palette for placeholder photos
 const photoColors = [
@@ -286,7 +218,24 @@ export function PublicEventPage({
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
-  const event = demoEventsBySlug[slug] || defaultEvent;
+  const { data: eventData } = useQuery({
+    queryKey: ["public-event", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/events/by-slug/${slug}`);
+      if (!res.ok) throw new Error("Not found");
+      return res.json();
+    },
+  });
+
+  const event = eventData?.event || {
+    title: "",
+    description: "",
+    date: null,
+    location: "",
+    photoCount: 0,
+    participantCount: 0,
+  };
+  const searchResults = eventData?.photos || [];
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -361,8 +310,8 @@ export function PublicEventPage({
         <div className="max-w-6xl mx-auto px-4 py-5">
           <div className="flex items-center justify-between mb-5" style={{ opacity: 0, animation: "fade-in-up 0.4s ease-out 0.1s forwards" }}>
             <div>
-              <h2 className="text-lg font-bold">{t("results", { count: demoResults.length })}</h2>
-              <p className="text-xs text-text-secondary mt-0.5">Номер на нагруднике: #1247</p>
+              <h2 className="text-lg font-bold">{t("results", { count: searchResults.length })}</h2>
+              <p className="text-xs text-text-secondary mt-0.5">{t("found_photos")}</p>
             </div>
             <div className="flex gap-2">
               {likedCount > 0 && (
@@ -378,7 +327,7 @@ export function PublicEventPage({
 
           {/* Masonry Grid */}
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-            {demoResults.map((photo, index) => {
+            {searchResults.map((photo: { id: string; width: number | null; height: number | null; watermarkedPath: string | null; thumbnailPath: string | null }, index: number) => {
               const isLiked = likes.has(photo.id);
               const staggerDelay = Math.min(index * 40, 400);
               return (
@@ -392,7 +341,7 @@ export function PublicEventPage({
                 >
                   <div
                     className={`bg-gradient-to-br ${photoColors[index % photoColors.length]} rounded-xl overflow-hidden cursor-pointer relative`}
-                    style={{ aspectRatio: `${photo.w}/${photo.h}` }}
+                    style={{ aspectRatio: `${photo.width || 4}/${photo.height || 3}` }}
                     onClick={() => setLightbox(index)}
                   >
                     {/* Watermark overlay */}
@@ -404,15 +353,18 @@ export function PublicEventPage({
                       </div>
                     )}
 
-                    {/* Bib number badge */}
-                    <div className="absolute top-2 left-2 bg-black/50 backdrop-blur text-white text-[10px] px-1.5 py-0.5 rounded">
-                      #{photo.bib}
-                    </div>
-
-                    {/* Photo placeholder content */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <RiImageLine size={32} className="text-white/30" />
-                    </div>
+                    {/* Photo content */}
+                    {photo.watermarkedPath || photo.thumbnailPath ? (
+                      <img
+                        src={photo.watermarkedPath || photo.thumbnailPath || undefined}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <RiImageLine size={32} className="text-white/30" />
+                      </div>
+                    )}
 
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
@@ -446,20 +398,21 @@ export function PublicEventPage({
           </div>
 
           {/* Purchase CTA */}
-          <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 text-center" style={{ opacity: 0, animation: "fade-in-up 0.5s ease-out 0.6s forwards" }}>
-            <h3 className="text-lg font-bold mb-1">Скачайте свои фото</h3>
-            <p className="text-sm text-text-secondary mb-4">
-              1 фото — 1 200 ₸ &nbsp;|&nbsp; Все {demoResults.length} фото — 9 600 ₸ (скидка 30%)
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button variant="secondary" size="xs">
-                Выбранные ({likedCount || 0})
-              </Button>
-              <Button size="xs" icon={RiDownloadLine}>
-                Купить все за 9 600 ₸
-              </Button>
+          {searchResults.length > 0 && (
+            <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 text-center" style={{ opacity: 0, animation: "fade-in-up 0.5s ease-out 0.6s forwards" }}>
+              <h3 className="text-lg font-bold mb-1">{t("download_your_photos")}</h3>
+              <div className="flex gap-3 justify-center mt-4">
+                {likedCount > 0 && (
+                  <Button variant="secondary" size="xs">
+                    {t("selected")} ({likedCount})
+                  </Button>
+                )}
+                <Button size="xs" icon={RiDownloadLine}>
+                  {t("download_all")}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -481,7 +434,7 @@ export function PublicEventPage({
 
             {/* Counter */}
             <div className="absolute top-4 left-4 text-white/70 text-sm">
-              {lightbox + 1} / {demoResults.length}
+              {lightbox + 1} / {searchResults.length}
             </div>
 
             {/* Nav */}
@@ -493,7 +446,7 @@ export function PublicEventPage({
                 <RiArrowLeftSLine size={24} className="text-white" />
               </button>
             )}
-            {lightbox < demoResults.length - 1 && (
+            {lightbox < searchResults.length - 1 && (
               <button
                 onClick={() => setLightbox(lightbox + 1)}
                 className="absolute right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
@@ -504,18 +457,21 @@ export function PublicEventPage({
 
             {/* Photo */}
             <div
-              className={`bg-gradient-to-br ${photoColors[lightbox % photoColors.length]} rounded-xl max-w-3xl w-full mx-8`}
+              className={`bg-gradient-to-br ${photoColors[lightbox % photoColors.length]} rounded-xl max-w-3xl w-full mx-8 overflow-hidden`}
               style={{
-                aspectRatio: `${demoResults[lightbox].w}/${demoResults[lightbox].h}`,
+                aspectRatio: `${searchResults[lightbox].width || 4}/${searchResults[lightbox].height || 3}`,
                 maxHeight: "80vh",
               }}
             >
               <div className="w-full h-full flex items-center justify-center relative">
-                <RiImageLine size={64} className="text-white/20" />
-                {!hideBranding && (
-                  <span className="absolute text-5xl font-bold text-black/[0.06] -rotate-30 select-none">
-                    BASPEN
-                  </span>
+                {searchResults[lightbox].watermarkedPath || searchResults[lightbox].thumbnailPath ? (
+                  <img
+                    src={searchResults[lightbox].watermarkedPath || searchResults[lightbox].thumbnailPath}
+                    alt=""
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <RiImageLine size={64} className="text-white/20" />
                 )}
               </div>
             </div>
@@ -523,15 +479,15 @@ export function PublicEventPage({
             {/* Bottom actions */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
               <button
-                onClick={() => toggleLike(demoResults[lightbox].id)}
+                onClick={() => toggleLike(searchResults[lightbox].id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur text-sm ${
-                  likes.has(demoResults[lightbox].id)
+                  likes.has(searchResults[lightbox].id)
                     ? "bg-red-500 text-white"
                     : "bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
-                {likes.has(demoResults[lightbox].id) ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
-                {likes.has(demoResults[lightbox].id) ? "В избранном" : "В избранное"}
+                {likes.has(searchResults[lightbox].id) ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
+                {likes.has(searchResults[lightbox].id) ? "В избранном" : "В избранное"}
               </button>
               <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur text-sm">
                 <RiShareLine size={16} />
@@ -539,7 +495,7 @@ export function PublicEventPage({
               </button>
               <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white hover:bg-primary-hover text-sm">
                 <RiDownloadLine size={16} />
-                Купить — 1 200 ₸
+                {t("download")}
               </button>
             </div>
           </div>

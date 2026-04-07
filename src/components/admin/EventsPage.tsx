@@ -25,27 +25,13 @@ import {
   TextInput,
 } from "@tremor/react";
 
-const DEMO_EVENTS = {
-  total: 24,
-  events: [
-    { id: "e1", title: "Almaty Marathon 2026", slug: "almaty-marathon-2026", ownerName: "Айбек Касымов", ownerEmail: "aibek@marathon.kz", photoCount: 4200, isPublished: true, pricingMode: "per_photo", createdAt: "2026-03-20T10:00:00Z" },
-    { id: "e2", title: "Nauryz Festival", slug: "nauryz-festival", ownerName: "Дана Сериккызы", ownerEmail: "dana.s@gmail.com", photoCount: 3100, isPublished: true, pricingMode: "package", createdAt: "2026-03-15T08:00:00Z" },
-    { id: "e3", title: "Tech Conference KZ", slug: "tech-conference-kz", ownerName: "Тимур Ахметов", ownerEmail: "timur.a@corp.kz", photoCount: 2800, isPublished: true, pricingMode: "free", createdAt: "2026-03-10T09:00:00Z" },
-    { id: "e4", title: "Корпоратив Kaspi", slug: "kaspi-corp-2026", ownerName: "Тимур Ахметов", ownerEmail: "timur.a@corp.kz", photoCount: 1580, isPublished: true, pricingMode: "per_photo", createdAt: "2026-03-05T14:00:00Z" },
-    { id: "e5", title: "Ironman Astana 70.3", slug: "ironman-astana", ownerName: "Айбек Касымов", ownerEmail: "aibek@marathon.kz", photoCount: 6800, isPublished: true, pricingMode: "per_photo", createdAt: "2026-02-28T07:00:00Z" },
-    { id: "e6", title: "Свадьба — Нурлан & Аида", slug: "nurlan-aida-wedding", ownerName: "Асель Нурланова", ownerEmail: "assel.n@gmail.com", photoCount: 920, isPublished: false, pricingMode: "package", createdAt: "2026-04-01T11:00:00Z" },
-    { id: "e7", title: "Выпускной НИШ 2026", slug: "nis-graduation-2026", ownerName: "Камила Бектурганова", ownerEmail: "kamila.b@mail.ru", photoCount: 0, isPublished: false, pricingMode: "per_photo", createdAt: "2026-04-03T16:00:00Z" },
-    { id: "e8", title: "Run The Silk Road", slug: "run-silk-road", ownerName: "Арман Сагинтаев", ownerEmail: "arman.s@run.kz", photoCount: 5400, isPublished: true, pricingMode: "per_photo", createdAt: "2026-02-15T06:00:00Z" },
-  ],
-};
 
 export function AdminEventsPage() {
   const t = useTranslations("admin");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
-  const { data: apiData } = useAdminEvents({ page, search });
-  const data = apiData ?? DEMO_EVENTS;
+  const { data } = useAdminEvents({ page, search });
   const deleteEvent = useAdminDeleteEvent();
 
   const totalPages = data ? Math.ceil(data.total / 20) : 1;

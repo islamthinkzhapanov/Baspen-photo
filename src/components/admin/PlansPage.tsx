@@ -29,16 +29,10 @@ const emptyForm: PlanForm = {
   priceMonthly: 0,
 };
 
-const DEMO_PLANS = [
-  { id: "p1", name: "Free", maxEvents: 2, maxPhotosPerEvent: 500, maxStorageGb: 5, priceMonthly: 0, isActive: true, subscriberCount: 32 },
-  { id: "p2", name: "Pro", maxEvents: 20, maxPhotosPerEvent: 50000, maxStorageGb: 100, priceMonthly: 9900, isActive: true, subscriberCount: 14 },
-  { id: "p3", name: "Enterprise", maxEvents: 999, maxPhotosPerEvent: 200000, maxStorageGb: 1000, priceMonthly: 29900, isActive: true, subscriberCount: 4 },
-];
 
 export function PlansPage() {
   const t = useTranslations("admin");
-  const { data: apiPlans } = useAdminPlans();
-  const plans = apiPlans ?? DEMO_PLANS;
+  const { data: plans } = useAdminPlans();
   const createPlan = useCreatePlan();
   const updatePlan = useUpdatePlan();
 

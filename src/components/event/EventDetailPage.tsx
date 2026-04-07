@@ -38,150 +38,9 @@ import {
 } from "@tremor/react";
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
-
-// --- Demo data ---
-
-const demoEvents: Record<
-  string,
-  {
-    id: string;
-    title: string;
-    slug: string;
-    description: string;
-    date: string;
-    location: string;
-    isPublished: boolean;
-    pricingMode: string;
-    photoCount: number;
-    searches: number;
-    participants: number;
-    downloads: number;
-    revenue: number;
-    freeDownload: boolean;
-    watermark: boolean;
-    pricePerPhoto: number;
-    packageDiscount: number;
-  }
-> = {
-  "1": {
-    id: "1",
-    title: "Almaty Marathon 2026",
-    slug: "almaty-marathon-2026",
-    description: "Ежегодный марафон в Алматы — 42 км, 21 км, 10 км, 5 км",
-    date: "2026-03-30",
-    location: "Алматы, пр. Абая",
-    isPublished: true,
-    pricingMode: "commission",
-    photoCount: 4200,
-    searches: 1580,
-    participants: 320,
-    downloads: 486,
-    revenue: 185000,
-    freeDownload: false,
-    watermark: true,
-    pricePerPhoto: 1200,
-    packageDiscount: 30,
-  },
-  "2": {
-    id: "2",
-    title: "Nauryz Festival",
-    slug: "nauryz-festival",
-    description: "Празднование Наурыза — концерты, конкурсы, национальная кухня",
-    date: "2026-03-22",
-    location: "Астана, EXPO",
-    isPublished: true,
-    pricingMode: "exclusive",
-    photoCount: 3100,
-    searches: 890,
-    participants: 245,
-    downloads: 312,
-    revenue: 124500,
-    freeDownload: false,
-    watermark: true,
-    pricePerPhoto: 800,
-    packageDiscount: 25,
-  },
-  "3": {
-    id: "3",
-    title: "Tech Conference KZ",
-    slug: "tech-conf-kz",
-    description: "IT-конференция для разработчиков и стартапов Казахстана",
-    date: "2026-03-15",
-    location: "Алматы, Rixos",
-    isPublished: false,
-    pricingMode: "commission",
-    photoCount: 2800,
-    searches: 520,
-    participants: 180,
-    downloads: 95,
-    revenue: 78000,
-    freeDownload: false,
-    watermark: true,
-    pricePerPhoto: 1000,
-    packageDiscount: 20,
-  },
-  "4": {
-    id: "4",
-    title: "Корпоратив Kaspi",
-    slug: "kaspi-corp",
-    description: "Корпоративное мероприятие для сотрудников Kaspi.kz",
-    date: "2026-03-08",
-    location: "Алматы, The Ritz",
-    isPublished: true,
-    pricingMode: "exclusive",
-    photoCount: 1580,
-    searches: 210,
-    participants: 95,
-    downloads: 78,
-    revenue: 41000,
-    freeDownload: true,
-    watermark: false,
-    pricePerPhoto: 0,
-    packageDiscount: 0,
-  },
-  "5": {
-    id: "5",
-    title: "Свадьба Арман & Айгуль",
-    slug: "arman-aigul-wedding",
-    description: "Свадебное торжество",
-    date: "2026-04-12",
-    location: "Алматы, Tau House",
-    isPublished: false,
-    pricingMode: "exclusive",
-    photoCount: 0,
-    searches: 0,
-    participants: 0,
-    downloads: 0,
-    revenue: 0,
-    freeDownload: true,
-    watermark: false,
-    pricePerPhoto: 0,
-    packageDiscount: 0,
-  },
-};
-
-const demoMembers = [
-  { id: "m1", name: "Арман Сериков", email: "arman@baspen.kz", role: "owner" },
-  { id: "m2", name: "Дана Алиева", email: "dana@photo.kz", role: "photographer" },
-  { id: "m3", name: "Бекзат Тулеев", email: "bekzat@photo.kz", role: "photographer" },
-];
-
-const demoPhotos = Array.from({ length: 12 }, (_, i) => ({
-  id: `p${i + 1}`,
-  index: i + 1,
-}));
-
-const chartData = [
-  { date: "22 мар", searches: 45, downloads: 12 },
-  { date: "23 мар", searches: 78, downloads: 28 },
-  { date: "24 мар", searches: 120, downloads: 45 },
-  { date: "25 мар", searches: 95, downloads: 38 },
-  { date: "26 мар", searches: 180, downloads: 62 },
-  { date: "27 мар", searches: 210, downloads: 78 },
-  { date: "28 мар", searches: 155, downloads: 52 },
-  { date: "29 мар", searches: 290, downloads: 95 },
-  { date: "30 мар", searches: 420, downloads: 142 },
-];
+import { useEvent, useEventMembers } from "@/hooks/useEvents";
+import { useEventPhotos } from "@/hooks/usePhotos";
+import { useEventAnalytics } from "@/hooks/useAnalytics";
 
 // --- Component ---
 
@@ -195,18 +54,21 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
 
-  const event = demoEvents[eventId];
+  const { data: event } = useEvent(eventId);
+  const { data: members = [] } = useEventMembers(eventId);
+  const { data: photosData } = useEventPhotos(eventId);
+  const { data: analytics } = useEventAnalytics(eventId);
 
   if (!event) {
     return (
       <div className="text-center py-16">
-        <p className="text-text-secondary">Проект не найден</p>
-        <Link href="/events" className="text-primary text-sm mt-2 inline-block">
-          ← Назад к проектам
-        </Link>
+        <p className="text-text-secondary">{tc("loading")}</p>
       </div>
     );
   }
+
+  const photos = photosData?.photos || [];
+  const chartData = analytics?.chartData || [];
 
   const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/e/${event.slug}`;
 
@@ -224,10 +86,10 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   };
 
   const allStats = [
-    { key: "photos", label: t("photos"), value: event.photoCount, icon: statIcons.photos, color: "text-primary" },
-    { key: "searches", label: ta("total_searches"), value: event.searches, icon: statIcons.searches, color: "text-amber-600" },
-    { key: "downloads", label: ta("total_downloads"), value: event.downloads, icon: statIcons.downloads, color: "text-emerald-600" },
-    { key: "revenue", label: ta("total_revenue"), value: `${event.revenue.toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600", ownerOnly: true },
+    { key: "photos", label: t("photos"), value: event.photoCount || 0, icon: statIcons.photos, color: "text-primary" },
+    { key: "searches", label: ta("total_searches"), value: event.searches || 0, icon: statIcons.searches, color: "text-amber-600" },
+    { key: "downloads", label: ta("total_downloads"), value: event.downloads || 0, icon: statIcons.downloads, color: "text-emerald-600" },
+    { key: "revenue", label: ta("total_revenue"), value: `${(event.revenue || 0).toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600", ownerOnly: true },
   ];
 
   const stats = isPhotographer
@@ -254,20 +116,26 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               {event.isPublished ? t("published") : t("draft")}
             </Badge>
           </div>
-          <p className="text-sm text-text-secondary mt-1">{event.description}</p>
+          {event.description && (
+            <p className="text-sm text-text-secondary mt-1">{event.description}</p>
+          )}
           <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
-            <span className="flex items-center gap-1">
-              <RiCalendarLine size={14} />
-              {new Date(event.date).toLocaleDateString("ru-RU", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </span>
-            <span className="flex items-center gap-1">
-              <RiMapPinLine size={14} />
-              {event.location}
-            </span>
+            {event.date && (
+              <span className="flex items-center gap-1">
+                <RiCalendarLine size={14} />
+                {new Date(event.date).toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+            )}
+            {event.location && (
+              <span className="flex items-center gap-1">
+                <RiMapPinLine size={14} />
+                {event.location}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap w-full sm:w-auto">
@@ -331,9 +199,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               </div>
 
               {/* Photo Grid */}
-              {event.photoCount > 0 ? (
+              {photos.length > 0 ? (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {demoPhotos.map((photo) => (
+                  {photos.slice(0, 12).map((photo: { id: string }, index: number) => (
                     <div
                       key={photo.id}
                       className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center group relative overflow-hidden cursor-pointer"
@@ -343,7 +211,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                         <RiEyeLine size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       <span className="absolute bottom-1 right-1 text-[10px] text-gray-400">
-                        #{photo.index}
+                        #{index + 1}
                       </span>
                     </div>
                   ))}
@@ -355,9 +223,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 </div>
               )}
 
-              {event.photoCount > 12 && (
+              {(event.photoCount || 0) > 12 && (
                 <p className="text-center text-xs text-text-secondary">
-                  Показано 12 из {event.photoCount.toLocaleString("ru-RU")} фото
+                  Показано 12 из {(event.photoCount || 0).toLocaleString("ru-RU")} фото
                 </p>
               )}
             </div>
@@ -393,7 +261,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               )}
 
               <div className="space-y-2">
-                {demoMembers.map((m) => (
+                {(members as { id: string; name: string | null; email: string; role: string }[]).map((m) => (
                   <Card
                     key={m.id}
                     className="flex items-center justify-between py-3 px-4"
@@ -414,6 +282,11 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     </Badge>
                   </Card>
                 ))}
+                {(members as unknown[]).length === 0 && (
+                  <p className="text-center text-sm text-text-secondary py-8">
+                    {t("no_members")}
+                  </p>
+                )}
               </div>
             </div>
           </TabPanel>
@@ -422,25 +295,34 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {!isPhotographer && (
             <TabPanel>
               <div className="space-y-6">
-                <Card className="p-5">
-                  <h3 className="text-sm font-semibold mb-4">Поиски и скачивания</h3>
-                  <LineChart
-                    data={chartData}
-                    index="date"
-                    categories={["searches", "downloads"]}
-                    colors={["blue", "green"]}
-                    yAxisWidth={40}
-                    className="h-64"
-                  />
-                </Card>
+                {chartData.length > 0 ? (
+                  <Card className="p-5">
+                    <h3 className="text-sm font-semibold mb-4">Поиски и скачивания</h3>
+                    <LineChart
+                      data={chartData}
+                      index="date"
+                      categories={["searches", "downloads"]}
+                      colors={["blue", "green"]}
+                      yAxisWidth={40}
+                      className="h-64"
+                    />
+                  </Card>
+                ) : (
+                  <Card className="p-5">
+                    <div className="text-center py-8">
+                      <RiBarChart2Line size={32} className="text-text-secondary mx-auto mb-2" />
+                      <p className="text-sm text-text-secondary">{ta("no_data")}</p>
+                    </div>
+                  </Card>
+                )}
 
                 <Card className="p-5">
                   <h3 className="text-sm font-semibold mb-4">Воронка</h3>
                   <div className="flex items-center justify-between gap-2 sm:gap-6 sm:justify-start">
                     {[
-                      { label: "Посетители", value: event.participants + event.searches },
-                      { label: "Искали фото", value: event.searches },
-                      { label: "Скачали", value: event.downloads },
+                      { label: "Посетители", value: (event.participants || 0) + (event.searches || 0) },
+                      { label: "Искали фото", value: event.searches || 0 },
+                      { label: "Скачали", value: event.downloads || 0 },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-2 sm:gap-4">
                         <div className="text-center">
@@ -473,7 +355,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   </div>
                   <div>
                     <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
-                    <Textarea defaultValue={event.description} rows={3} />
+                    <Textarea defaultValue={event.description || ""} rows={3} />
                   </div>
                 </Card>
 
@@ -503,11 +385,11 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     <>
                       <div>
                         <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
-                        <NumberInput defaultValue={event.pricePerPhoto} className="w-40" />
+                        <NumberInput defaultValue={event.pricePerPhoto || 0} className="w-40" />
                       </div>
                       <div>
                         <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
-                        <NumberInput defaultValue={event.packageDiscount} className="w-40" />
+                        <NumberInput defaultValue={event.packageDiscount || 0} className="w-40" />
                       </div>
                     </>
                   )}

@@ -42,21 +42,6 @@ const ACTION_COLORS: Record<string, "green" | "gray" | "red" | "blue" | "violet"
   payment: "green",
 };
 
-const DEMO_AUDIT = {
-  total: 86,
-  entries: [
-    { id: "a1", action: "create", entityType: "event", entityId: "e7abc123", details: { title: "Выпускной НИШ 2026" }, userName: "Камила Бектурганова", userEmail: "kamila.b@mail.ru", ipAddress: "178.89.42.11", createdAt: "2026-04-05T16:12:00Z" },
-    { id: "a2", action: "payment", entityType: "order", entityId: "ord45def", details: { amount: 4500, currency: "KZT", photos: 3 }, userName: "Нурлан Абдыкаримов", userEmail: "nurlan.a@gmail.com", ipAddress: "95.56.78.22", createdAt: "2026-04-05T15:48:00Z" },
-    { id: "a3", action: "role_change", entityType: "user", entityId: "u6bcd890", details: { from: "photographer", to: "owner" }, userName: "Ислам Жапанов", userEmail: "islam@baspen.kz", ipAddress: "185.120.1.5", createdAt: "2026-04-05T14:30:00Z" },
-    { id: "a4", action: "update", entityType: "event", entityId: "e1abc456", details: { field: "isPublished", value: true }, userName: "Айбек Касымов", userEmail: "aibek@marathon.kz", ipAddress: "178.89.55.10", createdAt: "2026-04-05T13:15:00Z" },
-    { id: "a5", action: "login", entityType: "user", entityId: "u2def789", details: { provider: "google" }, userName: "Дана Сериккызы", userEmail: "dana.s@gmail.com", ipAddress: "91.220.12.88", createdAt: "2026-04-05T12:00:00Z" },
-    { id: "a6", action: "delete", entityType: "photo", entityId: "ph9012ab", details: { reason: "duplicate" }, userName: "Максим Ли", userEmail: "max.li@photo.kz", ipAddress: "185.120.3.14", createdAt: "2026-04-05T11:22:00Z" },
-    { id: "a7", action: "create", entityType: "subscription", entityId: "sub34cd5", details: { plan: "Pro", amount: 9900 }, userName: "Арман Сагинтаев", userEmail: "arman.s@run.kz", ipAddress: "178.89.61.33", createdAt: "2026-04-05T10:05:00Z" },
-    { id: "a8", action: "plan_change", entityType: "plan", entityId: "p2efg678", details: { field: "priceMonthly", from: 7900, to: 9900 }, userName: "Ислам Жапанов", userEmail: "islam@baspen.kz", ipAddress: "185.120.1.5", createdAt: "2026-04-04T18:40:00Z" },
-    { id: "a9", action: "payment", entityType: "order", entityId: "ord78hij", details: { amount: 12000, currency: "KZT", photos: 8 }, userName: "Алия Темирова", userEmail: "aliya.t@mail.ru", ipAddress: "95.56.90.44", createdAt: "2026-04-04T17:10:00Z" },
-    { id: "a10", action: "create", entityType: "event", entityId: "e6klm012", details: { title: "Свадьба — Нурлан & Аида" }, userName: "Асель Нурланова", userEmail: "assel.n@gmail.com", ipAddress: "178.89.33.77", createdAt: "2026-04-04T15:50:00Z" },
-  ],
-};
 
 type AuditEntry = {
   id: string;
@@ -124,8 +109,7 @@ export function AuditPage() {
   const [action, setAction] = useState("");
   const [entityType, setEntityType] = useState("");
 
-  const { data: apiData } = useAdminAudit({ page, action, entityType });
-  const data = apiData ?? DEMO_AUDIT;
+  const { data } = useAdminAudit({ page, action, entityType });
   const totalPages = data ? Math.ceil(data.total / 50) : 1;
 
   return (

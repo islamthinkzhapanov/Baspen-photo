@@ -22,21 +22,6 @@ import { InviteModal } from "./InviteModal";
 
 const ROLES = ["super_admin", "user"] as const;
 
-const DEMO_USERS = {
-  total: 48,
-  users: [
-    { id: "u1", name: "Ислам Жапанов", email: "islam@baspen.kz", role: "super_admin", status: "active", eventCount: 12, createdAt: "2025-11-10T10:00:00Z" },
-    { id: "u2", name: "Айбек Касымов", email: "aibek@marathon.kz", role: "user", status: "active", eventCount: 8, createdAt: "2025-12-01T09:00:00Z" },
-    { id: "u3", name: "Дана Сериккызы", email: "dana.s@gmail.com", role: "user", status: "invited", eventCount: 0, createdAt: "2026-01-15T11:00:00Z" },
-    { id: "u4", name: "Максим Ли", email: "max.li@photo.kz", role: "user", status: "active", eventCount: 14, createdAt: "2026-01-20T08:30:00Z" },
-    { id: "u5", name: "Асель Нурланова", email: "assel.n@gmail.com", role: "user", status: "active", eventCount: 7, createdAt: "2026-02-05T12:00:00Z" },
-    { id: "u6", name: "Тимур Ахметов", email: "timur.a@corp.kz", role: "user", status: "invited", eventCount: 0, createdAt: "2026-02-18T14:00:00Z" },
-    { id: "u7", name: "Камила Бектурганова", email: "kamila.b@mail.ru", role: "user", status: "active", eventCount: 9, createdAt: "2026-03-01T10:00:00Z" },
-    { id: "u8", name: "Руслан Омаров", email: "ruslan.o@baspen.kz", role: "super_admin", status: "active", eventCount: 12, createdAt: "2025-11-10T10:00:00Z" },
-    { id: "u9", name: "Мадина Жумабаева", email: "madina.zh@gmail.com", role: "user", status: "active", eventCount: 2, createdAt: "2026-03-10T16:00:00Z" },
-    { id: "u10", name: "Арман Сагинтаев", email: "arman.s@run.kz", role: "user", status: "active", eventCount: 6, createdAt: "2026-03-15T09:00:00Z" },
-  ],
-};
 
 type User = {
   id: string;
@@ -56,8 +41,7 @@ export function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
 
-  const { data: apiData } = useAdminUsers({ page, search, role: roleFilter });
-  const data = apiData ?? DEMO_USERS;
+  const { data } = useAdminUsers({ page, search, role: roleFilter });
   const updateRole = useUpdateUserRole();
   const resendInvite = useResendInvite();
 

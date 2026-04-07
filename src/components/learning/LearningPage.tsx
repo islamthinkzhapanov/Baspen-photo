@@ -14,8 +14,6 @@ import {
 } from "@remixicon/react";
 import { Card, Badge } from "@tremor/react";
 
-// --- Demo data ---
-
 type ModuleStatus = "completed" | "in_progress" | "locked";
 
 const modules: {
@@ -26,76 +24,7 @@ const modules: {
   durationMin: number;
   status: ModuleStatus;
   lessons: { title: string; done: boolean }[];
-}[] = [
-  {
-    id: 1,
-    title: "Начало работы",
-    description: "Регистрация, создание первого проекта и настройка профиля",
-    icon: RiBookOpenLine,
-    durationMin: 5,
-    status: "completed",
-    lessons: [
-      { title: "Регистрация и вход", done: true },
-      { title: "Интерфейс дашборда", done: true },
-      { title: "Создание первого проекта", done: true },
-    ],
-  },
-  {
-    id: 2,
-    title: "Загрузка фотографий",
-    description: "Как загружать фото через браузер и настроить автозагрузку с камеры",
-    icon: RiUploadLine,
-    durationMin: 8,
-    status: "completed",
-    lessons: [
-      { title: "Загрузка через браузер", done: true },
-      { title: "Bulk-загрузка (drag & drop)", done: true },
-      { title: "API-ключи для камеры", done: true },
-      { title: "Автоматическая обработка", done: true },
-    ],
-  },
-  {
-    id: 3,
-    title: "Распознавание лиц",
-    description: "Как работает поиск по лицу и стартовому номеру для участников",
-    icon: RiCameraLine,
-    durationMin: 6,
-    status: "in_progress",
-    lessons: [
-      { title: "Как работает CompreFace", done: true },
-      { title: "Оптимальные условия съёмки", done: true },
-      { title: "Поиск по номеру на нагруднике", done: false },
-    ],
-  },
-  {
-    id: 4,
-    title: "Продажа фото",
-    description: "Настройка цен, водяных знаков и получение оплаты",
-    icon: RiBarChart2Line,
-    durationMin: 10,
-    status: "locked",
-    lessons: [
-      { title: "Модели монетизации", done: false },
-      { title: "Настройка цен и пакетов", done: false },
-      { title: "Водяные знаки", done: false },
-      { title: "Подключение Kaspi Pay", done: false },
-    ],
-  },
-  {
-    id: 5,
-    title: "Дистрибуция",
-    description: "QR-коды, виджеты, спонсоры и брендированные рамки",
-    icon: RiShareLine,
-    durationMin: 7,
-    status: "locked",
-    lessons: [
-      { title: "QR-код для мероприятия", done: false },
-      { title: "Виджет для сайта", done: false },
-      { title: "Спонсорские блоки", done: false },
-      { title: "Брендированные рамки для шеринга", done: false },
-    ],
-  },
-];
+}[] = [];
 
 const statusConfig: Record<
   ModuleStatus,
