@@ -18,7 +18,11 @@ RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
 RUN python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 
 # Pre-download InsightFace antelopev2 model (ResNet-100, more accurate than buffalo_l)
-RUN python -c "from insightface.app import FaceAnalysis; app = FaceAnalysis(name='antelopev2', allowed_modules=['detection', 'recognition'], providers=['CPUExecutionProvider']); app.prepare(ctx_id=-1, det_size=(640,640))"
+RUN python -c "import os, zipfile, urllib.request; \
+d = os.path.expanduser('~/.insightface/models'); os.makedirs(d, exist_ok=True); \
+z = os.path.join(d, 'antelopev2.zip'); \
+urllib.request.urlretrieve('https://github.com/deepinsight/insightface/releases/download/v0.7/antelopev2.zip', z); \
+zipfile.ZipFile(z).extractall(d); os.remove(z); print('antelopev2 downloaded')"
 
 COPY . .
 
