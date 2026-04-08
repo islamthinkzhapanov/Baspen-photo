@@ -57,7 +57,7 @@ async function detectFaces(imageBuffer: Buffer): Promise<FaceResult[]> {
   const formData = new FormData();
   formData.append(
     "file",
-    new Blob([new Uint8Array(imageBuffer)]),
+    new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" }),
     "photo.jpg"
   );
 
