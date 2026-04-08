@@ -238,20 +238,18 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const { data: analytics } = useEventAnalytics(eventId);
 
   // Initialize settings state from event data
-  useEffect(() => {
-    if (event && !settingsInitialized) {
-      setSettingsTitle(event.title);
-      setSettingsSlug(event.slug);
-      setSettingsDescription(event.description || "");
-      setFreeDownloadToggle(!!event.settings?.freeDownload);
-      setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
-      setWatermarkToggle(event.settings?.watermarkEnabled !== false);
-      setSettingsPrice(event.settings?.pricePerPhoto || 0);
-      setSettingsDiscount(event.settings?.packageDiscount || 0);
-      setBibSearchToggle(!!event.settings?.bibSearchEnabled);
-      setSettingsInitialized(true);
-    }
-  }, [event, settingsInitialized]);
+  if (event && !settingsInitialized) {
+    setSettingsTitle(event.title);
+    setSettingsSlug(event.slug);
+    setSettingsDescription(event.description || "");
+    setFreeDownloadToggle(!!event.settings?.freeDownload);
+    setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
+    setWatermarkToggle(event.settings?.watermarkEnabled !== false);
+    setSettingsPrice(event.settings?.pricePerPhoto || 0);
+    setSettingsDiscount(event.settings?.packageDiscount || 0);
+    setBibSearchToggle(!!event.settings?.bibSearchEnabled);
+    setSettingsInitialized(true);
+  }
 
   const settingsDirty = settingsInitialized && event ? (
     settingsTitle !== event.title ||
