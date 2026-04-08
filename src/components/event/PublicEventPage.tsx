@@ -71,6 +71,7 @@ export function PublicEventPage({
   const [bibNumber, setBibNumber] = useState(["", "", "", ""]);
   const bibRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
   // --- Real search state ---
@@ -124,6 +125,7 @@ export function PublicEventPage({
   };
 
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
+  const isFreeDownload = !!event.settings?.freeDownload;
 
   // Combine matched photos with realtime new matches
   const searchResults: SearchPhoto[] = numberSearchQuery
@@ -246,7 +248,7 @@ export function PublicEventPage({
             <div className="flex gap-2">
               {likedCount > 0 && (
                 <Button size="xs" icon={RiDownloadLine}>
-                  Купить выбранные ({likedCount})
+                  {isFreeDownload ? t("download_selected") : t("buy_selected")} ({likedCount})
                 </Button>
               )}
               <Button variant="secondary" size="xs" icon={RiDownloadLine}>
@@ -335,7 +337,7 @@ export function PublicEventPage({
               <div className="flex gap-3 justify-center mt-4">
                 {likedCount > 0 && (
                   <Button variant="secondary" size="xs">
-                    {t("selected")} ({likedCount})
+                    {isFreeDownload ? t("download_selected") : t("buy_selected")} ({likedCount})
                   </Button>
                 )}
                 <Button size="xs" icon={RiDownloadLine}>
@@ -355,9 +357,9 @@ export function PublicEventPage({
 
         {/* Lightbox */}
         {lightbox !== null && (
-          <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" style={{ animation: "fade-in 0.2s ease-out" }}>
+          <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" style={{ animation: "fade-in 0.2s ease-out" }} onClick={() => setLightbox(null)}>
             <button
-              onClick={() => setLightbox(null)}
+              onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
               className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
             >
               <RiCloseLine size={20} className="text-white" />
@@ -371,7 +373,7 @@ export function PublicEventPage({
             {/* Nav */}
             {lightbox > 0 && (
               <button
-                onClick={() => setLightbox(lightbox - 1)}
+                onClick={(e) => { e.stopPropagation(); setLightbox(lightbox - 1); }}
                 className="absolute left-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
               >
                 <RiArrowLeftSLine size={24} className="text-white" />
@@ -379,7 +381,7 @@ export function PublicEventPage({
             )}
             {lightbox < searchResults.length - 1 && (
               <button
-                onClick={() => setLightbox(lightbox + 1)}
+                onClick={(e) => { e.stopPropagation(); setLightbox(lightbox + 1); }}
                 className="absolute right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
               >
                 <RiArrowRightSLine size={24} className="text-white" />
@@ -389,6 +391,7 @@ export function PublicEventPage({
             {/* Photo */}
             <div
               className="rounded-xl max-w-3xl w-full mx-8 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
               style={{
                 aspectRatio: `${searchResults[lightbox].width || 4}/${searchResults[lightbox].height || 3}`,
                 maxHeight: "80vh",
@@ -408,7 +411,7 @@ export function PublicEventPage({
             </div>
 
             {/* Bottom actions */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => toggleLike(searchResults[lightbox].id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur text-sm ${
@@ -418,14 +421,43 @@ export function PublicEventPage({
                 }`}
               >
                 {likes.has(searchResults[lightbox].id) ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
-                {likes.has(searchResults[lightbox].id) ? "В избранном" : "В избранное"}
+                {likes.has(searchResults[lightbox].id) ? t("in_favorites") : t("add_to_favorites")}
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur text-sm">
+              <button
+                onClick={async () => {
+                  const photoUrl = `${window.location.origin}/photo/${searchResults[lightbox].id}`;
+                  if (navigator.share) {
+                    try { await navigator.share({ url: photoUrl }); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(photoUrl);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur text-sm"
+              >
                 <RiShareLine size={16} />
-                Поделиться
+                {t("share")}
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white hover:bg-primary-hover text-sm">
-                <RiDownloadLine size={16} />
+              <button
+                disabled={downloading}
+                onClick={async () => {
+                  setDownloading(true);
+                  try {
+                    const res = await fetch(`/api/photos/${searchResults[lightbox].id}/download`);
+                    const { url, filename } = await res.json();
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = filename;
+                    a.target = "_blank";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  } catch {} finally {
+                    setDownloading(false);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white hover:bg-primary-hover text-sm"
+              >
+                {downloading ? <RiLoader4Line size={16} className="animate-spin" /> : <RiDownloadLine size={16} />}
                 {t("download")}
               </button>
             </div>
