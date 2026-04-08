@@ -14,7 +14,8 @@
     "error": "Error",
     "success": "Success",
     "no_data": "No data",
-    "actions": "Actions"
+    "actions": "Actions",
+    "download": "Download"
   },
   "auth": {
     "back_to_home": "Back to home",
@@ -299,6 +300,7 @@
     "enter_number": "Enter number",
     "searching": "Searching your photos...",
     "results": "Found {count} photos",
+    "found_photos": "Tap to view, swipe to browse",
     "no_results": "No photos found",
     "no_face_detected": "No face detected. Please try again",
     "try_different_search": "Try searching by face or a different number",

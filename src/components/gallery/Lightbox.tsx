@@ -101,9 +101,9 @@ export function Lightbox({ photos, currentIndex, onClose, onChange, onDelete }: 
   if (!photo) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={onClose} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 text-white z-10">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 text-white z-10" onClick={(e) => e.stopPropagation()}>
         <span className="text-sm">
           {t("photo_of", {
             current: currentIndex + 1,
@@ -171,6 +171,7 @@ export function Lightbox({ photos, currentIndex, onClose, onChange, onDelete }: 
         src={photo.publicPath || photo.thumbnailPath || ""}
         alt={photo.originalFilename || ""}
         className="max-h-[85vh] max-w-[90vw] object-contain"
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );

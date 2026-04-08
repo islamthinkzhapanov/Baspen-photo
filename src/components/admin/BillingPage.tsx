@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import {
-  RiCheckLine,
   RiImageLine,
   RiCalendarLine,
   RiHardDriveLine,
@@ -22,54 +21,6 @@ const currentPlan = {
   usedPhotos: 12480,
   usedStorageGb: 34,
 };
-
-const plans = [
-  {
-    id: "free",
-    name: "Free",
-    priceMonthly: 0,
-    maxEvents: 2,
-    maxPhotosPerEvent: 500,
-    maxStorageGb: 5,
-    features: [
-      "Базовое распознавание лиц",
-      "Водяные знаки",
-      "Email-поддержка",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    priceMonthly: 9900,
-    maxEvents: 20,
-    maxPhotosPerEvent: 50000,
-    maxStorageGb: 100,
-    popular: true,
-    features: [
-      "Приоритетное распознавание",
-      "Кастомные водяные знаки",
-      "Брендированные рамки",
-      "Аналитика",
-      "Приоритетная поддержка",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    priceMonthly: 29900,
-    maxEvents: -1,
-    maxPhotosPerEvent: 200000,
-    maxStorageGb: 1000,
-    features: [
-      "Безлимит мероприятий",
-      "Кастомный домен",
-      "White-label виджет",
-      "API-доступ",
-      "SLA 99.9%",
-      "Персональный менеджер",
-    ],
-  },
-];
 
 const eventPackages = [
   { photos: "2 500", price: "200 000", perPhoto: "80" },
@@ -153,74 +104,6 @@ export function BillingPage() {
                     style={{ width: `${percent}%` }}
                   />
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Plans */}
-      <div>
-        <h2 className="text-lg font-semibold mb-5">{t("available_plans")}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border rounded-xl overflow-hidden border border-border">
-          {plans.map((plan) => {
-            const isCurrent = plan.name === currentPlan.name;
-            return (
-              <div
-                key={plan.id}
-                className={`bg-bg-primary p-6 flex flex-col ${isCurrent ? "bg-bg-secondary/40" : ""}`}
-              >
-                {/* Plan header */}
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-base font-semibold">{plan.name}</h3>
-                    {plan.popular && (
-                      <span className="text-[10px] uppercase tracking-wider font-medium text-text-secondary border border-border rounded px-1.5 py-0.5">
-                        {t("popular") ?? "Популярный"}
-                      </span>
-                    )}
-                  </div>
-
-                  {plan.priceMonthly === 0 ? (
-                    <p className="text-2xl font-bold">{t("free")}</p>
-                  ) : (
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold tabular-nums">
-                        {plan.priceMonthly.toLocaleString("ru-RU")}
-                      </span>
-                      <span className="text-sm text-text-secondary">{t("kzt_month")}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Limits */}
-                <div className="space-y-1 text-sm text-text-secondary mb-5">
-                  <p>{plan.maxEvents === -1 ? "Безлимит мероприятий" : t("limit_events", { count: plan.maxEvents })}</p>
-                  <p>{t("limit_photos", { count: plan.maxPhotosPerEvent.toLocaleString("ru-RU") })}</p>
-                  <p>{t("limit_storage", { gb: plan.maxStorageGb })}</p>
-                </div>
-
-                {/* Features */}
-                <ul className="space-y-2 text-sm mb-6 flex-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <RiCheckLine size={15} className="text-text-secondary flex-shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                {isCurrent ? (
-                  <button
-                    disabled
-                    className="w-full py-2.5 text-sm font-medium text-text-secondary border border-border rounded-lg cursor-default"
-                  >
-                    {t("current")}
-                  </button>
-                ) : (
-                  <Button className="w-full">{t("select_plan")}</Button>
-                )}
               </div>
             );
           })}
