@@ -3,7 +3,7 @@ ML Service (formerly Bib Detector)
 
 Combines two ML pipelines:
 1. Bib Number Detection: YOLOv8 + EasyOCR
-2. Face Detection: InsightFace buffalo_l (512-dim embeddings)
+2. Face Detection: InsightFace antelopev2 (512-dim embeddings)
 """
 
 import io
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
 
     ocr_reader = easyocr.Reader(["en", "ru"], gpu=False)
 
-    logger.info("Loading InsightFace buffalo_l...")
+    logger.info("Loading InsightFace antelopev2...")
     load_face_model()
 
     logger.info("All models loaded, service ready")
@@ -216,7 +216,7 @@ async def detect_from_url(body: dict):
 
 
 # ──────────────────────────────────────────────
-# Face Detection (InsightFace buffalo_l)
+# Face Detection (InsightFace antelopev2)
 # ──────────────────────────────────────────────
 
 @app.post("/faces/detect")

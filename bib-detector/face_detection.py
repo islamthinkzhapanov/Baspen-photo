@@ -1,12 +1,12 @@
 """
-Face Detection Module using InsightFace buffalo_l
+Face Detection Module using InsightFace antelopev2
 
 Provides face detection + 512-dim embedding extraction.
 Response format matches the old CompreFace API for drop-in replacement.
 """
 
 import logging
-from typing import Optional
+import os
 
 import numpy as np
 from PIL import Image
@@ -16,19 +16,22 @@ logger = logging.getLogger("face-detection")
 # Global model instance (loaded once at startup)
 face_app = None
 
+# Minimum face size in pixels (width or height) — filters out tiny/noisy detections
+MIN_FACE_SIZE = int(os.environ.get("MIN_FACE_SIZE", "40"))
+
 
 def load_model():
-    """Load InsightFace buffalo_l model for CPU inference."""
+    """Load InsightFace antelopev2 model (ResNet-100) for CPU inference."""
     global face_app
     from insightface.app import FaceAnalysis
 
-    logger.info("Loading InsightFace buffalo_l model...")
+    logger.info("Loading InsightFace antelopev2 model...")
     face_app = FaceAnalysis(
-        name="buffalo_l",
+        name="antelopev2",
         providers=["CPUExecutionProvider"],
     )
     face_app.prepare(ctx_id=-1, det_size=(640, 640))
-    logger.info("InsightFace buffalo_l loaded successfully")
+    logger.info("InsightFace antelopev2 loaded successfully")
 
 
 def detect_faces(image: Image.Image, det_prob_threshold: float = 0.5) -> dict:
@@ -69,6 +72,14 @@ def detect_faces(image: Image.Image, det_prob_threshold: float = 0.5) -> dict:
             continue
 
         bbox = face.bbox.astype(int)
+        face_w = int(bbox[2]) - int(bbox[0])
+        face_h = int(bbox[3]) - int(bbox[1])
+
+        # Skip tiny faces — likely noise or distant bystanders
+        if face_w < MIN_FACE_SIZE or face_h < MIN_FACE_SIZE:
+            logger.debug("Skipping small face %dx%d (min=%d)", face_w, face_h, MIN_FACE_SIZE)
+            continue
+
         result.append({
             "box": {
                 "probability": round(score, 4),

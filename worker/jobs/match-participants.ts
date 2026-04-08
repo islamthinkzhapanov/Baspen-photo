@@ -4,7 +4,9 @@ import postgres from "postgres";
 import IORedis from "ioredis";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-const SIMILARITY_THRESHOLD = 0.45;
+const SIMILARITY_THRESHOLD = parseFloat(
+  process.env.FACE_SIMILARITY_THRESHOLD || "0.45"
+);
 
 const dbClient = postgres(process.env.DATABASE_URL!);
 const db = drizzle(dbClient);

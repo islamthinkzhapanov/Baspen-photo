@@ -532,7 +532,9 @@
       "Bash(ssh root@204.168.229.127 \"docker compose -f /home/baspen/app/docker-compose.yml -f /home/baspen/app/docker-compose.prod.yml ps --format 'table {{.Names}}\\\\t{{.Status}}'\")",
       "Bash(ssh root@204.168.229.127 \"docker logs app-app-1 --tail 30\")",
       "Bash(ssh root@204.168.229.127 \"docker logs app-nginx-1 --tail 20\")",
-      "Bash(ssh root@204.168.229.127 \"docker exec app-nginx-1 nginx -s reload && echo 'nginx reloaded'\")"
+      "Bash(ssh root@204.168.229.127 \"docker exec app-nginx-1 nginx -s reload && echo 'nginx reloaded'\")",
+      "Bash(ssh root@204.168.229.127 \"cd /home/baspen/app && git pull origin main && docker compose -f docker-compose.yml -f docker-compose.prod.yml build app && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d app && docker exec app-nginx-1 nginx -s reload && echo '=== Deploy done ===' && docker ps --format 'table {{.Names}}\\\\t{{.Status}}' | grep app\")",
+      "Bash(ssh root@204.168.229.127 \"cd /home/baspen/app && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d && docker exec app-nginx-1 nginx -s reload && echo '=== Done ===' && docker ps --format 'table {{.Names}}\\\\t{{.Status}}' | sort\")"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
