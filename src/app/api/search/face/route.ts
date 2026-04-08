@@ -56,6 +56,24 @@ export async function POST(request: Request) {
   const queryEmbedding = faces[0].embedding;
   const embeddingStr = `[${queryEmbedding.join(",")}]`;
 
+  // DEBUG: log top-10 similarity scores (no threshold filter) to see real distribution
+  const debugTop = await db.execute(sql`
+    SELECT DISTINCT ON (p.id)
+      p.id,
+      p.original_filename,
+      1 - (fe.embedding <=> ${embeddingStr}::vector(512)) AS similarity
+    FROM face_embeddings fe
+    JOIN photos p ON p.id = fe.photo_id
+    WHERE fe.event_id = ${eventId} AND p.status = 'ready'
+    ORDER BY p.id, similarity DESC
+  `);
+  const debugSorted = (debugTop as Array<Record<string, unknown>>)
+    .sort((a, b) => (b.similarity as number) - (a.similarity as number))
+    .slice(0, 20);
+  console.log(`[face-search] TOP-20 scores (no threshold):`,
+    debugSorted.map((r) => `${(r.similarity as number).toFixed(3)} ${r.original_filename}`).join(" | ")
+  );
+
   // pgvector cosine similarity search
   // cosine_distance returns 0..2, similarity = 1 - distance
   const matchedPhotos = await db.execute(sql`

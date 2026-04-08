@@ -154,37 +154,34 @@ export async function processPhoto(job: Job<PhotoJobData>) {
 
   job.updateProgress(60);
 
-  // 4. Detect faces via CompreFace and store embeddings
+  // 4. Detect faces via ML service and store embeddings
+  // If ML service fails, re-throw so BullMQ retries the job (3 attempts configured).
+  // This ensures every photo gets face embeddings — users expect face search to work.
   let facesDetected = 0;
-  try {
-    const faces = await detectFaces(imageBuffer);
-    facesDetected = faces.length;
+  const faces = await detectFaces(imageBuffer);
+  facesDetected = faces.length;
 
-    for (const face of faces) {
-      const embeddingStr = `[${face.embedding.join(",")}]`;
-      const bboxJson = JSON.stringify({
-        x: face.box.x_min,
-        y: face.box.y_min,
-        w: face.box.x_max - face.box.x_min,
-        h: face.box.y_max - face.box.y_min,
-      });
+  for (const face of faces) {
+    const embeddingStr = `[${face.embedding.join(",")}]`;
+    const bboxJson = JSON.stringify({
+      x: face.box.x_min,
+      y: face.box.y_min,
+      w: face.box.x_max - face.box.x_min,
+      h: face.box.y_max - face.box.y_min,
+    });
 
-      await db.execute(sql`
-        INSERT INTO face_embeddings (id, photo_id, event_id, embedding, bbox, confidence, created_at)
-        VALUES (
-          gen_random_uuid(),
-          ${photoId},
-          ${eventId},
-          ${embeddingStr}::vector(512),
-          ${bboxJson}::jsonb,
-          ${face.box.probability},
-          NOW()
-        )
-      `);
-    }
-  } catch (err) {
-    // Face detection failure is non-fatal — photo is still usable
-    console.error(`[process-photo] Face detection failed for ${photoId}:`, err);
+    await db.execute(sql`
+      INSERT INTO face_embeddings (id, photo_id, event_id, embedding, bbox, confidence, created_at)
+      VALUES (
+        gen_random_uuid(),
+        ${photoId},
+        ${eventId},
+        ${embeddingStr}::vector(512),
+        ${bboxJson}::jsonb,
+        ${face.box.probability},
+        NOW()
+      )
+    `);
   }
 
   // 4.5. Detect bib/race numbers via bib-detector microservice
