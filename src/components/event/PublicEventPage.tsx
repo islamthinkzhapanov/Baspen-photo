@@ -271,7 +271,7 @@ export function PublicEventPage({
                   }}
                 >
                   <div
-                    className={`bg-gradient-to-br ${photoColors[index % photoColors.length]} rounded-xl overflow-hidden cursor-pointer relative`}
+                    className="bg-gray-100 rounded-xl overflow-hidden cursor-pointer relative"
                     style={{ aspectRatio: `${photo.width || 4}/${photo.height || 3}` }}
                     onClick={() => setLightbox(index)}
                   >
@@ -388,7 +388,7 @@ export function PublicEventPage({
 
             {/* Photo */}
             <div
-              className={`bg-gradient-to-br ${photoColors[lightbox % photoColors.length]} rounded-xl max-w-3xl w-full mx-8 overflow-hidden`}
+              className="rounded-xl max-w-3xl w-full mx-8 overflow-hidden"
               style={{
                 aspectRatio: `${searchResults[lightbox].width || 4}/${searchResults[lightbox].height || 3}`,
                 maxHeight: "80vh",
