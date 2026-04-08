@@ -54,11 +54,11 @@ echo ""
 echo "=== Services status ==="
 docker compose -f docker-compose.prod.yml ps
 
-# --- 7. Health check (wait up to 30s) ---
+# --- 7. Health check (wait up to 30s via nginx) ---
 echo ">>> Checking app health..."
 for i in $(seq 1 6); do
     sleep 5
-    if curl -sf http://localhost:3000 > /dev/null; then
+    if curl -sfk https://localhost > /dev/null 2>&1 || curl -sf http://localhost > /dev/null 2>&1; then
         echo "App is healthy!"
         break
     fi
