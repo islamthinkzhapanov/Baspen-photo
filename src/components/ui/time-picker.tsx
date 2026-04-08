@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { RiTimeLine } from "@remixicon/react";
 import { cn } from "@/lib/utils";
@@ -15,21 +15,18 @@ const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 const MINUTES = ["00", "15", "30", "45"];
 
 export function TimePicker({ value, onChange, placeholder = "чч:мм" }: TimePickerProps) {
-  const [selectedHour, setSelectedHour] = useState(() =>
-    value ? value.split(":")[0] : ""
-  );
-  const [selectedMinute, setSelectedMinute] = useState(() =>
-    value ? value.split(":")[1] : ""
-  );
+  const parsed = useMemo(() => {
+    if (!value) return { hour: "", minute: "" };
+    const [h, m] = value.split(":");
+    return { hour: h, minute: m };
+  }, [value]);
+  const [selectedHour, setSelectedHour] = useState(parsed.hour);
+  const [selectedMinute, setSelectedMinute] = useState(parsed.minute);
   const hourRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (value) {
-      const [h, m] = value.split(":");
-      setSelectedHour(h);
-      setSelectedMinute(m);
-    }
-  }, [value]);
+  // Sync from prop when value changes externally
+  if (parsed.hour && parsed.hour !== selectedHour) setSelectedHour(parsed.hour);
+  if (parsed.minute && parsed.minute !== selectedMinute) setSelectedMinute(parsed.minute);
 
   function handleSelect(hour: string, minute: string) {
     setSelectedHour(hour);

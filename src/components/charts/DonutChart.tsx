@@ -38,16 +38,15 @@ export function DonutChart({
     label ?? (valueFormatter ? valueFormatter(primaryValue) : String(primaryValue));
 
   // Build arc segments
-  let offset = 0;
-  const segments = data.map((d, i) => {
+  const segments = data.reduce<{ dash: number; gap: number; offset: number; color: string }[]>((acc, d, i) => {
     const value = d[category] as number;
     const pct = total > 0 ? value / total : 0;
     const dash = pct * CIRCUMFERENCE;
     const gap = CIRCUMFERENCE - dash;
-    const seg = { dash, gap, offset, color: hex[i % hex.length] };
-    offset += dash;
-    return seg;
-  });
+    const currentOffset = acc.length > 0 ? acc[acc.length - 1].offset + acc[acc.length - 1].dash : 0;
+    acc.push({ dash, gap, offset: currentOffset, color: hex[i % hex.length] });
+    return acc;
+  }, []);
 
   return (
     <div className={className}>

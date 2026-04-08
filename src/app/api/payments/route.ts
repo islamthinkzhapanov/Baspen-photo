@@ -58,8 +58,8 @@ export async function GET(request: Request) {
   // Fetch order item counts per order
   const orderIds = allOrders.map((o) => o.id);
 
-  let itemCountMap: Record<string, number> = {};
-  let txMap: Record<
+  const itemCountMap: Record<string, number> = {};
+  const txMap: Record<
     string,
     { provider: string; status: string }
   > = {};

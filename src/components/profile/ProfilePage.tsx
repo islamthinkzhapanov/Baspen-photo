@@ -8,7 +8,7 @@ import {
   RiSmartphoneLine,
 } from "@remixicon/react";
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Card,
   TextInput,
@@ -28,19 +28,16 @@ export function ProfilePage() {
     phone: "",
   };
 
-  const [profile, setProfile] = useState(defaultProfile);
-  const initializedRef = useRef(false);
-
-  useEffect(() => {
-    if (session?.user && !initializedRef.current) {
-      setProfile({
+  const [profile, setProfile] = useState(() => {
+    if (session?.user) {
+      return {
         name: session.user.name || "",
         email: session.user.email || "",
         phone: "",
-      });
-      initializedRef.current = true;
+      };
     }
-  }, [session]);
+    return defaultProfile;
+  });
 
   // Password state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
