@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useUploadPhotos } from "@/hooks/usePhotos";
-import { useCallback, useState } from "react";
+import { useUploadPhotos, useProcessingStatus } from "@/hooks/usePhotos";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   RiUploadLine,
@@ -14,21 +14,37 @@ interface Props {
   eventId: string;
 }
 
+type Phase = "idle" | "uploading" | "processing" | "done";
+
 export function PhotoUploadZone({ eventId }: Props) {
   const t = useTranslations("upload");
-  const [uploadProgress, setUploadProgress] = useState<{
-    total: number;
-    done: number;
-  } | null>(null);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
+  const [uploadedCount, setUploadedCount] = useState(0);
+
+  const { data: processingStatus } = useProcessingStatus(
+    eventId,
+    phase === "processing"
+  );
 
   const uploadMutation = useUploadPhotos(eventId, (done, total) => {
     setUploadProgress({ done, total });
   });
 
+  // Transition from processing → done when worker finishes
+  useEffect(() => {
+    if (phase !== "processing" || !processingStatus) return;
+    if (processingStatus.processing === 0) {
+      setPhase("done");
+      setTimeout(() => setPhase("idle"), 4000);
+    }
+  }, [phase, processingStatus]);
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
 
+      setPhase("uploading");
       setUploadProgress({ total: acceptedFiles.length, done: 0 });
 
       uploadMutation.mutate(acceptedFiles, {
@@ -36,11 +52,14 @@ export function PhotoUploadZone({ eventId }: Props) {
           const done = results.filter(
             (r: PromiseSettledResult<unknown>) => r.status === "fulfilled"
           ).length;
+          setUploadedCount(done);
           setUploadProgress({ total: acceptedFiles.length, done });
-          setTimeout(() => setUploadProgress(null), 4000);
+          // Move to processing phase — wait for worker
+          setPhase("processing");
         },
         onError: () => {
-          setUploadProgress(null);
+          setPhase("done");
+          setTimeout(() => setPhase("idle"), 4000);
         },
       });
     },
@@ -55,14 +74,35 @@ export function PhotoUploadZone({ eventId }: Props) {
       "image/webp": [".webp"],
     },
     maxSize: 50 * 1024 * 1024,
-    disabled: uploadMutation.isPending,
+    disabled: phase === "uploading" || phase === "processing",
   });
 
-  const isUploading = uploadMutation.isPending && uploadProgress;
-  const isDone = !uploadMutation.isPending && uploadProgress;
-  const percent = uploadProgress
-    ? Math.round((uploadProgress.done / uploadProgress.total) * 100)
-    : 0;
+  // Compute unified percent
+  let percent = 0;
+  let statusText = "";
+
+  if (phase === "uploading") {
+    percent = uploadProgress.total
+      ? Math.round((uploadProgress.done / uploadProgress.total) * 50)
+      : 0;
+    statusText = t("progress", {
+      current: uploadProgress.done,
+      total: uploadProgress.total,
+    });
+  } else if (phase === "processing" && processingStatus) {
+    const ready = processingStatus.ready + processingStatus.failed;
+    const total = processingStatus.total;
+    percent = total ? 50 + Math.round((ready / total) * 50) : 50;
+    statusText = t("processing_progress", {
+      current: ready,
+      total,
+    });
+  } else if (phase === "done") {
+    percent = 100;
+  }
+
+  const showProgress = phase === "uploading" || phase === "processing";
+  const showDone = phase === "done";
 
   return (
     <div>
@@ -72,7 +112,7 @@ export function PhotoUploadZone({ eventId }: Props) {
           isDragActive
             ? "border-primary bg-primary/5"
             : "border-border hover:border-border-active"
-        } ${uploadMutation.isPending ? "opacity-50 pointer-events-none" : ""}`}
+        } ${phase === "uploading" || phase === "processing" ? "opacity-50 pointer-events-none" : ""}`}
       >
         <input {...getInputProps()} />
         <div className="flex justify-center mb-3">
@@ -83,18 +123,13 @@ export function PhotoUploadZone({ eventId }: Props) {
         <p className="text-xs text-text-secondary mt-1">{t("formats")}</p>
       </div>
 
-      {/* Upload progress bar */}
-      {isUploading && (
+      {/* Unified progress bar */}
+      {showProgress && (
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-text-secondary">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span>
-                {t("progress", {
-                  current: uploadProgress.done,
-                  total: uploadProgress.total,
-                })}
-              </span>
+              <span>{statusText}</span>
             </div>
             <span className="text-xs text-text-secondary tabular-nums font-medium">
               {percent}%
@@ -102,7 +137,7 @@ export function PhotoUploadZone({ eventId }: Props) {
           </div>
           <div className="h-2 bg-border rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -110,15 +145,15 @@ export function PhotoUploadZone({ eventId }: Props) {
       )}
 
       {/* Upload result */}
-      {isDone && (
+      {showDone && (
         <div className="mt-3 flex items-center gap-2 text-sm">
-          {uploadProgress.done === uploadProgress.total ? (
+          {uploadedCount === uploadProgress.total ? (
             <RiCheckboxCircleLine size={16} className="text-green-600" />
           ) : (
             <RiCloseCircleLine size={16} className="text-red-600" />
           )}
           {t("progress", {
-            current: uploadProgress.done,
+            current: uploadedCount,
             total: uploadProgress.total,
           })}
         </div>

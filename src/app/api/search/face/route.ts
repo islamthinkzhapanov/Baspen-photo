@@ -6,7 +6,7 @@ import { detectFaces } from "@/lib/face-detection/client";
 import { nanoid } from "nanoid";
 
 const SIMILARITY_THRESHOLD = parseFloat(
-  process.env.FACE_SIMILARITY_THRESHOLD || "0.25"
+  process.env.FACE_SIMILARITY_THRESHOLD || "0.30"
 );
 const MAX_RESULTS = 200;
 

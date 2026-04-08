@@ -278,7 +278,8 @@
     "uploaded": "Загружено",
     "failed": "Ошибка загрузки",
     "progress": "{current} из {total}",
-    "processing": "Обработка..."
+    "processing": "Обработка...",
+    "processing_progress": "Обработка {current} из {total}"
   },
   "gallery": {
     "all_photos": "Все фото",

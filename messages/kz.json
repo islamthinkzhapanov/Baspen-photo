@@ -258,7 +258,8 @@
     "uploaded": "Жүктелді",
     "failed": "Жүктеу қатесі",
     "progress": "{total} ішінен {current}",
-    "processing": "Өңделуде..."
+    "processing": "Өңделуде...",
+    "processing_progress": "{total} ішінен {current} өңделді"
   },
   "gallery": {
     "all_photos": "Барлық фото",

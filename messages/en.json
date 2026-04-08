@@ -275,7 +275,8 @@
     "uploaded": "Uploaded",
     "failed": "Upload failed",
     "progress": "{current} of {total}",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "processing_progress": "Processing {current} of {total}"
   },
   "gallery": {
     "all_photos": "All photos",

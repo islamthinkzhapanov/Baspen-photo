@@ -37,6 +37,7 @@ services:
       - S3_SECRET_KEY=${MINIO_SECRET_KEY}
       - S3_BUCKET=baspen-photos
       - S3_PUBLIC_URL=${S3_PUBLIC_URL}
+      - S3_PUBLIC_ENDPOINT=https://mytime.kz
       - S3_REGION=us-east-1
       - ML_SERVICE_URL=http://ml-service:8001
       - BIB_DETECTOR_URL=http://ml-service:8001

@@ -18,7 +18,7 @@ import {
   RiCheckboxFill,
 } from "@remixicon/react";
 import { useEvent } from "@/hooks/useEvents";
-import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos, useProcessingStatus } from "@/hooks/usePhotos";
+import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos } from "@/hooks/usePhotos";
 import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
 
 interface Photo {
@@ -280,40 +280,6 @@ function Pagination({
   );
 }
 
-/* ─── Processing Status Bar ─── */
-
-function ProcessingBar({ eventId }: { eventId: string }) {
-  const t = useTranslations("photographer");
-  const { data: status } = useProcessingStatus(eventId);
-
-  if (!status || status.processing === 0) return null;
-
-  const percent = Math.round(((status.ready + status.failed) / status.total) * 100);
-
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl text-sm">
-      <RiLoader4Line size={16} className="text-primary animate-spin shrink-0" />
-      <span className="text-text-secondary">
-        {t("processing_status", {
-          ready: status.ready,
-          total: status.total,
-        })}
-      </span>
-      <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      {status.failed > 0 && (
-        <span className="text-xs text-red-500">
-          {status.failed} {t("failed")}
-        </span>
-      )}
-    </div>
-  );
-}
-
 /* ─── Delete Confirmation Modal ─── */
 
 function DeleteConfirmModal({
@@ -526,9 +492,6 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
       <div className="space-y-4">
         {/* Upload zone */}
         <PhotoUploadZone eventId={eventId} />
-
-        {/* Processing status */}
-        <ProcessingBar eventId={eventId} />
 
         {/* Photo count + actions */}
         {readyPhotos.length > 0 && (
