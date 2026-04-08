@@ -28,6 +28,10 @@ fi
 echo ">>> Restarting services..."
 docker compose -f docker-compose.prod.yml up -d
 
+# Reload nginx to pick up new app container IP
+echo ">>> Reloading nginx..."
+docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload 2>/dev/null || true
+
 # --- 4. Apply any new migrations ---
 echo ">>> Applying database migrations..."
 for migration in "$PROJECT_DIR"/drizzle/migrations/*.sql; do
@@ -54,16 +58,16 @@ echo ""
 echo "=== Services status ==="
 docker compose -f docker-compose.prod.yml ps
 
-# --- 7. Health check (wait up to 30s via nginx) ---
+# --- 7. Health check (wait up to 60s via nginx) ---
 echo ">>> Checking app health..."
 for i in $(seq 1 6); do
-    sleep 5
+    sleep 10
     if curl -sfk https://localhost > /dev/null 2>&1 || curl -sf http://localhost > /dev/null 2>&1; then
         echo "App is healthy!"
         break
     fi
     if [ "$i" -eq 6 ]; then
-        echo "WARNING: App health check failed after 30s"
+        echo "WARNING: App health check failed after 60s"
         docker compose -f docker-compose.prod.yml logs --tail=20 app
         exit 1
     fi
