@@ -17,7 +17,10 @@ logger = logging.getLogger("face-detection")
 face_app = None
 
 # Minimum face size in pixels (width or height) — filters out tiny/noisy detections
-MIN_FACE_SIZE = int(os.environ.get("MIN_FACE_SIZE", "40"))
+MIN_FACE_SIZE = int(os.environ.get("MIN_FACE_SIZE", "20"))
+
+# Minimum detection confidence (0.0–1.0) — lower = more faces but more noise
+DET_PROB_THRESHOLD = float(os.environ.get("DET_PROB_THRESHOLD", "0.3"))
 
 
 def load_model():
@@ -35,7 +38,7 @@ def load_model():
     logger.info("InsightFace antelopev2 loaded successfully")
 
 
-def detect_faces(image: Image.Image, det_prob_threshold: float = 0.5) -> dict:
+def detect_faces(image: Image.Image, det_prob_threshold: float = DET_PROB_THRESHOLD) -> dict:
     """
     Detect faces in a PIL image and return embeddings.
 
