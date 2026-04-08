@@ -54,16 +54,21 @@ echo ""
 echo "=== Services status ==="
 docker compose -f docker-compose.prod.yml ps
 
-# --- 7. Health check ---
+# --- 7. Health check (wait up to 30s) ---
 echo ">>> Checking app health..."
-sleep 5
-if curl -sf http://localhost:3000 > /dev/null; then
-    echo "App is healthy!"
-else
-    echo "WARNING: App health check failed"
-    docker compose -f docker-compose.prod.yml logs --tail=20 app
-    exit 1
-fi
+for i in $(seq 1 6); do
+    sleep 5
+    if curl -sf http://localhost:3000 > /dev/null; then
+        echo "App is healthy!"
+        break
+    fi
+    if [ "$i" -eq 6 ]; then
+        echo "WARNING: App health check failed after 30s"
+        docker compose -f docker-compose.prod.yml logs --tail=20 app
+        exit 1
+    fi
+    echo "  Waiting... (attempt $i/6)"
+done
 
 echo ""
 echo "=== Update complete! ==="
