@@ -305,6 +305,8 @@
     "no_face_detected": "No face detected. Please try again",
     "try_different_search": "Try searching by face or a different number",
     "download_all": "Download all",
+    "download_your_photos": "Download your photos",
+    "selected": "Selected",
     "powered_by": "Powered by Baspen",
     "camera_error": "Camera access denied. Please allow access and try again",
     "retry": "Retry",
