@@ -2,10 +2,9 @@ name: CI/CD
 
 on:
   push:
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   lint:
@@ -13,16 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
 
@@ -31,7 +25,9 @@ jobs:
     needs: lint
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
