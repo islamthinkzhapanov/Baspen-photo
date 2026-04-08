@@ -5,7 +5,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { detectFaces } from "@/lib/face-detection/client";
 import { nanoid } from "nanoid";
 
-const SIMILARITY_THRESHOLD = 0.25;
+const SIMILARITY_THRESHOLD = 0.45;
 const MAX_RESULTS = 200;
 
 /**
@@ -52,8 +52,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // Use first detected face embedding for search
-  const queryEmbedding = faces[0].embedding;
+  // Use the largest detected face (most likely the selfie subject, not background faces)
+  const bestFace = faces.reduce((largest, face) => {
+    const area = (face.box.x_max - face.box.x_min) * (face.box.y_max - face.box.y_min);
+    const largestArea = (largest.box.x_max - largest.box.x_min) * (largest.box.y_max - largest.box.y_min);
+    return area > largestArea ? face : largest;
+  });
+  const queryEmbedding = bestFace.embedding;
   const embeddingStr = `[${queryEmbedding.join(",")}]`;
 
   // DEBUG: log top-10 similarity scores (no threshold filter) to see real distribution

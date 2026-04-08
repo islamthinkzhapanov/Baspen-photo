@@ -77,7 +77,7 @@ def detect_faces(image: Image.Image, det_prob_threshold: float = 0.5) -> dict:
                 "x_max": int(bbox[2]),
                 "y_max": int(bbox[3]),
             },
-            "embedding": face.embedding.tolist(),
+            "embedding": (face.embedding / np.linalg.norm(face.embedding)).tolist(),
         })
 
     return {"result": result}
