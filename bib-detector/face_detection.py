@@ -28,6 +28,7 @@ def load_model():
     logger.info("Loading InsightFace antelopev2 model...")
     face_app = FaceAnalysis(
         name="antelopev2",
+        allowed_modules=["detection", "recognition"],
         providers=["CPUExecutionProvider"],
     )
     face_app.prepare(ctx_id=-1, det_size=(640, 640))

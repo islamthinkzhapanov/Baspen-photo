@@ -18,7 +18,7 @@ RUN python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"
 RUN python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 
 # Pre-download InsightFace antelopev2 model (ResNet-100, more accurate than buffalo_l)
-RUN python -c "from insightface.app import FaceAnalysis; FaceAnalysis(name='antelopev2', providers=['CPUExecutionProvider'])"
+RUN python -c "from insightface.app import FaceAnalysis; app = FaceAnalysis(name='antelopev2', allowed_modules=['detection', 'recognition'], providers=['CPUExecutionProvider']); app.prepare(ctx_id=-1, det_size=(640,640))"
 
 COPY . .
 
