@@ -57,7 +57,7 @@ export function BillingPage() {
   ];
 
   return (
-    <div className="space-y-10 max-w-5xl">
+    <div className="space-y-10">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display">{t("title")}</h1>

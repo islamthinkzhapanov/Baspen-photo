@@ -395,7 +395,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   };
 
   return (
-    <div className="max-w-[1000px] w-full">
+    <div className="w-full">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm mb-4">
         <Link
