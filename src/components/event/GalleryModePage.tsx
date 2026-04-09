@@ -10,6 +10,7 @@ import {
   RiLoader4Line,
   RiErrorWarningLine,
   RiCheckboxCircleLine,
+  RiCheckLine,
   RiFolder3Line,
   RiContactsLine,
 } from "@remixicon/react";
@@ -370,7 +371,13 @@ export function GalleryModePage({
                     disabled={isDownloading}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
                   >
-                    <RiDownloadLine size={16} />
+                    {isDownloading ? (
+                      <RiLoader4Line size={16} className="animate-spin" />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
+                        <RiCheckLine size={13} />
+                      </span>
+                    )}
                     {isDownloading ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
                   </button>
                   <button
