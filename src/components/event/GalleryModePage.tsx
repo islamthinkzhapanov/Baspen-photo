@@ -207,28 +207,15 @@ export function GalleryModePage({
   const downloadAsZip = useCallback(async (photoIds: string[]) => {
     setIsDownloading(true);
     try {
-      const JSZip = (await import("jszip")).default;
-      const zip = new JSZip();
-
-      const results = await Promise.all(
-        photoIds.map(async (id) => {
-          const res = await fetch(`/api/photos/${id}/download`);
-          const data = await res.json();
-          return { id, url: data.url, filename: data.filename };
-        })
-      );
-
-      await Promise.all(
-        results.map(async ({ url, filename }, i) => {
-          const resp = await fetch(url);
-          const blob = await resp.blob();
-          zip.file(`${i + 1}_${filename}`, blob);
-        })
-      );
-
-      const content = await zip.generateAsync({ type: "blob" });
+      const res = await fetch("/api/photos/download-zip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: photoIds }),
+      });
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(content);
+      a.href = URL.createObjectURL(blob);
       a.download = `${event.title || "photos"}.zip`;
       a.click();
       URL.revokeObjectURL(a.href);
@@ -238,6 +225,21 @@ export function GalleryModePage({
       setIsDownloading(false);
     }
   }, [event.title]);
+
+  async function downloadIndividually(ids: string[]) {
+    for (const id of ids) {
+      const res = await fetch(`/api/photos/${id}/download`);
+      const data = await res.json();
+      const a = document.createElement("a");
+      a.href = data.url;
+      a.download = data.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Small delay so browser doesn't block multiple downloads
+      await new Promise((r) => setTimeout(r, 300));
+    }
+  }
 
   function handleDownloadAll() {
     const ids = filteredPhotos.map((p) => p.id);
@@ -249,15 +251,8 @@ export function GalleryModePage({
     if (ids.length > 10) {
       downloadAsZip(ids);
     } else {
-      // Download individually
-      ids.forEach(async (id) => {
-        const res = await fetch(`/api/photos/${id}/download`);
-        const data = await res.json();
-        const a = document.createElement("a");
-        a.href = data.url;
-        a.download = data.filename;
-        a.click();
-      });
+      setIsDownloading(true);
+      downloadIndividually(ids).finally(() => setIsDownloading(false));
     }
   }
 
