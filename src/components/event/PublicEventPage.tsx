@@ -109,7 +109,16 @@ export function PublicEventPage({
     enabled: !!sessionToken && view === "results",
   });
 
-  const event = eventData?.event || {
+  // Show loading state while data is fetching to prevent flash of wrong UI
+  if (!eventData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <RiLoader4Line size={32} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const event = eventData.event || {
     title: "",
     description: "",
     date: null,
@@ -121,7 +130,7 @@ export function PublicEventPage({
 
   // Gallery mode: render separate component
   const displayMode = event.settings?.displayMode as string | undefined;
-  if (displayMode === "gallery" && eventData) {
+  if (displayMode === "gallery") {
     return <GalleryModePage slug={slug} embedConfig={embedConfig} eventData={eventData} />;
   }
 
