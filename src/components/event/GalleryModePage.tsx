@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import {
   RiCameraLine,
   RiHashtag,
@@ -136,16 +136,16 @@ export function GalleryModePage({
     filteredPhotos = filteredPhotos.filter((p) => likes.has(p.id));
   }
 
-  const searchPhotos = filteredPhotos.map(toSearchPhoto);
+  const searchPhotos = useMemo(() => filteredPhotos.map(toSearchPhoto), [filteredPhotos]);
 
-  function toggleLike(id: string) {
+  const toggleLike = useCallback((id: string) => {
     setLikes((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }
+  }, []);
 
   async function handleFaceSearch(blob: Blob) {
     setShowCamera(false);

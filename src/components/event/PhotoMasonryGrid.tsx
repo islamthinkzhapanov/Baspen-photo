@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   RiImageLine,
   RiCheckLine,
@@ -13,7 +14,7 @@ interface PhotoMasonryGridProps {
   onPhotoClick: (index: number) => void;
 }
 
-export function PhotoMasonryGrid({
+export const PhotoMasonryGrid = memo(function PhotoMasonryGrid({
   photos,
   likes,
   onToggleLike,
@@ -32,6 +33,7 @@ export function PhotoMasonryGrid({
             style={{
               opacity: 0,
               animation: `masonry-fade-in 0.5s ease-out ${staggerDelay}ms forwards`,
+              willChange: "opacity, transform",
             }}
           >
             <div
@@ -43,6 +45,8 @@ export function PhotoMasonryGrid({
                 <img
                   src={imgSrc}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
               ) : (
@@ -81,4 +85,4 @@ export function PhotoMasonryGrid({
       })}
     </div>
   );
-}
+});
