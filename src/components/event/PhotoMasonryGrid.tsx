@@ -4,7 +4,7 @@ import {
   RiImageLine,
   RiHeartLine,
   RiHeartFill,
-  RiShareLine,
+  RiDownloadLine,
 } from "@remixicon/react";
 import type { SearchPhoto } from "@/hooks/useSearch";
 
@@ -61,20 +61,22 @@ export function PhotoMasonryGrid({
                   e.stopPropagation();
                   onToggleLike(photo.id);
                 }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors ${
                   isLiked
                     ? "bg-red-500 text-white"
                     : "bg-white/90 text-text-secondary hover:text-red-500"
                 }`}
               >
-                {isLiked ? <RiHeartFill size={14} /> : <RiHeartLine size={14} />}
+                {isLiked ? <RiHeartFill size={18} /> : <RiHeartLine size={18} />}
               </button>
-              <button
+              <a
+                href={photo.watermarked_path || photo.thumbnail_path || ""}
+                download
                 onClick={(e) => e.stopPropagation()}
-                className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-text-secondary hover:text-primary transition-colors"
+                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-text-secondary hover:text-primary transition-colors"
               >
-                <RiShareLine size={14} />
-              </button>
+                <RiDownloadLine size={18} />
+              </a>
             </div>
           </div>
         );

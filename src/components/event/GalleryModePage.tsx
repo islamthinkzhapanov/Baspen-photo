@@ -10,6 +10,7 @@ import {
   RiLoader4Line,
   RiErrorWarningLine,
   RiHeartLine,
+  RiHeartFill,
   RiFolder3Line,
   RiContactsLine,
 } from "@remixicon/react";
@@ -290,7 +291,7 @@ export function GalleryModePage({
                 onClick={() => setShowCamera(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
               >
-                <img src="/icon-face.svg" alt="" className="w-4 h-4 invert" />
+                <img src="/icon-face.svg" alt="" className="w-4 h-4 brightness-0 invert" />
                 {t("search_by_face")}
               </button>
               {bibSearchEnabled && (
@@ -300,6 +301,14 @@ export function GalleryModePage({
                 >
                   <img src="/icon-number.svg" alt="" className="w-4 h-4" />
                   {t("search_by_number")}
+                </button>
+              )}
+              {likes.size > 0 && (
+                <button
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
+                >
+                  <RiHeartFill size={16} />
+                  {t("download_favorites")}: {likes.size}
                 </button>
               )}
               <button
