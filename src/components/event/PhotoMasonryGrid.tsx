@@ -33,7 +33,6 @@ export const PhotoMasonryGrid = memo(function PhotoMasonryGrid({
             style={{
               opacity: 0,
               animation: `masonry-fade-in 0.5s ease-out ${staggerDelay}ms forwards`,
-              willChange: "opacity, transform",
             }}
           >
             <div
