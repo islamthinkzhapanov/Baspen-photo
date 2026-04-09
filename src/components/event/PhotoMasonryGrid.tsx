@@ -75,7 +75,7 @@ export const PhotoMasonryGrid = memo(function PhotoMasonryGrid({
               className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
                 isSelected
                   ? "bg-blue-500 text-white shadow-md"
-                  : "border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100"
+                  : "border-2 border-white/80 bg-black/30 text-white opacity-0 group-hover:opacity-100"
               }`}
             >
               {isSelected && <RiCheckLine size={18} />}
