@@ -39,8 +39,10 @@ services:
       - S3_PUBLIC_URL=${S3_PUBLIC_URL}
       - S3_PUBLIC_ENDPOINT=https://mytime.kz
       - S3_REGION=us-east-1
-      - ML_SERVICE_URL=http://ml-service:8001
-      - BIB_DETECTOR_URL=http://ml-service:8001
+      - BIB_DETECTOR_URL=http://bib-detector:8001
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AUTH_SECRET=${AUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
@@ -67,22 +69,24 @@ services:
       - S3_BUCKET=baspen-photos
       - S3_PUBLIC_URL=${S3_PUBLIC_URL}
       - S3_REGION=us-east-1
-      - ML_SERVICE_URL=http://ml-service:8001
-      - BIB_DETECTOR_URL=http://ml-service:8001
+      - BIB_DETECTOR_URL=http://bib-detector:8001
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     depends_on:
       - postgres
       - redis
       - minio
-      - ml-service
+      - bib-detector
     deploy:
       replicas: 2
       resources:
         limits:
           memory: 2G
 
-  # --- PostgreSQL + pgvector ---
+  # --- PostgreSQL ---
   postgres:
-    image: pgvector/pgvector:pg16
+    image: postgres:16-alpine
     restart: always
     environment:
       POSTGRES_DB: baspen
@@ -120,14 +124,14 @@ services:
     volumes:
       - miniodata:/data
 
-  # --- ML Service (Face Detection + Bib Detection) ---
-  ml-service:
+  # --- Bib Number Detection ---
+  bib-detector:
     build: ./bib-detector
     restart: always
     deploy:
       resources:
         limits:
-          memory: 6G
+          memory: 4G
 
   # --- Backup (pg_dump daily) ---
   backup:

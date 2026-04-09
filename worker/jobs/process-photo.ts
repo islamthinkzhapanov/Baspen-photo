@@ -8,7 +8,11 @@ import {
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { sql } from "drizzle-orm";
-import { detectFaces } from "../../src/lib/face-detection/client";
+import {
+  indexFaces,
+  getCollectionId,
+  searchFaces,
+} from "../../src/lib/rekognition/client";
 import {
   generateWatermarkedImage,
   type WatermarkConfig,
@@ -45,7 +49,7 @@ const bucket = process.env.S3_BUCKET || "baspen-photos";
  * 2. Extract metadata (width, height, EXIF)
  * 3. Generate thumbnail (400px)
  * 4. Generate watermarked version (using event settings)
- * 5. Detect faces via CompreFace → store embeddings in pgvector
+ * 5. Detect faces via AWS Rekognition → store face IDs
  * 6. Update photo status to "ready"
  */
 export async function processPhoto(job: Job<PhotoJobData>) {
@@ -154,31 +158,30 @@ export async function processPhoto(job: Job<PhotoJobData>) {
 
   job.updateProgress(60);
 
-  // 4. Detect faces via ML service and store embeddings
-  // If ML service fails, re-throw so BullMQ retries the job (3 attempts configured).
-  // This ensures every photo gets face embeddings — users expect face search to work.
+  // 4. Index faces via AWS Rekognition and store face IDs
+  // If Rekognition fails, re-throw so BullMQ retries the job (3 attempts configured).
+  // This ensures every photo gets indexed — users expect face search to work.
   let facesDetected = 0;
-  const faces = await detectFaces(imageBuffer);
-  facesDetected = faces.length;
+  const collectionId = getCollectionId(eventId);
+  const indexedFaces = await indexFaces(
+    collectionId,
+    imageBuffer,
+    `photo-${photoId}`
+  );
+  facesDetected = indexedFaces.length;
 
-  for (const face of faces) {
-    const embeddingStr = `[${face.embedding.join(",")}]`;
-    const bboxJson = JSON.stringify({
-      x: face.box.x_min,
-      y: face.box.y_min,
-      w: face.box.x_max - face.box.x_min,
-      h: face.box.y_max - face.box.y_min,
-    });
+  for (const face of indexedFaces) {
+    const bboxJson = JSON.stringify(face.boundingBox);
 
     await db.execute(sql`
-      INSERT INTO face_embeddings (id, photo_id, event_id, embedding, bbox, confidence, created_at)
+      INSERT INTO face_embeddings (id, photo_id, event_id, rekognition_face_id, bbox, confidence, created_at)
       VALUES (
         gen_random_uuid(),
         ${photoId},
         ${eventId},
-        ${embeddingStr}::vector(512),
+        ${face.faceId},
         ${bboxJson}::jsonb,
-        ${face.box.probability},
+        ${face.confidence},
         NOW()
       )
     `);

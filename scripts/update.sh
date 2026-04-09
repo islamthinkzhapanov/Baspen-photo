@@ -20,7 +20,7 @@ if git diff HEAD~1 --name-only | grep -q '^bib-detector/'; then
     echo ">>> bib-detector changed, rebuilding all services..."
     docker compose -f docker-compose.prod.yml build
 else
-    echo ">>> Rebuilding app services only (ml-service unchanged)..."
+    echo ">>> Rebuilding app services only (bib-detector unchanged)..."
     docker compose -f docker-compose.prod.yml build app worker
 fi
 

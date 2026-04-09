@@ -284,7 +284,7 @@ export const photos = pgTable(
   ]
 );
 
-// --- Face Embeddings (pgvector) ---
+// --- Face Embeddings (AWS Rekognition) ---
 export const faceEmbeddings = pgTable(
   "face_embeddings",
   {
@@ -295,7 +295,7 @@ export const faceEmbeddings = pgTable(
     eventId: uuid("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    // embedding vector(512) -- added via raw SQL migration for pgvector
+    rekognitionFaceId: text("rekognition_face_id"),
     bbox: jsonb("bbox").$type<{
       x: number;
       y: number;
@@ -316,7 +316,7 @@ export const participants = pgTable(
     eventId: uuid("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    // selfie_embedding vector(512) -- managed via raw SQL (pgvector)
+    rekognitionFaceId: text("rekognition_face_id"),
     bibNumber: text("bib_number"),
     phone: text("phone"),
     email: text("email"),

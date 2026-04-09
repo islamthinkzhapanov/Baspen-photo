@@ -157,7 +157,7 @@ docker compose -f docker-compose.prod.yml exec -T minio \
 # --- 9. Health check ---
 echo ""
 echo "=== Checking services ==="
-services=("postgres" "redis" "minio" "app" "worker" "nginx" "compreface" "bib-detector")
+services=("postgres" "redis" "minio" "app" "worker" "nginx" "bib-detector")
 for svc in "${services[@]}"; do
     status=$(docker compose -f docker-compose.prod.yml ps --format '{{.Status}}' "$svc" 2>/dev/null || echo "not found")
     echo "  $svc: $status"

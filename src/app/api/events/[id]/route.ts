@@ -5,6 +5,7 @@ import { events } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { updateEventSchema } from "@/lib/validators/event";
 import { getEventAccess, requireEventRole } from "@/lib/event-auth";
+import { deleteCollection, getCollectionId } from "@/lib/rekognition/client";
 
 // GET /api/events/[id]
 export async function GET(
@@ -93,6 +94,13 @@ export async function DELETE(
   const { denied } = await requireEventRole(id, session.user.id, "owner");
   if (denied) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Delete Rekognition collection before removing event from DB
+  try {
+    await deleteCollection(getCollectionId(id));
+  } catch (err) {
+    console.error("[events] Failed to delete Rekognition collection:", err);
   }
 
   const [deleted] = await db

@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { photos, events, participants } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
-import { detectFaces } from "@/lib/face-detection/client";
+import {
+  searchFacesByImage,
+  indexFaces,
+  getCollectionId,
+  deleteFaces,
+} from "@/lib/rekognition/client";
 import { nanoid } from "nanoid";
 
-const SIMILARITY_THRESHOLD = parseFloat(
-  process.env.FACE_SIMILARITY_THRESHOLD || "0.27"
-);
 const MAX_RESULTS = 200;
 
 /**
@@ -17,6 +19,10 @@ const MAX_RESULTS = 200;
  * - file: selfie image
  * - eventId: event UUID
  * - sessionToken: optional existing session
+ *
+ * Uses AWS Rekognition:
+ * 1. searchFacesByImage to find matching photo faces
+ * 2. indexFaces to store the selfie in the collection for future match-participants
  *
  * Returns matched photos sorted by similarity.
  */
@@ -43,69 +49,78 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  // Detect face in selfie via CompreFace
   const imageBuffer = Buffer.from(await file.arrayBuffer());
-  const faces = await detectFaces(imageBuffer);
+  const collectionId = getCollectionId(eventId);
 
-  if (faces.length === 0) {
-    return NextResponse.json(
-      { error: "no_face_detected", photos: [] },
-      { status: 200 }
+  // Search the collection for faces matching the selfie
+  let faceMatches;
+  try {
+    faceMatches = await searchFacesByImage(
+      collectionId,
+      imageBuffer,
+      MAX_RESULTS
     );
+  } catch (err: unknown) {
+    // Rekognition throws if no face detected in the image
+    if (
+      err instanceof Error &&
+      err.message.includes("no faces in the image")
+    ) {
+      return NextResponse.json(
+        { error: "no_face_detected", photos: [] },
+        { status: 200 }
+      );
+    }
+    throw err;
   }
 
-  // Use the largest detected face (most likely the selfie subject, not background faces)
-  const bestFace = faces.reduce((largest, face) => {
-    const area = (face.box.x_max - face.box.x_min) * (face.box.y_max - face.box.y_min);
-    const largestArea = (largest.box.x_max - largest.box.x_min) * (largest.box.y_max - largest.box.y_min);
-    return area > largestArea ? face : largest;
-  });
-  const queryEmbedding = bestFace.embedding;
-  const embeddingStr = `[${queryEmbedding.join(",")}]`;
-
-  // DEBUG: log top-10 similarity scores (no threshold filter) to see real distribution
-  const debugTop = await db.execute(sql`
-    SELECT DISTINCT ON (p.id)
-      p.id,
-      p.original_filename,
-      1 - (fe.embedding <=> ${embeddingStr}::vector(512)) AS similarity
-    FROM face_embeddings fe
-    JOIN photos p ON p.id = fe.photo_id
-    WHERE fe.event_id = ${eventId} AND p.status = 'ready'
-    ORDER BY p.id, similarity DESC
-  `);
-  const debugSorted = (debugTop as Array<Record<string, unknown>>)
-    .sort((a, b) => (b.similarity as number) - (a.similarity as number))
-    .slice(0, 20);
-  console.log(`[face-search] TOP-20 scores (no threshold):`,
-    debugSorted.map((r) => `${(r.similarity as number).toFixed(3)} ${r.original_filename}`).join(" | ")
+  // Filter to only photo faces (not other selfies)
+  const photoMatches = faceMatches.filter((m) =>
+    m.externalImageId.startsWith("photo-")
   );
 
-  // pgvector cosine similarity search
-  // cosine_distance returns 0..2, similarity = 1 - distance
-  const matchedPhotos = await db.execute(sql`
-    SELECT DISTINCT ON (p.id)
-      p.id,
-      p.thumbnail_path,
-      p.thumbnail_avif_path,
-      p.watermarked_path,
-      p.placeholder,
-      p.width,
-      p.height,
-      p.created_at,
-      1 - (fe.embedding <=> ${embeddingStr}::vector(512)) AS similarity
-    FROM face_embeddings fe
-    JOIN photos p ON p.id = fe.photo_id
-    WHERE fe.event_id = ${eventId}
-      AND p.status = 'ready'
-      AND 1 - (fe.embedding <=> ${embeddingStr}::vector(512)) > ${SIMILARITY_THRESHOLD}
-    ORDER BY p.id, similarity DESC
-    LIMIT ${MAX_RESULTS}
-  `);
+  // Extract photoIds from externalImageId ("photo-{uuid}")
+  const photoIdSet = new Map<string, number>();
+  for (const match of photoMatches) {
+    const photoId = match.externalImageId.replace("photo-", "");
+    const existing = photoIdSet.get(photoId);
+    // Keep highest similarity per photo
+    if (!existing || match.similarity > existing) {
+      photoIdSet.set(photoId, match.similarity);
+    }
+  }
 
-  // Sort by similarity descending
-  const sortedPhotos = (matchedPhotos as Array<Record<string, unknown>>)
-    .sort((a, b) => (b.similarity as number) - (a.similarity as number));
+  // Fetch photo details for matched photos
+  let sortedPhotos: Record<string, unknown>[] = [];
+  if (photoIdSet.size > 0) {
+    const photoIds = Array.from(photoIdSet.keys());
+    const placeholders = photoIds.map((id) => sql`${id}::uuid`);
+
+    const matchedPhotos = await db.execute(sql`
+      SELECT
+        p.id,
+        p.thumbnail_path,
+        p.thumbnail_avif_path,
+        p.watermarked_path,
+        p.placeholder,
+        p.width,
+        p.height,
+        p.created_at
+      FROM photos p
+      WHERE p.id IN (${sql.join(placeholders, sql`, `)})
+        AND p.status = 'ready'
+    `);
+
+    sortedPhotos = (matchedPhotos as unknown as Record<string, unknown>[]).map(
+      (p) => ({
+        ...p,
+        similarity: photoIdSet.get(p.id as string) ?? 0,
+      })
+    );
+    sortedPhotos.sort(
+      (a, b) => (b.similarity as number) - (a.similarity as number)
+    );
+  }
 
   // Create or update participant session
   let sessionToken = formData.get("sessionToken") as string | null;
@@ -128,12 +143,31 @@ export async function POST(request: Request) {
       })
       .returning();
 
-    // Store selfie embedding via raw SQL
-    await db.execute(sql`
-      UPDATE participants
-      SET selfie_embedding = ${embeddingStr}::vector(512)
-      WHERE id = ${participant.id}
-    `);
+    // Index the selfie into the collection so match-participants can find it later.
+    // If participant already has a face indexed, delete old one first.
+    if (participant.rekognitionFaceId) {
+      try {
+        await deleteFaces(collectionId, [participant.rekognitionFaceId]);
+      } catch {
+        // Old face may not exist — ignore
+      }
+    }
+
+    const indexedFaces = await indexFaces(
+      collectionId,
+      imageBuffer,
+      `selfie-${participant.id}`
+    );
+
+    if (indexedFaces.length > 0) {
+      // Store the largest face's Rekognition ID on the participant
+      const selfieFaceId = indexedFaces[0].faceId;
+      await db.execute(sql`
+        UPDATE participants
+        SET rekognition_face_id = ${selfieFaceId}
+        WHERE id = ${participant.id}
+      `);
+    }
 
     // Cache matches
     if (sortedPhotos.length > 0) {

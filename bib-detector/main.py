@@ -1,26 +1,20 @@
 """
-ML Service (formerly Bib Detector)
+Bib Detector Service
 
-Combines two ML pipelines:
-1. Bib Number Detection: YOLOv8 + EasyOCR
-2. Face Detection: InsightFace antelopev2 (512-dim embeddings)
+Bib Number Detection: YOLOv8 + EasyOCR
 """
 
 import io
 import re
 import logging
 from contextlib import asynccontextmanager
-from typing import Optional
 
 import numpy as np
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from face_detection import load_model as load_face_model, detect_faces
-
-logger = logging.getLogger("ml-service")
+logger = logging.getLogger("bib-detector")
 logging.basicConfig(level=logging.INFO)
 
 # Global model instances (loaded once at startup)
@@ -43,9 +37,6 @@ async def lifespan(app: FastAPI):
 
     ocr_reader = easyocr.Reader(["en", "ru"], gpu=False)
 
-    logger.info("Loading InsightFace antelopev2...")
-    load_face_model()
-
     logger.info("All models loaded, service ready")
     yield
 
@@ -53,8 +44,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Baspen ML Service",
-    version="2.0.0",
+    title="Baspen Bib Detector",
+    version="3.0.0",
     lifespan=lifespan,
 )
 
@@ -216,57 +207,13 @@ async def detect_from_url(body: dict):
 
 
 # ──────────────────────────────────────────────
-# Face Detection (InsightFace antelopev2)
-# ──────────────────────────────────────────────
-
-@app.post("/faces/detect")
-async def faces_detect(file: UploadFile = File(...)):
-    """Detect faces and return 512-dim embeddings."""
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
-
-    try:
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
-
-    result = detect_faces(image)
-    return result
-
-
-@app.post("/faces/detect-url")
-async def faces_detect_from_url(body: dict):
-    """Detect faces from an image URL."""
-    import httpx
-
-    url = body.get("url")
-    if not url:
-        raise HTTPException(status_code=400, detail="Missing 'url' field")
-
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            image = Image.open(io.BytesIO(resp.content)).convert("RGB")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to fetch image: {e}")
-
-    result = detect_faces(image)
-    return result
-
-
-# ──────────────────────────────────────────────
 # Health Check
 # ──────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
     """Health check endpoint."""
-    from face_detection import face_app
-
     return {
         "status": "ok",
         "models_loaded": yolo_model is not None and ocr_reader is not None,
-        "face_model_loaded": face_app is not None,
     }

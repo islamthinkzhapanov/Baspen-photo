@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { events, eventMembers } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { createEventSchema } from "@/lib/validators/event";
+import { createCollection, getCollectionId } from "@/lib/rekognition/client";
 
 // GET /api/events — list user's events
 export async function GET() {
@@ -90,6 +91,13 @@ export async function POST(request: Request) {
       ownerId: session.user.id,
     })
     .returning();
+
+  // Create Rekognition face collection for this event
+  try {
+    await createCollection(getCollectionId(event.id));
+  } catch (err) {
+    console.error("[events] Failed to create Rekognition collection:", err);
+  }
 
   // Add creator as event member with owner role
   await db.insert(eventMembers).values({
