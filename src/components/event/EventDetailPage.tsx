@@ -29,6 +29,8 @@ import {
   RiCloseLine,
   RiHashtag,
   RiFolderLine,
+  RiCameraLine,
+  RiGridLine,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
@@ -182,6 +184,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [photoSalesToggle, setPhotoSalesToggle] = useState(false);
   const [watermarkToggle, setWatermarkToggle] = useState(true);
   const [bibSearchToggle, setBibSearchToggle] = useState(false);
+  const [displayMode, setDisplayMode] = useState<"search" | "gallery">("search");
   const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
   const [settingsSlug, setSettingsSlug] = useState<string | undefined>();
   const [settingsDescription, setSettingsDescription] = useState<string | undefined>();
@@ -229,6 +232,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     setSettingsPrice(event.settings?.pricePerPhoto || 0);
     setSettingsDiscount(event.settings?.packageDiscount || 0);
     setBibSearchToggle(!!event.settings?.bibSearchEnabled);
+    setDisplayMode(event.settings?.displayMode ?? "search");
     setSettingsInitialized(true);
   }
 
@@ -240,7 +244,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     watermarkToggle !== (event.settings?.watermarkEnabled !== false) ||
     settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
     settingsDiscount !== (event.settings?.packageDiscount || 0) ||
-    bibSearchToggle !== !!event.settings?.bibSearchEnabled
+    bibSearchToggle !== !!event.settings?.bibSearchEnabled ||
+    displayMode !== (event.settings?.displayMode ?? "search")
   ) : false;
 
   function handleSaveSettings() {
@@ -255,6 +260,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           pricePerPhoto: photoSalesToggle ? settingsPrice : 0,
           packageDiscount: photoSalesToggle ? settingsDiscount : 0,
           bibSearchEnabled: bibSearchToggle,
+          displayMode,
         },
       },
       {
@@ -832,6 +838,46 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   <div>
                     <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
                     <Textarea value={settingsDescription ?? (event.description || "")} onChange={(e) => setSettingsDescription(e.target.value)} rows={3} />
+                  </div>
+                </Card>
+
+                <Card className="p-5 space-y-4">
+                  <h3 className="text-sm font-semibold">{t("display_mode")}</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode("search")}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+                        displayMode === "search"
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-white hover:border-primary/30"
+                      }`}
+                    >
+                      <RiCameraLine className={`w-6 h-6 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`} />
+                      <span className={`text-sm font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}>
+                        {t("display_mode_search")}
+                      </span>
+                      <span className="text-xs text-text-secondary text-center">
+                        {t("display_mode_search_desc")}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode("gallery")}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+                        displayMode === "gallery"
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-white hover:border-primary/30"
+                      }`}
+                    >
+                      <RiGridLine className={`w-6 h-6 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`} />
+                      <span className={`text-sm font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}>
+                        {t("display_mode_gallery")}
+                      </span>
+                      <span className="text-xs text-text-secondary text-center">
+                        {t("display_mode_gallery_desc")}
+                      </span>
+                    </button>
                   </div>
                 </Card>
 
