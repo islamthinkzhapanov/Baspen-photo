@@ -22,7 +22,7 @@ export function PhotoMasonryGrid({
   onPhotoClick,
 }: PhotoMasonryGridProps) {
   return (
-    <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
+    <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
       {photos.map((photo, index) => {
         const isLiked = likes.has(photo.id);
         const staggerDelay = Math.min(index * 40, 400);
@@ -30,14 +30,14 @@ export function PhotoMasonryGrid({
         return (
           <div
             key={photo.id}
-            className="mb-3 break-inside-avoid group relative"
+            className="mb-4 break-inside-avoid group relative"
             style={{
               opacity: 0,
               animation: `masonry-fade-in 0.5s ease-out ${staggerDelay}ms forwards`,
             }}
           >
             <div
-              className="bg-gray-100 rounded-xl overflow-hidden cursor-pointer relative"
+              className="bg-gray-100 rounded-lg overflow-hidden cursor-pointer relative"
               style={{ aspectRatio: `${photo.width || 4}/${photo.height || 3}` }}
               onClick={() => onPhotoClick(index)}
             >
@@ -45,35 +45,35 @@ export function PhotoMasonryGrid({
                 <img
                   src={imgSrc}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <RiImageLine size={32} className="text-white/30" />
+                  <RiImageLine size={32} className="text-gray-300" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             </div>
 
-            <div className="absolute bottom-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleLike(photo.id);
                 }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors ${
                   isLiked
                     ? "bg-red-500 text-white"
-                    : "bg-white/80 text-text-secondary hover:text-red-500"
+                    : "bg-white/90 text-text-secondary hover:text-red-500"
                 }`}
               >
-                {isLiked ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
+                {isLiked ? <RiHeartFill size={14} /> : <RiHeartLine size={14} />}
               </button>
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-text-secondary hover:text-primary"
+                className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-text-secondary hover:text-primary transition-colors"
               >
-                <RiShareLine size={16} />
+                <RiShareLine size={14} />
               </button>
             </div>
           </div>

@@ -12,7 +12,6 @@ import {
   RiHeartLine,
   RiFolder3Line,
   RiContactsLine,
-  RiArrowDownDoubleLine,
 } from "@remixicon/react";
 import { useFaceSearch, type SearchPhoto } from "@/hooks/useSearch";
 import { useRealtimeMatches } from "@/hooks/useRealtimeMatches";
@@ -213,7 +212,7 @@ export function GalleryModePage({
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative h-[50vh] md:h-[70vh] overflow-hidden">
+      <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
         {heroImage ? (
           <img
             src={heroImage}
@@ -223,50 +222,41 @@ export function GalleryModePage({
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900" />
         )}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
         {/* Hero Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:px-20 md:pb-10">
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:px-20 md:pb-12">
           <div className="max-w-6xl mx-auto">
             {formattedDate && (
-              <p className="text-white/80 text-xs md:text-[20px] md:leading-6 mb-2 md:mb-3">
+              <p className="text-white/70 text-sm md:text-base font-medium tracking-wide mb-2 md:mb-3">
                 {formattedDate}
               </p>
             )}
-            <h1
-              className="text-white text-2xl md:text-[64px] md:leading-none font-medium tracking-[-1px]"
-              style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif" }}
-            >
+            <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight">
               {event.title}
             </h1>
             {event.description && (
-              <p className="text-white/80 text-xs md:text-[20px] mt-2 md:mt-3">
+              <p className="text-white/70 text-sm md:text-lg mt-2 md:mt-3 max-w-2xl">
                 {event.description}
               </p>
             )}
           </div>
         </div>
-
-        {/* Mobile scroll hint */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:hidden animate-bounce">
-          <RiArrowDownDoubleLine className="w-6 h-6 text-white/70" />
-        </div>
       </div>
 
       {/* Sticky Header with Album Tabs + Actions */}
-      <div className="sticky top-0 z-30 bg-white border-b border-[rgba(0,16,61,0.12)]">
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-4 md:px-20">
-          <div className="flex items-center justify-between h-16 md:h-20">
+          <div className="flex items-center justify-between gap-6">
             {/* Album Tabs */}
-            <div className="flex gap-4 md:gap-5 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1 overflow-x-auto no-scrollbar -mb-px">
               <button
                 onClick={() => { setActiveAlbumId(null); setMobileTab("files"); }}
-                className={`whitespace-nowrap pb-4 md:pb-6 text-sm md:text-[20px] font-medium tracking-[-0.4px] border-b-3 transition-colors ${
+                className={`whitespace-nowrap px-3 py-4 md:py-5 text-sm md:text-[15px] font-medium border-b-2 transition-colors ${
                   activeAlbumId === null
-                    ? "border-[#005ff9] text-[#28303f]"
-                    : "border-transparent text-[rgba(40,48,63,0.6)] hover:text-[#28303f]"
+                    ? "border-primary text-text"
+                    : "border-transparent text-text-secondary hover:text-text"
                 }`}
-                style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
               >
                 {t("all_albums")}
               </button>
@@ -274,54 +264,49 @@ export function GalleryModePage({
                 <button
                   key={album.id}
                   onClick={() => { setActiveAlbumId(album.id); setMobileTab("files"); }}
-                  className={`whitespace-nowrap pb-4 md:pb-6 text-sm md:text-[20px] font-medium tracking-[-0.4px] border-b-3 transition-colors ${
+                  className={`whitespace-nowrap px-3 py-4 md:py-5 text-sm md:text-[15px] font-medium border-b-2 transition-colors ${
                     activeAlbumId === album.id
-                      ? "border-[#005ff9] text-[#28303f]"
-                      : "border-transparent text-[rgba(40,48,63,0.6)] hover:text-[#28303f]"
+                      ? "border-primary text-text"
+                      : "border-transparent text-text-secondary hover:text-text"
                   }`}
-                  style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
                 >
-                  {album.name.toUpperCase()}
+                  {album.name}
                 </button>
               ))}
             </div>
 
             {/* Action Buttons (desktop) */}
-            <div className="hidden md:flex items-center gap-2.5">
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               {searchMode && (
                 <button
                   onClick={clearSearch}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full border border-red-200 bg-red-50 text-red-600 text-[15px] tracking-[-0.3px]"
-                  style={{ fontWeight: 510 }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors"
                 >
                   <RiCloseLine size={16} />
-                  Сбросить поиск
+                  Сбросить
                 </button>
               )}
               <button
                 onClick={() => setShowCamera(true)}
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#005ff9] text-white text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
-                style={{ fontWeight: 510 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
               >
-                <img src="/icon-face.svg" alt="" className="w-[18px] h-[18px] invert" />
+                <img src="/icon-face.svg" alt="" className="w-4 h-4 invert" />
                 {t("search_by_face")}
               </button>
               {bibSearchEnabled && (
                 <button
                   onClick={() => setShowNumberSearch(true)}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full border border-[rgba(0,16,61,0.12)] bg-white text-[#28303f] text-[15px] tracking-[-0.3px] hover:bg-gray-50 transition-colors"
-                  style={{ fontWeight: 510 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <img src="/icon-number.svg" alt="" className="w-[18px] h-[18px]" />
+                  <img src="/icon-number.svg" alt="" className="w-4 h-4" />
                   {t("search_by_number")}
                 </button>
               )}
               <button
-                className="flex items-center gap-1 px-3.5 py-2.5 rounded-full border border-[rgba(0,16,61,0.12)] bg-white text-[#28303f] text-[15px] tracking-[-0.3px] hover:bg-gray-50 transition-colors"
-                style={{ fontWeight: 510 }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
               >
-                {t("download_all_album")}
                 <RiDownloadLine size={16} />
+                {t("download_all_album")}
               </button>
             </div>
           </div>
@@ -368,7 +353,7 @@ export function GalleryModePage({
 
       {/* Photo Grid */}
       {!isSearching && (
-        <div className="max-w-6xl mx-auto px-4 md:px-20 py-6 pb-24 md:pb-6">
+        <div className="max-w-6xl mx-auto px-4 md:px-20 py-8 pb-28 md:pb-8">
           {searchPhotos.length > 0 ? (
             <PhotoMasonryGrid
               photos={searchPhotos}
@@ -392,53 +377,49 @@ export function GalleryModePage({
       )}
 
       {/* Mobile Bottom Tab Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-[rgba(0,16,61,0.12)] md:hidden">
-        <div className="flex items-center justify-around pt-2 pb-1">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-border md:hidden safe-area-bottom">
+        <div className="flex items-center justify-around py-2">
           <button
             onClick={() => { setMobileTab("files"); setSearchMode(false); }}
-            className="flex flex-col items-center gap-1 px-3 py-1"
+            className="flex flex-col items-center gap-0.5 px-4 py-1"
           >
-            <RiFolder3Line size={24} className={mobileTab === "files" ? "text-[#28303f]" : "text-[#28303f]/60"} />
-            <span className={`text-xs ${mobileTab === "files" ? "text-[#28303f]" : "text-[#28303f]/60"}`}>
+            <RiFolder3Line size={22} className={mobileTab === "files" ? "text-primary" : "text-text-secondary"} />
+            <span className={`text-[11px] font-medium ${mobileTab === "files" ? "text-primary" : "text-text-secondary"}`}>
               {t("files_tab")}
             </span>
           </button>
           <button
             onClick={() => setShowCamera(true)}
-            className="flex flex-col items-center gap-1 px-3 py-1"
+            className="flex flex-col items-center gap-0.5 px-4 py-1"
           >
-            <RiCameraLine size={24} className="text-[#28303f]/60" />
-            <span className="text-xs text-[#28303f]/60">
+            <RiCameraLine size={22} className="text-text-secondary" />
+            <span className="text-[11px] font-medium text-text-secondary">
               {t("search_by_face")}
             </span>
           </button>
           <button
             onClick={() => setMobileTab("favorites")}
-            className="flex flex-col items-center gap-1 px-3 py-1 relative"
+            className="flex flex-col items-center gap-0.5 px-4 py-1 relative"
           >
-            <RiHeartLine size={24} className={mobileTab === "favorites" ? "text-[#28303f]" : "text-[#28303f]/60"} />
+            <RiHeartLine size={22} className={mobileTab === "favorites" ? "text-primary" : "text-text-secondary"} />
             {likes.size > 0 && (
-              <span className="absolute -top-0.5 right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-0.5 right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
                 {likes.size}
               </span>
             )}
-            <span className={`text-xs ${mobileTab === "favorites" ? "text-[#28303f]" : "text-[#28303f]/60"}`}>
+            <span className={`text-[11px] font-medium ${mobileTab === "favorites" ? "text-primary" : "text-text-secondary"}`}>
               {t("favorites_tab")}
             </span>
           </button>
           <button
             onClick={() => setMobileTab("contacts")}
-            className="flex flex-col items-center gap-1 px-3 py-1"
+            className="flex flex-col items-center gap-0.5 px-4 py-1"
           >
-            <RiContactsLine size={24} className={mobileTab === "contacts" ? "text-[#28303f]" : "text-[#28303f]/60"} />
-            <span className={`text-xs ${mobileTab === "contacts" ? "text-[#28303f]" : "text-[#28303f]/60"}`}>
+            <RiContactsLine size={22} className={mobileTab === "contacts" ? "text-primary" : "text-text-secondary"} />
+            <span className={`text-[11px] font-medium ${mobileTab === "contacts" ? "text-primary" : "text-text-secondary"}`}>
               {t("contacts_tab")}
             </span>
           </button>
-        </div>
-        {/* Home indicator */}
-        <div className="flex justify-center pb-2">
-          <div className="w-[134px] h-[5px] bg-black rounded-full" />
         </div>
       </div>
 
@@ -512,8 +493,7 @@ export function GalleryModePage({
 
               <button
                 onClick={handleNumberSearch}
-                className="w-full py-4 bg-[#005ff9] text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
-                style={{ fontWeight: 510 }}
+                className="w-full py-3.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors"
               >
                 {t("search_by_number")}
               </button>

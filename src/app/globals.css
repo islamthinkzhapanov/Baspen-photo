@@ -405,6 +405,13 @@ body {
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
 
+/* Hide scrollbar for horizontal scroll areas */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Safe area for bottom-docked elements on iOS */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
 /* Smooth scrolling for anchor links */
 html {
   scroll-behavior: smooth;
