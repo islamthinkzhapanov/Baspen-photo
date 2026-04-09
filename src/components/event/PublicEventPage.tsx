@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 
 function fmt(n: number) {
@@ -131,6 +131,21 @@ export function PublicEventPage({
     : [...newPhotos.filter((np) => !matchedPhotos.some((mp) => mp.id === np.id)), ...matchedPhotos];
 
   const searchResults = allSearchResults;
+
+  // Keyboard navigation for lightbox
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (lightbox === null) return;
+    if (e.key === "Escape") setLightbox(null);
+    if (e.key === "ArrowLeft" && lightbox > 0) setLightbox(lightbox - 1);
+    if (e.key === "ArrowRight" && lightbox < searchResults.length - 1) setLightbox(lightbox + 1);
+  }, [lightbox, searchResults.length]);
+
+  useEffect(() => {
+    if (lightbox !== null) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [lightbox, handleKeyDown]);
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -389,9 +404,9 @@ export function PublicEventPage({
               }}
             >
               <div className="w-full h-full flex items-center justify-center relative">
-                {searchResults[lightbox].thumbnail_path ? (
+                {(searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path) ? (
                   <img
-                    src={searchResults[lightbox].thumbnail_path || undefined}
+                    src={searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path || undefined}
                     alt=""
                     className="w-full h-full object-contain"
                   />
