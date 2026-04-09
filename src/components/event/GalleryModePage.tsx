@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   RiCameraLine,
   RiHashtag,
@@ -195,6 +195,72 @@ export function GalleryModePage({
     setSearchError(null);
   }
 
+  // Clear favorites confirmation
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  function clearAllFavorites() {
+    setLikes(new Set());
+    setShowClearConfirm(false);
+  }
+
+  const downloadAsZip = useCallback(async (photoIds: string[]) => {
+    setIsDownloading(true);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      const results = await Promise.all(
+        photoIds.map(async (id) => {
+          const res = await fetch(`/api/photos/${id}/download`);
+          const data = await res.json();
+          return { id, url: data.url, filename: data.filename };
+        })
+      );
+
+      await Promise.all(
+        results.map(async ({ url, filename }, i) => {
+          const resp = await fetch(url);
+          const blob = await resp.blob();
+          zip.file(`${i + 1}_${filename}`, blob);
+        })
+      );
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = `${event.title || "photos"}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [event.title]);
+
+  function handleDownloadAll() {
+    const ids = filteredPhotos.map((p) => p.id);
+    downloadAsZip(ids);
+  }
+
+  function handleDownloadFavorites() {
+    const ids = Array.from(likes);
+    if (ids.length > 10) {
+      downloadAsZip(ids);
+    } else {
+      // Download individually
+      ids.forEach(async (id) => {
+        const res = await fetch(`/api/photos/${id}/download`);
+        const data = await res.json();
+        const a = document.createElement("a");
+        a.href = data.url;
+        a.download = data.filename;
+        a.click();
+      });
+    }
+  }
+
   // Hero image: coverUrl > branding.bannerUrl > first photo thumbnail
   const heroImage =
     event.coverUrl ||
@@ -304,18 +370,30 @@ export function GalleryModePage({
                 </button>
               )}
               {likes.size > 0 && (
-                <button
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
-                >
-                  <RiHeartFill size={16} />
-                  {t("download_favorites")}: {likes.size}
-                </button>
+                <div className="relative group">
+                  <button
+                    onClick={handleDownloadFavorites}
+                    disabled={isDownloading}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    <RiHeartFill size={16} className="text-red-500" />
+                    {isDownloading ? "Скачивание..." : <>{t("download_favorites")}: {likes.size}</>}
+                  </button>
+                  <button
+                    onClick={() => setShowClearConfirm(true)}
+                    className="absolute -right-2 -top-2 w-5 h-5 rounded-full bg-gray-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-700"
+                  >
+                    <RiCloseLine size={14} />
+                  </button>
+                </div>
               )}
               <button
+                onClick={handleDownloadAll}
+                disabled={isDownloading}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
               >
                 <RiDownloadLine size={16} />
-                {t("download_all_album")}
+                {isDownloading ? "Скачивание..." : t("download_all_album")}
               </button>
             </div>
           </div>
@@ -505,6 +583,32 @@ export function GalleryModePage({
                 className="w-full py-3.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors"
               >
                 {t("search_by_number")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear favorites confirmation modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[360px] p-6">
+            <h3 className="text-lg font-semibold mb-2">Сбросить избранное?</h3>
+            <p className="text-sm text-text-secondary mb-6">
+              Вы уверены, что хотите сбросить все выбранные фотографии ({likes.size} шт.)?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={clearAllFavorites}
+                className="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
+              >
+                Сбросить
               </button>
             </div>
           </div>
