@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 function fmt(n: number) {
@@ -10,15 +10,9 @@ function fmt(n: number) {
 import {
   RiCameraLine,
   RiHashtag,
-  RiImageLine,
   RiArrowLeftLine,
   RiDownloadLine,
-  RiShareLine,
-  RiHeartLine,
-  RiHeartFill,
   RiCloseLine,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
   RiLoader4Line,
   RiErrorWarningLine,
 } from "@remixicon/react";
@@ -28,6 +22,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useFaceSearch, type SearchPhoto } from "@/hooks/useSearch";
 import { useRealtimeMatches } from "@/hooks/useRealtimeMatches";
 import { SelfieCamera } from "@/components/selfie/SelfieCamera";
+import { PhotoMasonryGrid } from "@/components/event/PhotoMasonryGrid";
+import { PhotoLightbox } from "@/components/event/PhotoLightbox";
+import { GalleryModePage } from "@/components/event/GalleryModePage";
 
 // Color palette for placeholder photos
 const photoColors = [
@@ -71,7 +68,6 @@ export function PublicEventPage({
   const [bibNumber, setBibNumber] = useState(["", "", "", ""]);
   const bibRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [downloading, setDownloading] = useState(false);
   const [likes, setLikes] = useState<Set<string>>(new Set());
   // --- Real search state ---
   const [matchedPhotos, setMatchedPhotos] = useState<SearchPhoto[]>([]);
@@ -123,6 +119,12 @@ export function PublicEventPage({
     settings: null as Record<string, unknown> | null,
   };
 
+  // Gallery mode: render separate component
+  const displayMode = event.settings?.displayMode as string | undefined;
+  if (displayMode === "gallery" && eventData) {
+    return <GalleryModePage slug={slug} embedConfig={embedConfig} eventData={eventData} />;
+  }
+
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
   const isFreeDownload = !!event.settings?.freeDownload;
   // Combine matched photos with realtime new matches
@@ -131,21 +133,6 @@ export function PublicEventPage({
     : [...newPhotos.filter((np) => !matchedPhotos.some((mp) => mp.id === np.id)), ...matchedPhotos];
 
   const searchResults = allSearchResults;
-
-  // Keyboard navigation for lightbox
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (lightbox === null) return;
-    if (e.key === "Escape") setLightbox(null);
-    if (e.key === "ArrowLeft" && lightbox > 0) setLightbox(lightbox - 1);
-    if (e.key === "ArrowRight" && lightbox < searchResults.length - 1) setLightbox(lightbox + 1);
-  }, [lightbox, searchResults.length]);
-
-  useEffect(() => {
-    if (lightbox !== null) {
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [lightbox, handleKeyDown]);
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -273,68 +260,12 @@ export function PublicEventPage({
           </div>
 
           {/* Masonry Grid */}
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-            {searchResults.map((photo, index) => {
-              const isLiked = likes.has(photo.id);
-              const staggerDelay = Math.min(index * 40, 400);
-              const imgSrc = photo.thumbnail_path;
-              return (
-                <div
-                  key={photo.id}
-                  className="mb-3 break-inside-avoid group relative"
-                  style={{
-                    opacity: 0,
-                    animation: `masonry-fade-in 0.5s ease-out ${staggerDelay}ms forwards`,
-                  }}
-                >
-                  <div
-                    className="bg-gray-100 rounded-xl overflow-hidden cursor-pointer relative"
-                    style={{ aspectRatio: `${photo.width || 4}/${photo.height || 3}` }}
-                    onClick={() => setLightbox(index)}
-                  >
-                    {/* Photo content */}
-                    {imgSrc ? (
-                      <img
-                        src={imgSrc}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <RiImageLine size={32} className="text-white/30" />
-                      </div>
-                    )}
-
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                  </div>
-
-                  {/* Actions */}
-                  <div className="absolute bottom-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLike(photo.id);
-                      }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur ${
-                        isLiked
-                          ? "bg-red-500 text-white"
-                          : "bg-white/80 text-text-secondary hover:text-red-500"
-                      }`}
-                    >
-                      {isLiked ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
-                    </button>
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-text-secondary hover:text-primary"
-                    >
-                      <RiShareLine size={16} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <PhotoMasonryGrid
+            photos={searchResults}
+            likes={likes}
+            onToggleLike={toggleLike}
+            onPhotoClick={setLightbox}
+          />
 
           {/* Purchase CTA */}
           {searchResults.length > 0 && (
@@ -363,111 +294,15 @@ export function PublicEventPage({
 
         {/* Lightbox */}
         {lightbox !== null && (
-          <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" style={{ animation: "fade-in 0.2s ease-out" }} onClick={() => setLightbox(null)}>
-            <button
-              onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
-              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
-            >
-              <RiCloseLine size={20} className="text-white" />
-            </button>
-
-            {/* Counter */}
-            <div className="absolute top-4 left-4 text-white/70 text-sm">
-              {lightbox + 1} / {searchResults.length}
-            </div>
-
-            {/* Nav */}
-            {lightbox > 0 && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setLightbox(lightbox - 1); }}
-                className="absolute left-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
-              >
-                <RiArrowLeftSLine size={24} className="text-white" />
-              </button>
-            )}
-            {lightbox < searchResults.length - 1 && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setLightbox(lightbox + 1); }}
-                className="absolute right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
-              >
-                <RiArrowRightSLine size={24} className="text-white" />
-              </button>
-            )}
-
-            {/* Photo */}
-            <div
-              className="rounded-xl max-w-3xl w-full mx-8 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                aspectRatio: `${searchResults[lightbox].width || 4}/${searchResults[lightbox].height || 3}`,
-                maxHeight: "80vh",
-              }}
-            >
-              <div className="w-full h-full flex items-center justify-center relative">
-                {(searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path) ? (
-                  <img
-                    src={searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path || undefined}
-                    alt=""
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <RiImageLine size={64} className="text-white/20" />
-                )}
-              </div>
-            </div>
-
-            {/* Bottom actions */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => toggleLike(searchResults[lightbox].id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur text-sm ${
-                  likes.has(searchResults[lightbox].id)
-                    ? "bg-red-500 text-white"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                }`}
-              >
-                {likes.has(searchResults[lightbox].id) ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
-                {likes.has(searchResults[lightbox].id) ? t("in_favorites") : t("add_to_favorites")}
-              </button>
-              <button
-                onClick={async () => {
-                  const photoUrl = `${window.location.origin}/photo/${searchResults[lightbox].id}`;
-                  if (navigator.share) {
-                    try { await navigator.share({ url: photoUrl }); } catch {}
-                  } else {
-                    await navigator.clipboard.writeText(photoUrl);
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur text-sm"
-              >
-                <RiShareLine size={16} />
-                {t("share")}
-              </button>
-              <button
-                disabled={downloading}
-                onClick={async () => {
-                  setDownloading(true);
-                  try {
-                    const res = await fetch(`/api/photos/${searchResults[lightbox].id}/download`);
-                    const { url, filename } = await res.json();
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = filename;
-                    a.target = "_blank";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                  } catch {} finally {
-                    setDownloading(false);
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white hover:bg-primary-hover text-sm"
-              >
-                {downloading ? <RiLoader4Line size={16} className="animate-spin" /> : <RiDownloadLine size={16} />}
-                {t("download")}
-              </button>
-            </div>
-          </div>
+          <PhotoLightbox
+            photos={searchResults}
+            currentIndex={lightbox}
+            onClose={() => setLightbox(null)}
+            onNavigate={setLightbox}
+            likes={likes}
+            onToggleLike={toggleLike}
+            isFreeDownload={isFreeDownload}
+          />
         )}
       </div>
     );

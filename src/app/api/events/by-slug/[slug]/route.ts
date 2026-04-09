@@ -72,6 +72,7 @@ export async function GET(
       date: event.date,
       location: event.location,
       branding: event.branding,
+      coverUrl: event.coverUrl,
       settings: event.settings,
       photoCount: event.photoCount,
       geofence: (event as Record<string, unknown>).geofence ?? null,

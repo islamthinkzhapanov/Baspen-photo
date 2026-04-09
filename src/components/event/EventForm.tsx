@@ -15,6 +15,8 @@ import {
   RiDropLine,
   RiShoppingCartLine,
   RiHashtag,
+  RiCameraLine,
+  RiGridLine,
 } from "@remixicon/react";
 
 interface EventFormProps {
@@ -32,6 +34,7 @@ interface EventFormProps {
       pricePerPhoto?: number;
       packageDiscount?: number;
       bibSearchEnabled?: boolean;
+      displayMode?: "search" | "gallery";
     } | null;
   };
 }
@@ -63,6 +66,7 @@ export function EventForm({ event }: EventFormProps) {
   const [pricePerPhoto, setPricePerPhoto] = useState(event?.settings?.pricePerPhoto || 0);
   const [packageDiscount, setPackageDiscount] = useState(event?.settings?.packageDiscount || 0);
   const [bibSearchEnabled, setBibSearchEnabled] = useState(event?.settings?.bibSearchEnabled ?? false);
+  const [displayMode, setDisplayMode] = useState<"search" | "gallery">(event?.settings?.displayMode ?? "search");
 
   function generateSlug(title: string) {
     return title
@@ -98,6 +102,7 @@ export function EventForm({ event }: EventFormProps) {
         pricePerPhoto: photoSalesEnabled ? pricePerPhoto : 0,
         packageDiscount: photoSalesEnabled ? packageDiscount : 0,
         bibSearchEnabled,
+        displayMode,
       },
     };
 
@@ -118,6 +123,49 @@ export function EventForm({ event }: EventFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6 pb-8">
+      {/* Section 0: Display Mode */}
+      <section className="rounded-xl bg-bg-secondary p-5">
+        <label className="block text-sm font-medium text-text mb-3">
+          {t("display_mode")}
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setDisplayMode("search")}
+            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+              displayMode === "search"
+                ? "border-primary bg-primary/5"
+                : "border-border bg-white hover:border-primary/30"
+            }`}
+          >
+            <RiCameraLine className={`w-6 h-6 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`} />
+            <span className={`text-sm font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}>
+              {t("display_mode_search")}
+            </span>
+            <span className="text-xs text-text-secondary text-center">
+              {t("display_mode_search_desc")}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDisplayMode("gallery")}
+            className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+              displayMode === "gallery"
+                ? "border-primary bg-primary/5"
+                : "border-border bg-white hover:border-primary/30"
+            }`}
+          >
+            <RiGridLine className={`w-6 h-6 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`} />
+            <span className={`text-sm font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}>
+              {t("display_mode_gallery")}
+            </span>
+            <span className="text-xs text-text-secondary text-center">
+              {t("display_mode_gallery_desc")}
+            </span>
+          </button>
+        </div>
+      </section>
+
       {/* Section 1: Basic Info */}
       <section className="rounded-xl bg-bg-secondary p-5 space-y-5">
         <div>

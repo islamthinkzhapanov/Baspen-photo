@@ -194,6 +194,7 @@ export const events = pgTable(
       packageDiscount?: number;
       commissionPercent?: number;
       bibSearchEnabled?: boolean;
+      displayMode?: "search" | "gallery";
     }>(),
     geofence: jsonb("geofence").$type<{
       lat: number;
