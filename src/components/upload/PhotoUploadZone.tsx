@@ -88,32 +88,18 @@ export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Pro
     disabled: phase === "uploading" || phase === "processing",
   });
 
-  // Compute unified percent
-  let percent = 0;
-  let statusText = "";
+  // Upload progress: 0-100%
+  const uploadPercent = uploadProgress.total
+    ? Math.round((uploadProgress.done / uploadProgress.total) * 100)
+    : 0;
 
-  if (phase === "uploading") {
-    percent = uploadProgress.total
-      ? Math.round((uploadProgress.done / uploadProgress.total) * 50)
-      : 0;
-    statusText = t("progress", {
-      current: uploadProgress.done,
-      total: uploadProgress.total,
-    });
-  } else if (phase === "processing" && processingStatus) {
+  // Processing progress: 0-100%
+  let processingPercent = 0;
+  if (phase === "processing" && processingStatus) {
     const ready = processingStatus.ready + processingStatus.failed;
     const total = processingStatus.total;
-    percent = total ? 50 + Math.round((ready / total) * 50) : 50;
-    statusText = t("processing_progress", {
-      current: ready,
-      total,
-    });
-  } else if (phase === "done") {
-    percent = 100;
+    processingPercent = total ? Math.round((ready / total) * 100) : 0;
   }
-
-  const showProgress = phase === "uploading" || phase === "processing";
-  const showDone = phase === "done";
 
   return (
     <div>
@@ -149,29 +135,62 @@ export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Pro
         <p className="text-xs text-text-secondary mt-1">{t("formats")}</p>
       </div>
 
-      {/* Unified progress bar */}
-      {showProgress && (
+      {/* Upload progress bar */}
+      {phase === "uploading" && (
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-text-secondary">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span>{statusText}</span>
+              <span>
+                {t("progress", {
+                  current: uploadProgress.done,
+                  total: uploadProgress.total,
+                })}
+              </span>
             </div>
             <span className="text-xs text-text-secondary tabular-nums font-medium">
-              {percent}%
+              {uploadPercent}%
             </span>
           </div>
           <div className="h-2 bg-border rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${percent}%` }}
+              style={{ width: `${uploadPercent}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Processing progress */}
+      {phase === "processing" && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-text-secondary">
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span>
+                {processingStatus
+                  ? t("processing_progress", {
+                      current: processingStatus.ready + processingStatus.failed,
+                      total: processingStatus.total,
+                    })
+                  : t("processing_progress", { current: 0, total: uploadedCount })}
+              </span>
+            </div>
+            <span className="text-xs text-text-secondary tabular-nums font-medium">
+              {processingPercent}%
+            </span>
+          </div>
+          <div className="h-2 bg-border rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${processingPercent}%` }}
             />
           </div>
         </div>
       )}
 
       {/* Upload result */}
-      {showDone && (
+      {phase === "done" && (
         <div className="mt-3 flex items-center gap-2 text-sm">
           {uploadedCount === uploadProgress.total ? (
             <RiCheckboxCircleLine size={16} className="text-green-600" />
