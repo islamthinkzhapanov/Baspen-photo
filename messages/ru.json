@@ -326,7 +326,8 @@
     "return_to_my_photos": "Вернуться к моим фото",
     "new_matches": "Новые совпадения: {count}",
     "new_photos_available": "Доступно новых фото: {count}",
-    "live_updates": "Обновления в реальном времени"
+    "live_updates": "Обновления в реальном времени",
+    "all_photos": "Все фото"
   },
   "share": {
     "title": "Поделиться",
@@ -787,5 +788,18 @@
     "member_since": "Дата регистрации",
     "role": "Роль",
     "notifications": "Уведомления"
+  },
+  "albums": {
+    "all_photos": "Все фото",
+    "unsorted": "Без папки",
+    "create_album": "Новая папка",
+    "create": "Создать",
+    "cancel": "Отмена",
+    "album_name_placeholder": "Название папки",
+    "no_album": "Без папки",
+    "create_new": "Создать новую...",
+    "move_to_album": "В папку",
+    "photos_moved": "Фото перемещены",
+    "delete_album_confirm": "Удалить эту папку? Фото останутся без папки."
   }
 }

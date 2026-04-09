@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       p.width,
       p.height,
       p.created_at,
+      p.album_id,
       pm.similarity
     FROM participant_matches pm
     JOIN participants pt ON pt.id = pm.participant_id

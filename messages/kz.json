@@ -306,7 +306,8 @@
     "return_to_my_photos": "Менің фотоларыма оралу",
     "new_matches": "Жаңа сәйкестіктер: {count}",
     "new_photos_available": "Жаңа фотолар бар: {count}",
-    "live_updates": "Нақты уақыт жаңартулары"
+    "live_updates": "Нақты уақыт жаңартулары",
+    "all_photos": "Барлық фото"
   },
   "share": {
     "title": "Бөлісу",
@@ -714,5 +715,18 @@
     "member_since": "Тіркелу күні",
     "role": "Рөл",
     "notifications": "Хабарламалар"
+  },
+  "albums": {
+    "all_photos": "Барлық фото",
+    "unsorted": "Папкасыз",
+    "create_album": "Жаңа папка",
+    "create": "Жасау",
+    "cancel": "Болдырмау",
+    "album_name_placeholder": "Папка атауы",
+    "no_album": "Папкасыз",
+    "create_new": "Жаңасын жасау...",
+    "move_to_album": "Папкаға",
+    "photos_moved": "Фото жылжытылды",
+    "delete_album_confirm": "Бұл папканы жою керек пе? Фотолар папкасыз қалады."
   }
 }

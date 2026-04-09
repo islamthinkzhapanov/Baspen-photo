@@ -22,6 +22,7 @@ import {
   RiLoader4Line,
   RiErrorWarningLine,
 } from "@remixicon/react";
+import { RiFolderLine } from "@remixicon/react";
 import { Button } from "@tremor/react";
 import { ShineBorder } from "@/components/ui/shine-border";
 import { useQuery } from "@tanstack/react-query";
@@ -73,6 +74,7 @@ export function PublicEventPage({
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [likes, setLikes] = useState<Set<string>>(new Set());
+  const [activeAlbumTab, setActiveAlbumTab] = useState<string | null>(null);
 
   // --- Real search state ---
   const [matchedPhotos, setMatchedPhotos] = useState<SearchPhoto[]>([]);
@@ -126,11 +128,17 @@ export function PublicEventPage({
 
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
   const isFreeDownload = !!event.settings?.freeDownload;
+  const eventAlbums: { id: string; name: string; sortOrder: number }[] = eventData?.albums || [];
 
   // Combine matched photos with realtime new matches
-  const searchResults: SearchPhoto[] = numberSearchQuery
+  const allSearchResults: SearchPhoto[] = numberSearchQuery
     ? (numberData?.photos || [])
     : [...newPhotos.filter((np) => !matchedPhotos.some((mp) => mp.id === np.id)), ...matchedPhotos];
+
+  // Filter by album tab
+  const searchResults = activeAlbumTab === null
+    ? allSearchResults
+    : allSearchResults.filter((p) => (p.album_id || p.albumId) === activeAlbumTab);
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -256,6 +264,36 @@ export function PublicEventPage({
               </Button>
             </div>
           </div>
+
+          {/* Album Tabs */}
+          {eventAlbums.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide">
+              <button
+                onClick={() => setActiveAlbumTab(null)}
+                className={`h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                  activeAlbumTab === null
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:bg-bg-secondary text-text-secondary"
+                }`}
+              >
+                {t("all_photos")}
+              </button>
+              {eventAlbums.map((album) => (
+                <button
+                  key={album.id}
+                  onClick={() => setActiveAlbumTab(album.id)}
+                  className={`h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                    activeAlbumTab === album.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:bg-bg-secondary text-text-secondary"
+                  }`}
+                >
+                  <RiFolderLine size={14} />
+                  {album.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Masonry Grid */}
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3">

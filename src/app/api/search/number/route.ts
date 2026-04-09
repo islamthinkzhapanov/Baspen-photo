@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
       width: photos.width,
       height: photos.height,
       createdAt: photos.createdAt,
+      albumId: photos.albumId,
     })
     .from(photos)
     .where(

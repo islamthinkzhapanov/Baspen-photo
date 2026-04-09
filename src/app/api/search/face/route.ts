@@ -105,7 +105,8 @@ export async function POST(request: Request) {
         p.placeholder,
         p.width,
         p.height,
-        p.created_at
+        p.created_at,
+        p.album_id
       FROM photos p
       WHERE p.id IN (${sql.join(placeholders, sql`, `)})
         AND p.status = 'ready'

@@ -28,6 +28,7 @@ import {
   RiCheckboxFill,
   RiCloseLine,
   RiHashtag,
+  RiFolderLine,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
@@ -54,7 +55,9 @@ import { toast } from "sonner";
 import { useEvent, useEventMembers, useUpdateEvent } from "@/hooks/useEvents";
 import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos } from "@/hooks/usePhotos";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
+import { useEventAlbums, useCreateAlbum, useUpdateAlbum, useDeleteAlbum, useMovePhotosToAlbum } from "@/hooks/useAlbums";
 import { PhotoUploadZone } from "@/components/upload/PhotoUploadZone";
+import { AlbumStrip } from "@/components/album/AlbumStrip";
 
 const PHOTOS_PER_PAGE = 100;
 
@@ -66,6 +69,7 @@ interface Photo {
   storagePath: string;
   originalFilename: string | null;
   status?: string;
+  albumId?: string | null;
 }
 
 /* ─── Pagination ─── */
@@ -171,6 +175,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const tc = useTranslations("common");
   const ta = useTranslations("analytics");
   const tp = useTranslations("photographer");
+  const tAlb = useTranslations("albums");
   const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
   const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
@@ -187,6 +192,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const updateMutation = useUpdateEvent(eventId);
   const deleteMutation = useDeletePhoto(eventId);
   const bulkDeleteMutation = useBulkDeletePhotos(eventId);
+
+  // Albums
+  const { data: albumsData = [] } = useEventAlbums(eventId);
+  const createAlbumMutation = useCreateAlbum(eventId);
+  const updateAlbumMutation = useUpdateAlbum(eventId);
+  const deleteAlbumMutation = useDeleteAlbum(eventId);
+  const movePhotosMutation = useMovePhotosToAlbum(eventId);
+  const [activeAlbumFilter, setActiveAlbumFilter] = useState<string | null>(null);
+  const [uploadAlbumId, setUploadAlbumId] = useState<string | null>(null);
+  const [moveToAlbumOpen, setMoveToAlbumOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -260,7 +275,15 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   }
 
   const photos: Photo[] = photosData?.photos || [];
-  const readyPhotos = photos.filter((p) => p.status === "ready");
+  const allReadyPhotos = photos.filter((p) => p.status === "ready");
+
+  // Filter by album
+  const readyPhotos = activeAlbumFilter === null
+    ? allReadyPhotos
+    : activeAlbumFilter === "unsorted"
+      ? allReadyPhotos.filter((p) => !p.albumId)
+      : allReadyPhotos.filter((p) => p.albumId === activeAlbumFilter);
+
   const chartData = analytics?.chartData || [];
 
   const pagePhotos = readyPhotos.slice(
@@ -476,7 +499,28 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <TabPanel>
             <div className="space-y-4">
               {/* Upload Zone */}
-              <PhotoUploadZone eventId={eventId} />
+              <PhotoUploadZone eventId={eventId} albumId={uploadAlbumId} albums={albumsData} onAlbumChange={setUploadAlbumId} />
+
+              {/* Album Strip */}
+              {(albumsData.length > 0 || !isPhotographer) && (
+                <AlbumStrip
+                  albums={albumsData}
+                  activeFilter={activeAlbumFilter}
+                  onFilterChange={(filter) => {
+                    setActiveAlbumFilter(filter);
+                    setCurrentPage(1);
+                  }}
+                  onCreateAlbum={(name) => createAlbumMutation.mutate({ name })}
+                  onRenameAlbum={(albumId, name) => updateAlbumMutation.mutate({ albumId, data: { name } })}
+                  onDeleteAlbum={(albumId) => {
+                    if (confirm(tAlb("delete_album_confirm"))) {
+                      deleteAlbumMutation.mutate(albumId);
+                      if (activeAlbumFilter === albumId) setActiveAlbumFilter(null);
+                    }
+                  }}
+                  isOwner={!isPhotographer}
+                />
+              )}
 
               {/* Photo count + actions */}
               {readyPhotos.length > 0 && (
@@ -525,15 +569,61 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                         </button>
 
                         {selectedIds.size > 0 && (
-                          <button
-                            onClick={() => setConfirmAction("selected")}
-                            className="h-8 px-3 text-xs font-medium rounded-lg
-                              bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer
-                              flex items-center gap-1.5"
-                          >
-                            <RiDeleteBinLine size={14} />
-                            {tp("delete_selected", { count: selectedIds.size })}
-                          </button>
+                          <>
+                            {/* Move to album */}
+                            {albumsData.length > 0 && (
+                              <div className="relative">
+                                <button
+                                  onClick={() => setMoveToAlbumOpen(!moveToAlbumOpen)}
+                                  className="h-8 px-3 text-xs font-medium rounded-lg
+                                    bg-primary text-white hover:bg-primary/90 transition-colors cursor-pointer
+                                    flex items-center gap-1.5"
+                                >
+                                  <RiFolderLine size={14} />
+                                  {tAlb("move_to_album")}
+                                </button>
+                                {moveToAlbumOpen && (
+                                  <div className="absolute top-full mt-1 right-0 z-20 bg-bg border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
+                                    <button
+                                      onClick={() => {
+                                        movePhotosMutation.mutate(
+                                          { photoIds: Array.from(selectedIds), albumId: null },
+                                          { onSuccess: () => { setMoveToAlbumOpen(false); exitSelectionMode(); toast.success(tAlb("photos_moved")); } }
+                                        );
+                                      }}
+                                      className="w-full text-left px-3 py-1.5 text-xs hover:bg-bg-secondary cursor-pointer"
+                                    >
+                                      {tAlb("unsorted")}
+                                    </button>
+                                    {albumsData.map((album) => (
+                                      <button
+                                        key={album.id}
+                                        onClick={() => {
+                                          movePhotosMutation.mutate(
+                                            { photoIds: Array.from(selectedIds), albumId: album.id },
+                                            { onSuccess: () => { setMoveToAlbumOpen(false); exitSelectionMode(); toast.success(tAlb("photos_moved")); } }
+                                          );
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-xs hover:bg-bg-secondary cursor-pointer"
+                                      >
+                                        {album.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            <button
+                              onClick={() => setConfirmAction("selected")}
+                              className="h-8 px-3 text-xs font-medium rounded-lg
+                                bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer
+                                flex items-center gap-1.5"
+                            >
+                              <RiDeleteBinLine size={14} />
+                              {tp("delete_selected", { count: selectedIds.size })}
+                            </button>
+                          </>
                         )}
 
                         <button

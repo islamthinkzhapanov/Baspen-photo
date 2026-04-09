@@ -323,7 +323,8 @@
     "return_to_my_photos": "Return to my photos",
     "new_matches": "{count} new matches",
     "new_photos_available": "{count} new photos available",
-    "live_updates": "Live updates"
+    "live_updates": "Live updates",
+    "all_photos": "All photos"
   },
   "share": {
     "title": "Share",
@@ -784,5 +785,18 @@
     "member_since": "Member since",
     "role": "Role",
     "notifications": "Notifications"
+  },
+  "albums": {
+    "all_photos": "All photos",
+    "unsorted": "Unsorted",
+    "create_album": "New folder",
+    "create": "Create",
+    "cancel": "Cancel",
+    "album_name_placeholder": "Folder name",
+    "no_album": "No folder",
+    "create_new": "Create new...",
+    "move_to_album": "Move to folder",
+    "photos_moved": "Photos moved",
+    "delete_album_confirm": "Delete this folder? Photos will become unsorted."
   }
 }

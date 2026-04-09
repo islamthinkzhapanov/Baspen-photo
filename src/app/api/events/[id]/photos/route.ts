@@ -72,11 +72,13 @@ export async function POST(
     originalFilename,
     mimeType,
     fileSize,
+    albumId,
   } = body as {
     storagePath: string;
     originalFilename: string;
     mimeType: string;
     fileSize: number;
+    albumId?: string;
   };
 
   if (!storagePath) {
@@ -93,6 +95,7 @@ export async function POST(
       mimeType,
       fileSize,
       status: "processing",
+      ...(albumId ? { albumId } : {}),
     })
     .returning();
 

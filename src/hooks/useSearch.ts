@@ -12,6 +12,8 @@ export interface SearchPhoto {
   height: number | null;
   created_at: string;
   similarity?: number;
+  album_id?: string | null;
+  albumId?: string | null;
 }
 
 interface FaceSearchResult {

@@ -25,7 +25,8 @@ export function useEventPhotos(eventId: string) {
 
 export function useUploadPhotos(
   eventId: string,
-  onProgress?: (done: number, total: number) => void
+  onProgress?: (done: number, total: number) => void,
+  albumId?: string | null
 ) {
   const qc = useQueryClient();
 
@@ -83,6 +84,7 @@ export function useUploadPhotos(
               originalFilename: urlInfo.name,
               mimeType: urlInfo.type,
               fileSize: batch[fileIdx].size,
+              ...(albumId ? { albumId } : {}),
             }),
           });
 
