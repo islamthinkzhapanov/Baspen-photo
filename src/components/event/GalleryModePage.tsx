@@ -225,8 +225,8 @@ export function GalleryModePage({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
         {/* Hero Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:px-20 md:pb-12">
-          <div className="max-w-6xl mx-auto">
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:px-8 md:pb-12">
+          <div>
             {formattedDate && (
               <p className="text-white/70 text-sm md:text-base font-medium tracking-wide mb-2 md:mb-3">
                 {formattedDate}
@@ -246,7 +246,7 @@ export function GalleryModePage({
 
       {/* Sticky Header with Album Tabs + Actions */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 md:px-20">
+        <div className="px-4 md:px-8">
           <div className="flex items-center justify-between gap-6">
             {/* Album Tabs */}
             <div className="flex gap-1 overflow-x-auto no-scrollbar -mb-px">
@@ -325,7 +325,7 @@ export function GalleryModePage({
 
       {/* Search Error */}
       {searchError && (
-        <div className="max-w-6xl mx-auto px-4 md:px-20 pt-4">
+        <div className="px-4 md:px-8 pt-4">
           <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
             <RiErrorWarningLine size={18} className="shrink-0" />
             <span>
@@ -341,7 +341,7 @@ export function GalleryModePage({
 
       {/* Search Mode Info */}
       {searchMode && !isSearching && (
-        <div className="max-w-6xl mx-auto px-4 md:px-20 pt-4">
+        <div className="px-4 md:px-8 pt-4">
           <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
             <span>Найдено {matchedPhotoIds.size} фото по вашему запросу</span>
             <button onClick={clearSearch} className="text-blue-600 hover:underline font-medium">
@@ -353,7 +353,7 @@ export function GalleryModePage({
 
       {/* Photo Grid */}
       {!isSearching && (
-        <div className="max-w-6xl mx-auto px-4 md:px-20 py-8 pb-28 md:pb-8">
+        <div className="px-4 md:px-8 py-8 pb-28 md:pb-8">
           {searchPhotos.length > 0 ? (
             <PhotoMasonryGrid
               photos={searchPhotos}
