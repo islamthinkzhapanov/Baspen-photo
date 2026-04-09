@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { albums, photos } from "@/lib/db/schema";
-import { eq, asc, sql } from "drizzle-orm";
+import { eq, asc, sql, count } from "drizzle-orm";
 import { createAlbumSchema, reorderAlbumsSchema } from "@/lib/validators/album";
 import { requireEventRole, getEventAccess } from "@/lib/event-auth";
+
+export const dynamic = "force-dynamic";
 
 // GET /api/events/[id]/albums
 export async function GET(
@@ -29,13 +31,12 @@ export async function GET(
       name: albums.name,
       sortOrder: albums.sortOrder,
       createdAt: albums.createdAt,
-      photoCount: sql<number>`(
-        SELECT COUNT(*)::int FROM photos
-        WHERE photos.album_id = ${albums.id}
-      )`,
+      photoCount: sql<number>`COALESCE(COUNT(${photos.id}), 0)::int`,
     })
     .from(albums)
+    .leftJoin(photos, eq(photos.albumId, albums.id))
     .where(eq(albums.eventId, id))
+    .groupBy(albums.id)
     .orderBy(asc(albums.sortOrder));
 
   return NextResponse.json(result);
