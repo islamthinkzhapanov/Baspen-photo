@@ -509,6 +509,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   onFilterChange={(filter) => {
                     setActiveAlbumFilter(filter);
                     setCurrentPage(1);
+                    // Sync upload target with active album filter
+                    setUploadAlbumId(filter === "unsorted" ? null : filter);
                   }}
                   onCreateAlbum={(name) => createAlbumMutation.mutate({ name })}
                   onRenameAlbum={(albumId, name) => updateAlbumMutation.mutate({ albumId, data: { name } })}

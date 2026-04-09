@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useUploadPhotos, useProcessingStatus } from "@/hooks/usePhotos";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
@@ -23,6 +24,7 @@ type Phase = "idle" | "uploading" | "processing" | "done";
 
 export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Props) {
   const t = useTranslations("upload");
+  const qc = useQueryClient();
   const createAlbumMutation = useCreateAlbum(eventId);
   const [phase, setPhase] = useState<Phase>("idle");
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
@@ -42,9 +44,12 @@ export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Pro
     if (phase !== "processing" || !processingStatus) return;
     if (processingStatus.processing === 0) {
       setPhase("done");
+      // Refresh photo list & album counts now that processing is complete
+      qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] });
+      qc.invalidateQueries({ queryKey: ["events", eventId, "albums"] });
       setTimeout(() => setPhase("idle"), 4000);
     }
-  }, [phase, processingStatus]);
+  }, [phase, processingStatus, qc, eventId]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {

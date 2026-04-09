@@ -117,9 +117,11 @@ export function useMovePhotosToAlbum(eventId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photoIds, albumId }),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] });
-      qc.invalidateQueries({ queryKey: ["events", eventId, "albums"] });
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["events", eventId, "photos"] }),
+        qc.invalidateQueries({ queryKey: ["events", eventId, "albums"] }),
+      ]);
     },
   });
 }
