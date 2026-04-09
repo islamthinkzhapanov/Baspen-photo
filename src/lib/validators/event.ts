@@ -8,6 +8,7 @@ export const createEventSchema = z.object({
     .max(100)
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers and hyphens"),
   description: z.string().max(2000).optional(),
+  coverUrl: z.string().nullable().optional(),
   isPublished: z.boolean().optional(),
   date: z.string().optional(),
   location: z.string().max(500).optional(),

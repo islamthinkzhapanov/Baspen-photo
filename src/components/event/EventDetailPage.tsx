@@ -31,6 +31,7 @@ import {
   RiFolderLine,
   RiCameraLine,
   RiGridLine,
+  RiUploadLine,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
@@ -191,6 +192,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [settingsPrice, setSettingsPrice] = useState<number | undefined>();
   const [settingsDiscount, setSettingsDiscount] = useState<number | undefined>();
   const [settingsInitialized, setSettingsInitialized] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const updateMutation = useUpdateEvent(eventId);
   const deleteMutation = useDeletePhoto(eventId);
@@ -247,6 +251,70 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     bibSearchToggle !== !!event.settings?.bibSearchEnabled ||
     displayMode !== (event.settings?.displayMode ?? "search")
   ) : false;
+
+  async function handleCoverUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverUploading(true);
+    try {
+      // Get presigned URL
+      const res = await fetch(`/api/events/${eventId}/cover`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType: file.type, fileName: file.name }),
+      });
+      if (!res.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, publicUrl } = await res.json();
+
+      // Upload to S3
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      // Save coverUrl to event
+      updateMutation.mutate(
+        { coverUrl: publicUrl },
+        {
+          onSuccess: () => {
+            setCoverPreview(null);
+            toast.success("Обложка загружена");
+            setSettingsInitialized(false);
+          },
+        }
+      );
+    } catch (err) {
+      toast.error("Ошибка загрузки обложки");
+      console.error("[cover]", err);
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }
+
+  async function handleCoverDelete() {
+    setCoverUploading(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/cover`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete cover");
+      updateMutation.mutate(
+        { coverUrl: null },
+        {
+          onSuccess: () => {
+            setCoverPreview(null);
+            toast.success("Обложка удалена");
+            setSettingsInitialized(false);
+          },
+        }
+      );
+    } catch (err) {
+      toast.error("Ошибка удаления обложки");
+      console.error("[cover]", err);
+    } finally {
+      setCoverUploading(false);
+    }
+  }
 
   function handleSaveSettings() {
     updateMutation.mutate(
@@ -880,6 +948,77 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     </button>
                   </div>
                 </Card>
+
+                {displayMode === "gallery" && (
+                  <Card className="p-5 space-y-4">
+                    <h3 className="text-sm font-semibold">Обложка проекта</h3>
+                    <p className="text-xs text-text-secondary">
+                      Загрузите обложку для hero-секции открытого альбома. Рекомендуемый размер: 1440×700px.
+                    </p>
+                    {event.coverUrl ? (
+                      <div className="space-y-3">
+                        <div className="relative w-full h-48 rounded-lg overflow-hidden bg-bg-secondary">
+                          <img
+                            src={event.coverUrl}
+                            alt="Обложка"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
+                            {event.title}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            onClick={() => coverInputRef.current?.click()}
+                            disabled={coverUploading}
+                          >
+                            {coverUploading ? (
+                              <RiLoader4Line className="w-4 h-4 animate-spin" />
+                            ) : (
+                              "Заменить обложку"
+                            )}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            onClick={handleCoverDelete}
+                            disabled={coverUploading}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            Удалить
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => coverInputRef.current?.click()}
+                        disabled={coverUploading}
+                        className="w-full h-40 rounded-lg border-2 border-dashed border-border hover:border-primary/50
+                          flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer"
+                      >
+                        {coverUploading ? (
+                          <RiLoader4Line className="w-8 h-8 text-text-secondary animate-spin" />
+                        ) : (
+                          <>
+                            <RiUploadLine className="w-8 h-8 text-text-secondary" />
+                            <span className="text-sm text-text-secondary">Загрузить обложку</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                    <input
+                      ref={coverInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleCoverUpload}
+                    />
+                  </Card>
+                )}
 
                 <Card className="p-5 space-y-4">
                   <h3 className="text-sm font-semibold">Настройки</h3>

@@ -12,6 +12,7 @@ import {
   RiHeartLine,
   RiFolder3Line,
   RiContactsLine,
+  RiArrowDownDoubleLine,
 } from "@remixicon/react";
 import { useFaceSearch, type SearchPhoto } from "@/hooks/useSearch";
 import { useRealtimeMatches } from "@/hooks/useRealtimeMatches";
@@ -244,6 +245,11 @@ export function GalleryModePage({
               </p>
             )}
           </div>
+        </div>
+
+        {/* Mobile scroll hint */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:hidden animate-bounce">
+          <RiArrowDownDoubleLine className="w-6 h-6 text-white/70" />
         </div>
       </div>
 
