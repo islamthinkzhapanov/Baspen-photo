@@ -112,7 +112,8 @@ export async function POST(request: NextRequest) {
   })();
 
   // Convert Node readable stream to Web ReadableStream
-  const webStream = Readable.toWeb(zipfile.outputStream) as ReadableStream;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const webStream = Readable.toWeb(zipfile.outputStream as any) as ReadableStream;
 
   return new Response(webStream, {
     headers: {
