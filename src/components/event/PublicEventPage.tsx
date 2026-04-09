@@ -22,7 +22,6 @@ import {
   RiLoader4Line,
   RiErrorWarningLine,
 } from "@remixicon/react";
-import { RiFolderLine } from "@remixicon/react";
 import { Button } from "@tremor/react";
 import { ShineBorder } from "@/components/ui/shine-border";
 import { useQuery } from "@tanstack/react-query";
@@ -74,8 +73,6 @@ export function PublicEventPage({
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [likes, setLikes] = useState<Set<string>>(new Set());
-  const [activeAlbumTab, setActiveAlbumTab] = useState<string | null>(null);
-
   // --- Real search state ---
   const [matchedPhotos, setMatchedPhotos] = useState<SearchPhoto[]>([]);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -128,17 +125,12 @@ export function PublicEventPage({
 
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
   const isFreeDownload = !!event.settings?.freeDownload;
-  const eventAlbums: { id: string; name: string; sortOrder: number }[] = eventData?.albums || [];
-
   // Combine matched photos with realtime new matches
   const allSearchResults: SearchPhoto[] = numberSearchQuery
     ? (numberData?.photos || [])
     : [...newPhotos.filter((np) => !matchedPhotos.some((mp) => mp.id === np.id)), ...matchedPhotos];
 
-  // Filter by album tab
-  const searchResults = activeAlbumTab === null
-    ? allSearchResults
-    : allSearchResults.filter((p) => (p.album_id || p.albumId) === activeAlbumTab);
+  const searchResults = allSearchResults;
 
   function toggleLike(id: string) {
     setLikes((prev) => {
@@ -265,42 +257,12 @@ export function PublicEventPage({
             </div>
           </div>
 
-          {/* Album Tabs */}
-          {eventAlbums.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveAlbumTab(null)}
-                className={`h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeAlbumTab === null
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:bg-bg-secondary text-text-secondary"
-                }`}
-              >
-                {t("all_photos")}
-              </button>
-              {eventAlbums.map((album) => (
-                <button
-                  key={album.id}
-                  onClick={() => setActiveAlbumTab(album.id)}
-                  className={`h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                    activeAlbumTab === album.id
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:bg-bg-secondary text-text-secondary"
-                  }`}
-                >
-                  <RiFolderLine size={14} />
-                  {album.name}
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Masonry Grid */}
           <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
             {searchResults.map((photo, index) => {
               const isLiked = likes.has(photo.id);
               const staggerDelay = Math.min(index * 40, 400);
-              const imgSrc = photo.watermarked_path || photo.thumbnail_path;
+              const imgSrc = photo.thumbnail_path;
               return (
                 <div
                   key={photo.id}
@@ -315,15 +277,6 @@ export function PublicEventPage({
                     style={{ aspectRatio: `${photo.width || 4}/${photo.height || 3}` }}
                     onClick={() => setLightbox(index)}
                   >
-                    {/* Watermark overlay */}
-                    {!hideBranding && (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none">
-                        <span className="text-4xl font-bold text-black -rotate-30 select-none">
-                          BASPEN
-                        </span>
-                      </div>
-                    )}
-
                     {/* Photo content */}
                     {imgSrc ? (
                       <img
@@ -436,9 +389,9 @@ export function PublicEventPage({
               }}
             >
               <div className="w-full h-full flex items-center justify-center relative">
-                {searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path ? (
+                {searchResults[lightbox].thumbnail_path ? (
                   <img
-                    src={searchResults[lightbox].watermarked_path || searchResults[lightbox].thumbnail_path || undefined}
+                    src={searchResults[lightbox].thumbnail_path || undefined}
                     alt=""
                     className="w-full h-full object-contain"
                   />
