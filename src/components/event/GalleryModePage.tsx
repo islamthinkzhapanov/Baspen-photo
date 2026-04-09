@@ -9,8 +9,7 @@ import {
   RiCloseLine,
   RiLoader4Line,
   RiErrorWarningLine,
-  RiHeartLine,
-  RiHeartFill,
+  RiCheckboxCircleLine,
   RiFolder3Line,
   RiContactsLine,
 } from "@remixicon/react";
@@ -72,7 +71,7 @@ function toSearchPhoto(p: GalleryPhoto): SearchPhoto {
   };
 }
 
-type MobileTab = "files" | "download" | "favorites" | "contacts";
+type MobileTab = "files" | "download" | "selected" | "contacts";
 
 export function GalleryModePage({
   slug,
@@ -132,8 +131,8 @@ export function GalleryModePage({
     filteredPhotos = filteredPhotos.filter((p) => allMatchedIds.has(p.id));
   }
 
-  // Mobile favorites filter
-  if (mobileTab === "favorites") {
+  // Mobile selected filter
+  if (mobileTab === "selected") {
     filteredPhotos = filteredPhotos.filter((p) => likes.has(p.id));
   }
 
@@ -371,8 +370,8 @@ export function GalleryModePage({
                     disabled={isDownloading}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
                   >
-                    <RiHeartFill size={16} className="text-red-500" />
-                    {isDownloading ? "Скачивание..." : <>{t("download_favorites")}: {likes.size}</>}
+                    <RiDownloadLine size={16} />
+                    {isDownloading ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
@@ -387,8 +386,12 @@ export function GalleryModePage({
                 disabled={isDownloading}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
               >
-                <RiDownloadLine size={16} />
-                {isDownloading ? "Скачивание..." : t("download_all_album")}
+                {isDownloading ? (
+                  <RiLoader4Line size={16} className="animate-spin" />
+                ) : (
+                  <RiDownloadLine size={16} />
+                )}
+                {isDownloading ? "Упаковка фото..." : t("download_all_album")}
               </button>
             </div>
           </div>
@@ -480,17 +483,17 @@ export function GalleryModePage({
             </span>
           </button>
           <button
-            onClick={() => setMobileTab("favorites")}
+            onClick={() => setMobileTab("selected")}
             className="flex flex-col items-center gap-0.5 px-4 py-1 relative"
           >
-            <RiHeartLine size={22} className={mobileTab === "favorites" ? "text-primary" : "text-text-secondary"} />
+            <RiCheckboxCircleLine size={22} className={mobileTab === "selected" ? "text-primary" : "text-text-secondary"} />
             {likes.size > 0 && (
-              <span className="absolute -top-0.5 right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+              <span className="absolute -top-0.5 right-2 bg-blue-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
                 {likes.size}
               </span>
             )}
-            <span className={`text-[11px] font-medium ${mobileTab === "favorites" ? "text-primary" : "text-text-secondary"}`}>
-              {t("favorites_tab")}
+            <span className={`text-[11px] font-medium ${mobileTab === "selected" ? "text-primary" : "text-text-secondary"}`}>
+              Выбранные
             </span>
           </button>
           <button
@@ -588,9 +591,9 @@ export function GalleryModePage({
       {showClearConfirm && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[360px] p-6">
-            <h3 className="text-lg font-semibold mb-2">Сбросить избранное?</h3>
+            <h3 className="text-lg font-semibold mb-2">Сбросить выбор?</h3>
             <p className="text-sm text-text-secondary mb-6">
-              Вы уверены, что хотите сбросить все выбранные фотографии ({likes.size} шт.)?
+              Вы уверены, что хотите снять выбор со всех фотографий ({likes.size} шт.)?
             </p>
             <div className="flex gap-3">
               <button

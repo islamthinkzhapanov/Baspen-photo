@@ -6,8 +6,8 @@ import {
   RiCloseLine,
   RiArrowLeftSLine,
   RiArrowRightSLine,
-  RiHeartLine,
-  RiHeartFill,
+  RiCheckboxCircleLine,
+  RiCheckboxCircleFill,
   RiShareLine,
   RiDownloadLine,
   RiLoader4Line,
@@ -121,12 +121,12 @@ export function PhotoLightbox({
             onClick={() => onToggleLike(photo.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg backdrop-blur-sm text-sm font-medium transition-colors ${
               isLiked
-                ? "bg-red-500 text-white"
+                ? "bg-blue-500 text-white"
                 : "bg-white/15 text-white hover:bg-white/25"
             }`}
           >
-            {isLiked ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
-            {isLiked ? t("in_favorites") : t("add_to_favorites")}
+            {isLiked ? <RiCheckboxCircleFill size={16} /> : <RiCheckboxCircleLine size={16} />}
+            {isLiked ? "Выбрано" : "Выбрать"}
           </button>
           <button
             onClick={async () => {

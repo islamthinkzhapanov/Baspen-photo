@@ -2,9 +2,7 @@
 
 import {
   RiImageLine,
-  RiHeartLine,
-  RiHeartFill,
-  RiDownloadLine,
+  RiCheckLine,
 } from "@remixicon/react";
 import type { SearchPhoto } from "@/hooks/useSearch";
 
@@ -24,7 +22,7 @@ export function PhotoMasonryGrid({
   return (
     <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
       {photos.map((photo, index) => {
-        const isLiked = likes.has(photo.id);
+        const isSelected = likes.has(photo.id);
         const staggerDelay = Math.min(index * 40, 400);
         const imgSrc = photo.thumbnail_path;
         return (
@@ -52,32 +50,32 @@ export function PhotoMasonryGrid({
                   <RiImageLine size={32} className="text-gray-300" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+              {/* Blue overlay when selected */}
+              {isSelected && (
+                <div className="absolute inset-0 bg-blue-500/25 pointer-events-none transition-opacity duration-200" />
+              )}
+
+              {/* Hover gradient (only when not selected) */}
+              {!isSelected && (
+                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+              )}
             </div>
 
-            <div className="absolute bottom-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleLike(photo.id);
-                }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors ${
-                  isLiked
-                    ? "bg-red-500 text-white"
-                    : "bg-white/90 text-text-secondary hover:text-red-500"
-                }`}
-              >
-                {isLiked ? <RiHeartFill size={18} /> : <RiHeartLine size={18} />}
-              </button>
-              <a
-                href={photo.watermarked_path || photo.thumbnail_path || ""}
-                download
-                onClick={(e) => e.stopPropagation()}
-                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-text-secondary hover:text-primary transition-colors"
-              >
-                <RiDownloadLine size={18} />
-              </a>
-            </div>
+            {/* Selection circle — top-right */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLike(photo.id);
+              }}
+              className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                isSelected
+                  ? "bg-blue-500 text-white shadow-md"
+                  : "border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              {isSelected && <RiCheckLine size={18} />}
+            </button>
           </div>
         );
       })}

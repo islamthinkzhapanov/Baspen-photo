@@ -1,40 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { photos, events } from "@/lib/db/schema";
 import { eq, inArray, and } from "drizzle-orm";
 import { s3, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import JSZip from "jszip";
+import yazl from "yazl";
+import { Readable } from "stream";
 
-// POST /api/photos/download-zip — generate a zip with requested photo IDs
+// POST /api/photos/download-zip — stream a zip with requested photo IDs
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const photoIds: string[] = body.ids;
 
   if (!Array.isArray(photoIds) || photoIds.length === 0) {
-    return NextResponse.json({ error: "No photo IDs" }, { status: 400 });
+    return new Response(JSON.stringify({ error: "No photo IDs" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  // Cap at 500 photos to avoid memory issues
-  const ids = photoIds.slice(0, 500);
+  // Query in batches of 500 (Postgres parameter limit)
+  const allRows: {
+    id: string;
+    eventId: string;
+    storagePath: string;
+    watermarkedPath: string | null;
+    originalFilename: string | null;
+  }[] = [];
 
-  const rows = await db
-    .select({
-      id: photos.id,
-      eventId: photos.eventId,
-      storagePath: photos.storagePath,
-      watermarkedPath: photos.watermarkedPath,
-      originalFilename: photos.originalFilename,
-    })
-    .from(photos)
-    .where(and(inArray(photos.id, ids), eq(photos.status, "ready")));
+  for (let i = 0; i < photoIds.length; i += 500) {
+    const batch = photoIds.slice(i, i + 500);
+    const rows = await db
+      .select({
+        id: photos.id,
+        eventId: photos.eventId,
+        storagePath: photos.storagePath,
+        watermarkedPath: photos.watermarkedPath,
+        originalFilename: photos.originalFilename,
+      })
+      .from(photos)
+      .where(and(inArray(photos.id, batch), eq(photos.status, "ready")));
+    allRows.push(...rows);
+  }
 
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "No photos found" }, { status: 404 });
+  if (allRows.length === 0) {
+    return new Response(JSON.stringify({ error: "No photos found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Check if event allows free download
-  const eventId = rows[0].eventId;
+  const eventId = allRows[0].eventId;
   const [event] = await db
     .select({ settings: events.settings })
     .from(events)
@@ -43,34 +60,65 @@ export async function POST(request: NextRequest) {
 
   const isFree = event?.settings?.freeDownload === true;
 
-  const zip = new JSZip();
+  // Track filenames to avoid duplicates
+  const usedNames = new Map<string, number>();
 
-  await Promise.all(
-    rows.map(async (photo, i) => {
+  function uniqueName(name: string): string {
+    const count = usedNames.get(name) || 0;
+    usedNames.set(name, count + 1);
+    if (count === 0) return name;
+    const dot = name.lastIndexOf(".");
+    if (dot === -1) return `${name}_${count}`;
+    return `${name.slice(0, dot)}_${count}${name.slice(dot)}`;
+  }
+
+  // Use yazl for memory-efficient streaming zip
+  // compress: false for JPEGs — they're already compressed, saves CPU
+  const zipfile = new yazl.ZipFile();
+
+  // Process photos sequentially to keep memory flat
+  (async () => {
+    for (let i = 0; i < allRows.length; i++) {
+      const photo = allRows[i];
       const key = isFree
         ? photo.storagePath
-        : photo.watermarkedPath || photo.storagePath.replace("/originals/", "/watermarked/");
+        : photo.watermarkedPath ||
+          photo.storagePath.replace("/originals/", "/watermarked/");
 
       try {
         const command = new GetObjectCommand({ Bucket: bucket, Key: key });
         const response = await s3.send(command);
-        const bytes = await response.Body?.transformToByteArray();
-        if (bytes) {
-          const filename = photo.originalFilename || `photo_${i + 1}.jpg`;
-          zip.file(filename, bytes);
+        const s3Stream = response.Body as Readable;
+
+        if (s3Stream) {
+          const baseName = photo.originalFilename || `photo_${i + 1}.jpg`;
+          const filename = uniqueName(baseName);
+
+          // compress: false — JPEGs are already compressed
+          zipfile.addReadStream(s3Stream, filename, { compress: false });
+
+          // Wait for this entry to be fully read before adding next
+          // This keeps memory flat regardless of photo count
+          await new Promise<void>((resolve, reject) => {
+            s3Stream.on("end", resolve);
+            s3Stream.on("error", reject);
+          });
         }
       } catch {
         // Skip failed downloads
       }
-    })
-  );
+    }
+    zipfile.end();
+  })();
 
-  const zipBuffer = await zip.generateAsync({ type: "arraybuffer" });
+  // Convert Node readable stream to Web ReadableStream
+  const webStream = Readable.toWeb(zipfile.outputStream) as ReadableStream;
 
-  return new NextResponse(zipBuffer, {
+  return new Response(webStream, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="photos.zip"`,
+      "Transfer-Encoding": "chunked",
     },
   });
 }
