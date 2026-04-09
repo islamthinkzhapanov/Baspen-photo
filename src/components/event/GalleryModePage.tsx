@@ -197,15 +197,16 @@ export function GalleryModePage({
 
   // Clear favorites confirmation
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingSelected, setIsDownloadingSelected] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   function clearAllFavorites() {
     setLikes(new Set());
     setShowClearConfirm(false);
   }
 
-  const downloadAsZip = useCallback(async (photoIds: string[]) => {
-    setIsDownloading(true);
+  const downloadAsZip = useCallback(async (photoIds: string[], setLoading: (v: boolean) => void) => {
+    setLoading(true);
     try {
       const res = await fetch("/api/photos/download-zip", {
         method: "POST",
@@ -222,7 +223,7 @@ export function GalleryModePage({
     } catch (err) {
       console.error("Download failed:", err);
     } finally {
-      setIsDownloading(false);
+      setLoading(false);
     }
   }, [event.title]);
 
@@ -243,16 +244,16 @@ export function GalleryModePage({
 
   function handleDownloadAll() {
     const ids = filteredPhotos.map((p) => p.id);
-    downloadAsZip(ids);
+    downloadAsZip(ids, setIsDownloadingAll);
   }
 
   function handleDownloadFavorites() {
     const ids = Array.from(likes);
     if (ids.length > 10) {
-      downloadAsZip(ids);
+      downloadAsZip(ids, setIsDownloadingSelected);
     } else {
-      setIsDownloading(true);
-      downloadIndividually(ids).finally(() => setIsDownloading(false));
+      setIsDownloadingSelected(true);
+      downloadIndividually(ids).finally(() => setIsDownloadingSelected(false));
     }
   }
 
@@ -368,17 +369,17 @@ export function GalleryModePage({
                 <div className="relative group">
                   <button
                     onClick={handleDownloadFavorites}
-                    disabled={isDownloading}
+                    disabled={isDownloadingSelected}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
                   >
-                    {isDownloading ? (
+                    {isDownloadingSelected ? (
                       <RiLoader4Line size={16} className="animate-spin" />
                     ) : (
                       <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
                         <RiCheckLine size={13} />
                       </span>
                     )}
-                    {isDownloading ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
+                    {isDownloadingSelected ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
@@ -390,15 +391,15 @@ export function GalleryModePage({
               )}
               <button
                 onClick={handleDownloadAll}
-                disabled={isDownloading}
+                disabled={isDownloadingAll}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white text-text text-sm font-medium hover:bg-gray-50 transition-colors"
               >
-                {isDownloading ? (
+                {isDownloadingAll ? (
                   <RiLoader4Line size={16} className="animate-spin" />
                 ) : (
                   <RiDownloadLine size={16} />
                 )}
-                {isDownloading ? "Упаковка фото..." : t("download_all_album")}
+                {isDownloadingAll ? "Упаковка фото..." : t("download_all_album")}
               </button>
             </div>
           </div>
