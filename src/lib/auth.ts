@@ -55,12 +55,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
       }
-      // Fetch role + profile status on login and after session update
-      if (user || trigger === "update") {
+      if (user) {
+        // Initial login — fetch from DB
         const [dbUser] = await db
           .select({
             role: users.role,
@@ -72,6 +72,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .limit(1);
         token.role = dbUser?.role || "user";
         token.profileCompleted = !!(dbUser?.phone && dbUser?.occupation);
+      } else if (trigger === "update" && session?.profileCompleted) {
+        // Client confirmed profile was just completed — trust it
+        token.profileCompleted = true;
       }
       return token;
     },

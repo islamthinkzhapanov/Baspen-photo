@@ -6,11 +6,8 @@ import {
   RiAddLine,
   RiCalendarLine,
   RiMapPinLine,
-  RiImageLine,
-  RiGroupLine,
   RiSearchLine,
   RiCameraLine,
-  RiEyeLine,
 } from "@remixicon/react";
 import { useState } from "react";
 import {
@@ -25,6 +22,7 @@ import {
   TableCell,
   TextInput,
 } from "@tremor/react";
+
 import { useEvents } from "@/hooks/useEvents";
 
 // --- Component ---
@@ -63,18 +61,6 @@ export function EventsPage() {
     return true;
   });
 
-  // --- Aggregated stats ---
-  const totalPhotos = (events as Event[]).reduce((sum, e) => sum + (e.photoCount || 0), 0);
-  const totalSearches = (events as Event[]).reduce((sum, e) => sum + (e.searches || 0), 0);
-  const totalParticipants = (events as Event[]).reduce((sum, e) => sum + (e.participants || 0), 0);
-
-  const statCards = [
-    { label: t("total_projects"), value: (events as Event[]).length, icon: RiCameraLine, color: "bg-primary/10 text-primary" },
-    { label: t("total_photos"), value: totalPhotos.toLocaleString("ru-RU"), icon: RiImageLine, color: "bg-emerald-50 text-emerald-600" },
-    { label: t("total_searches"), value: totalSearches.toLocaleString("ru-RU"), icon: RiEyeLine, color: "bg-amber-50 text-amber-600" },
-    { label: t("total_participants"), value: totalParticipants.toLocaleString("ru-RU"), icon: RiGroupLine, color: "bg-violet-50 text-violet-600" },
-  ];
-
   const filterTabs = [
     { key: "all" as const, label: t("filter_all") },
     { key: "published" as const, label: t("filter_published") },
@@ -87,24 +73,6 @@ export function EventsPage() {
       <div>
         <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
         <p className="text-sm text-text-secondary mt-1">{t("subtitle")}</p>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.label} className="p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
-                <Icon size={18} />
-              </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs text-text-secondary mt-0.5">{stat.label}</p>
-              </div>
-            </Card>
-          );
-        })}
       </div>
 
       {/* Search + Filters */}
@@ -173,21 +141,16 @@ export function EventsPage() {
                 <TableRow key={event.id}>
                   <TableCell>
                     <Link href={`/events/${event.id}`} className="group">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/5 to-primary/15 flex items-center justify-center flex-shrink-0">
-                          <RiImageLine size={18} className="text-primary/40" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium group-hover:text-primary transition-colors truncate">
-                            {event.title}
-                          </p>
-                          {event.location && (
-                            <div className="flex items-center gap-1 text-xs text-text-secondary">
-                              <RiMapPinLine size={12} />
-                              <span className="truncate">{event.location}</span>
-                            </div>
-                          )}
-                        </div>
+                      <div className="min-w-0">
+                        <p className="font-medium group-hover:text-primary transition-colors truncate">
+                          {event.title}
+                        </p>
+                        {event.location && (
+                          <div className="flex items-center gap-1 text-xs text-text-secondary">
+                            <RiMapPinLine size={12} />
+                            <span className="truncate">{event.location}</span>
+                          </div>
+                        )}
                       </div>
                     </Link>
                   </TableCell>

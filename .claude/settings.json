@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Bash(git *)",
+      "Bash(cd * && git *)",
+      "Bash(cd * && echo * && git *)",
+      "Bash(ssh *)",
       "WebSearch",
       "WebFetch(domain:kadr.app)",
       "Bash(pnpm -v)",
@@ -618,7 +622,37 @@
       "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload 2>&1 && sleep 2 && curl -sk https://localhost -o /dev/null -w '%{http_code}'\")",
       "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml up -d app 2>&1 && sleep 3 && curl -sk https://localhost -o /dev/null -w '%{http_code}'\")",
       "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && git pull origin main 2>&1 && docker compose -f docker-compose.prod.yml build app 2>&1 | tail -3\")",
-      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && git pull origin main 2>&1 && docker compose -f docker-compose.prod.yml build app 2>&1 | tail -3 && docker compose -f docker-compose.prod.yml up -d app 2>&1\")"
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && git pull origin main 2>&1 && docker compose -f docker-compose.prod.yml build app 2>&1 | tail -3 && docker compose -f docker-compose.prod.yml up -d app 2>&1\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"docker compose -f docker-compose.prod.yml ps\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml ps\")",
+      "Bash(ssh root@204.168.229.127 \"pm2 status && pm2 logs baspen --lines 30 --nostream\")",
+      "Bash(ssh root@204.168.229.127 'export PATH=$PATH:/root/.nvm/versions/node/*/bin:/usr/local/bin && which pm2 && pm2 status && pm2 logs --lines 30 --nostream')",
+      "Bash(ssh root@204.168.229.127 'source ~/.bashrc 2>/dev/null; source ~/.nvm/nvm.sh 2>/dev/null; which node; which pm2; pm2 status; pm2 logs --lines 30 --nostream')",
+      "Bash(ssh root@204.168.229.127 'find / -name pm2 -type f 2>/dev/null; find / -name node -type f 2>/dev/null | head -5; ls /root/.nvm/ 2>/dev/null; docker ps 2>/dev/null; systemctl list-units --type=service --state=running 2>/dev/null | grep -iE \"next|node|baspen|nginx\"')",
+      "Bash(ssh root@204.168.229.127 'docker ps 2>/dev/null; systemctl list-units --type=service --state=running 2>/dev/null | grep -iE \"next|node|baspen|nginx|docker\"')",
+      "Bash(ssh root@204.168.229.127 'docker logs app-app-1 --tail 50')",
+      "Bash(ssh root@204.168.229.127 'docker logs app-app-1 --tail 200 2>&1 | grep -iE \"error|ERR|fail|crash|SIGTERM|restart|killed|502|OOM\"')",
+      "Bash(ssh root@204.168.229.127 'docker logs app-nginx-1 --tail 30 2>&1 | grep -E \"502|almaty\"')",
+      "Bash(ssh root@204.168.229.127 'docker exec app-nginx-1 wget -qO- --timeout=5 http://app:3000/ 2>&1 | head -20')",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml logs app --tail 20\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec nginx wget -qO /dev/null --timeout=5 http://app:3000/ru/e/almaty-marafon-2026 2>&1; echo exit:\\\\$?\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml ps app\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml logs app --tail 50 2>&1\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec nginx nginx -s reload\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"curl -sk -o /dev/null -w '%{http_code}' https://mytime.kz/ru/e/almaty-marafon-2026\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec nginx nginx -s reload && sleep 3 && curl -sk -o /dev/null -w '%{http_code}' https://mytime.kz/ru/e/almaty-marafon-2026\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec nginx nginx -s reload && sleep 2 && curl -sk -o /dev/null -w '%{http_code}' https://mytime.kz/ru/e/almaty-marafon-2026\")",
+      "Bash(ssh -i ~/.ssh/hetzner baspen@204.168.229.127 \"cd ~/app && docker compose -f docker-compose.prod.yml exec nginx nginx -s reload 2>&1 && sleep 2 && curl -sk -o /dev/null -w '%{http_code}' https://mytime.kz/ru/e/almaty-marafon-2026\")",
+      "Bash(cat drizzle.config.ts)",
+      "Bash(cat drizzle.config.js)",
+      "Bash(rsync -avz --delete --exclude=.git --exclude=node_modules --exclude=.next --exclude=.env.local --exclude=nginx/ssl --exclude=uploads ./ root@204.168.229.127:/home/baspen/app/)",
+      "Bash(python3 -m json.tool)",
+      "Bash(rsync -avz --delete --exclude-from=.rsync-exclude ./ root@204.168.229.127:/home/baspen/app/)",
+      "Bash(npm -v)",
+      "Bash(npx npm@10 install @radix-ui/react-icons @radix-ui/react-dialog @radix-ui/react-slot class-variance-authority @radix-ui/react-checkbox)",
+      "Bash(corepack enable:*)",
+      "Bash(export PATH=\"$HOME/.local/share/pnpm:$HOME/.corepack/bin:$PATH\")",
+      "Bash(corepack pnpm:*)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
@@ -636,7 +670,8 @@
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/(auth)/reset-password",
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/order",
       "/Users/mobibrand/Documents/Baspen photo/.github",
-      "/Users/mobibrand/Documents/Baspen photo/.claude"
+      "/Users/mobibrand/Documents/Baspen photo/.claude",
+      "/Users/mobibrand/Documents/Baspen photo/messages"
     ]
   }
 }

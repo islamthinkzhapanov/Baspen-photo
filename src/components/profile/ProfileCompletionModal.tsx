@@ -51,8 +51,8 @@ export function ProfileCompletionModal() {
       // Fire confetti
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-      // Re-fetch session so profileCompleted updates
-      await update();
+      // Update session with profileCompleted flag
+      await update({ profileCompleted: true });
     } catch {
       toast.error(t("save_error"));
     } finally {
