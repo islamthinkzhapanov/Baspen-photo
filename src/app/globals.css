@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /* Disable dark mode site-wide: dark: classes only activate inside .force-dark (never used) */
 @variant dark (&:is(.force-dark *));
@@ -46,7 +45,6 @@
 @theme inline {
   --color-primary: #005FF9;
   --color-primary-hover: #0050d4;
-  --color-primary-foreground: #ffffff;
   --color-success: #0DC268;
   --color-text: #2C2D2E;
   --color-text-secondary: #6B7280;
@@ -56,21 +54,6 @@
   --color-border-active: rgba(0, 16, 61, 0.48);
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Inter", system-ui, sans-serif;
-
-  /* shadcn/ui tokens */
-  --color-background: #ffffff;
-  --color-foreground: #2C2D2E;
-  --color-muted: #f9fafb;
-  --color-muted-foreground: #6b7280;
-  --color-accent: #f3f4f6;
-  --color-accent-foreground: #111827;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-secondary: #f3f4f6;
-  --color-secondary-foreground: #111827;
-  --color-input: #e5e7eb;
-  --color-ring: #005FF9;
-  --radius: 0.5rem;
 
   /* Tailwind standard palettes required by Tremor charts */
   --color-blue-50: #eff6ff;
