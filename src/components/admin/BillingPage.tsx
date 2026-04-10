@@ -1,11 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  RiImageLine,
-  RiCalendarLine,
-  RiHardDriveLine,
-} from "@remixicon/react";
+import {} from "@remixicon/react";
 import { Button } from "@tremor/react";
 
 // --- Demo data ---
@@ -38,27 +34,6 @@ const eventPackages = [
 export function BillingPage() {
   const t = useTranslations("billing");
 
-  const usageItems = [
-    {
-      icon: RiImageLine,
-      label: t("limit_photos", { count: currentPlan.maxPhotosPerEvent.toLocaleString("ru-RU") }),
-      used: currentPlan.usedPhotos,
-      max: currentPlan.maxPhotosPerEvent,
-    },
-    {
-      icon: RiCalendarLine,
-      label: t("limit_events", { count: currentPlan.maxEvents }),
-      used: currentPlan.usedEvents,
-      max: currentPlan.maxEvents,
-    },
-    {
-      icon: RiHardDriveLine,
-      label: t("limit_storage", { gb: currentPlan.maxStorageGb }),
-      used: currentPlan.usedStorageGb,
-      max: currentPlan.maxStorageGb,
-    },
-  ];
-
   return (
     <div className="space-y-10">
       {/* Header */}
@@ -69,51 +44,6 @@ export function BillingPage() {
             date: new Date(currentPlan.currentPeriodEnd).toLocaleDateString("ru-RU"),
           })}
         </p>
-      </div>
-
-      {/* Current Plan */}
-      <div className="border border-border rounded-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 border-b border-border">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-text-secondary mb-1">{t("current_plan")}</p>
-            <p className="text-2xl font-bold">{currentPlan.name}</p>
-            <p className="text-sm text-text-secondary mt-0.5">
-              {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
-            </p>
-            <p className="text-xs text-text-secondary mt-1">
-              Пакет: до {currentPlan.currentPackagePhotos} фото/событие · {currentPlan.currentPackagePrice} ₸ · ~{currentPlan.currentPackagePerPhoto} ₸/фото
-            </p>
-          </div>
-          <button className="text-sm text-text-secondary hover:text-text-primary border border-border rounded-lg px-4 py-2 transition-colors w-fit">
-            {t("cancel_subscription")}
-          </button>
-        </div>
-
-        {/* Usage */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
-          {usageItems.map((item) => {
-            const Icon = item.icon;
-            const percent = Math.round((item.used / item.max) * 100);
-            return (
-              <div key={item.label} className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon size={15} className="text-text-secondary" />
-                  <span className="text-xs text-text-secondary">{item.label}</span>
-                </div>
-                <div className="flex items-baseline gap-1.5 mb-2.5">
-                  <span className="text-xl font-semibold tabular-nums">{item.used.toLocaleString("ru-RU")}</span>
-                  <span className="text-xs text-text-secondary">/ {item.max.toLocaleString("ru-RU")}</span>
-                </div>
-                <div className="w-full h-1 bg-bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-text-primary/20 transition-all"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       {/* Event Photo Packages */}

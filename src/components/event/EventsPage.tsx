@@ -27,6 +27,7 @@ import {
 } from "@tremor/react";
 
 import { useEvents, useDeleteEvent } from "@/hooks/useEvents";
+import { CreateProjectModal } from "./CreateProjectModal";
 
 // --- Component ---
 
@@ -48,6 +49,7 @@ export function EventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const deleteEventMutation = useDeleteEvent();
 
@@ -116,11 +118,11 @@ export function EventsPage() {
             </button>
           ))}
         </div>
-        <Link href="/events/new" className="sm:ml-auto inline-block">
+        <button onClick={() => setShowCreateModal(true)} className="sm:ml-auto inline-block">
           <Button icon={() => <RiAddLine size={16} />} className="w-full sm:w-auto">
             {t("create")}
           </Button>
-        </Link>
+        </button>
       </div>
 
       {/* Table */}
@@ -132,15 +134,16 @@ export function EventsPage() {
             </div>
             <h2 className="text-lg font-semibold">{t("no_events")}</h2>
             <p className="text-sm text-text-secondary mt-2">{t("no_events_desc")}</p>
-            <Link href="/events/new" className="inline-block mt-5">
+            <button onClick={() => setShowCreateModal(true)} className="inline-block mt-5">
               <Button icon={() => <RiAddLine size={16} />}>
                 {t("create")}
               </Button>
-            </Link>
+            </button>
           </div>
         </Card>
       ) : (
-        <Card className="p-0 overflow-x-auto">
+        <Card className="p-0">
+          <div className="overflow-x-auto">
           <Table className="min-w-[500px]">
             <TableHead>
               <TableRow>
@@ -219,20 +222,20 @@ export function EventsPage() {
                         <RiMore2Line size={16} className="text-text-secondary" />
                       </button>
                       {menuOpenId === event.id && (
-                        <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-20 min-w-[140px] py-1">
+                        <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1">
                           <Link
                             href={`/events/${event.id}`}
                             className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-bg-secondary transition-colors"
                             onClick={() => setMenuOpenId(null)}
                           >
                             <RiEditLine size={14} />
-                            {t("edit") || "Изменить"}
+                            {t("edit")}
                           </Link>
                           <button
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (confirm(t("delete_confirm") || "Удалить проект?")) {
+                              if (confirm(t("delete_confirm"))) {
                                 deleteEventMutation.mutate(event.id);
                               }
                               setMenuOpenId(null);
@@ -240,7 +243,7 @@ export function EventsPage() {
                             className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
                           >
                             <RiDeleteBinLine size={14} />
-                            {t("delete") || "Удалить"}
+                            {t("delete")}
                           </button>
                         </div>
                       )}
@@ -250,6 +253,7 @@ export function EventsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
 
           {filtered.length === 0 && (
             <div className="py-12 text-center">
@@ -260,6 +264,7 @@ export function EventsPage() {
           )}
         </Card>
       )}
+      <CreateProjectModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </div>
   );
 }

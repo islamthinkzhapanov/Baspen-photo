@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { TextInput, NumberInput, Button, DatePicker, Select, SelectItem } from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
-import { TimePicker } from "@/components/ui/time-picker";
 import {
   RiMapPinLine,
   RiDownloadLine,
@@ -53,12 +52,9 @@ export function EventForm({ event }: EventFormProps) {
   const [eventDate, setEventDate] = useState<Date | undefined>(
     event?.date ? new Date(event.date) : undefined
   );
-  const [eventTime, setEventTime] = useState(
-    event?.date ? new Date(event.date).toISOString().slice(11, 16) : ""
-  );
   const [location, setLocation] = useState(event?.location || "");
   const [pricingMode] = useState(event?.pricingMode || "commission");
-  const [freeDownload, setFreeDownload] = useState(event?.settings?.freeDownload ?? false);
+  const [freeDownload, setFreeDownload] = useState(event?.settings?.freeDownload ?? true);
   const [photoSalesEnabled, setPhotoSalesEnabled] = useState(
     (event?.settings?.pricePerPhoto ?? 0) > 0 || event?.settings?.watermarkEnabled === true
   );
@@ -78,16 +74,7 @@ export function EventForm({ event }: EventFormProps) {
     const data = {
       title,
       slug: event?.slug || generateRandomSlug(),
-      date: eventDate
-        ? (() => {
-            const d = new Date(eventDate);
-            if (eventTime) {
-              const [h, m] = eventTime.split(":");
-              d.setHours(Number(h), Number(m), 0, 0);
-            }
-            return d.toISOString();
-          })()
-        : undefined,
+      date: eventDate ? eventDate.toISOString() : undefined,
       location: location || undefined,
       pricingMode: pricingMode as "exclusive" | "commission",
       settings: {
@@ -161,66 +148,53 @@ export function EventForm({ event }: EventFormProps) {
         </div>
       </section>
 
-      {/* Section 1: Basic Info */}
+      {/* Section 1: Basic Info + Date & Location */}
       <section className="rounded-xl bg-bg-secondary p-5 space-y-5">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-text mb-1.5">
-            {t("event_name")} <span className="text-red-500">*</span>
-          </label>
-          <TextInput
-            id="title"
-            name="title"
-            placeholder={t("event_name")}
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-text mb-1.5">
+              {t("event_name")} <span className="text-red-500">*</span>
+            </label>
+            <TextInput
+              id="title"
+              name="title"
+              placeholder={t("event_name")}
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              {t("retention_period")}
+            </label>
+            <Select
+              value={String(retentionMonths)}
+              onValueChange={(val) => setRetentionMonths(Number(val))}
+              enableClear={false}
+            >
+              <SelectItem value="1">1 мес</SelectItem>
+              <SelectItem value="6">6 мес</SelectItem>
+              <SelectItem value="12">12 мес</SelectItem>
+            </Select>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text mb-1.5">
-            {t("retention_period")}
-          </label>
-          <Select
-            value={String(retentionMonths)}
-            onValueChange={(val) => setRetentionMonths(Number(val))}
-            enableClear={false}
-          >
-            <SelectItem value="1">1 мес</SelectItem>
-            <SelectItem value="6">6 мес</SelectItem>
-            <SelectItem value="12">12 мес</SelectItem>
-          </Select>
-        </div>
-      </section>
-
-      {/* Section 2: Date & Location */}
-      <section className="rounded-xl bg-bg-secondary p-5">
-        <div className="space-y-3">
-          <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
-            <div>
-              <label className="block text-sm font-medium text-text mb-1.5">
-                {t("event_date")}
-              </label>
-              <DatePicker
-                value={eventDate}
-                onValueChange={setEventDate}
-                placeholder="дд.мм.гггг"
-                displayFormat="dd.MM.yyyy"
-                locale={ru}
-                enableClear={true}
-                enableYearNavigation
-                weekStartsOn={1}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text mb-1.5">
-                &nbsp;
-              </label>
-              <TimePicker
-                value={eventTime}
-                onChange={setEventTime}
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              {t("event_date")}
+            </label>
+            <DatePicker
+              value={eventDate}
+              onValueChange={setEventDate}
+              placeholder="дд.мм.гггг"
+              displayFormat="dd.MM.yyyy"
+              locale={ru}
+              enableClear={true}
+              enableYearNavigation
+              weekStartsOn={1}
+            />
           </div>
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-text mb-1.5">

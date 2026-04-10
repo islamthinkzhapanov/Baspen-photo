@@ -51,7 +51,9 @@ import {
   DialogPanel,
   Select,
   SelectItem,
+  DatePicker,
 } from "@tremor/react";
+import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -191,6 +193,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [settingsPrice, setSettingsPrice] = useState<number | undefined>();
   const [settingsDiscount, setSettingsDiscount] = useState<number | undefined>();
   const [settingsRetention, setSettingsRetention] = useState<number | undefined>();
+  const [settingsDate, setSettingsDate] = useState<Date | undefined>();
+  const [settingsLocation, setSettingsLocation] = useState<string | undefined>();
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -239,6 +243,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     setSettingsDiscount(event.settings?.packageDiscount || 0);
     setBibSearchToggle(!!event.settings?.bibSearchEnabled);
     setDisplayMode(event.settings?.displayMode ?? "search");
+    setSettingsDate(event.date ? new Date(event.date) : undefined);
+    setSettingsLocation(event.location || "");
     setSettingsInitialized(true);
   }
 
@@ -250,7 +256,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
     settingsDiscount !== (event.settings?.packageDiscount || 0) ||
     bibSearchToggle !== !!event.settings?.bibSearchEnabled ||
-    displayMode !== (event.settings?.displayMode ?? "search")
+    displayMode !== (event.settings?.displayMode ?? "search") ||
+    settingsDate?.toISOString() !== (event.date ? new Date(event.date).toISOString() : undefined) ||
+    settingsLocation !== (event.location || "")
   ) : false;
 
   async function handleCoverUpload(e: ChangeEvent<HTMLInputElement>) {
@@ -321,6 +329,8 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     updateMutation.mutate(
       {
         title: settingsTitle,
+        date: settingsDate ? settingsDate.toISOString() : undefined,
+        location: settingsLocation || undefined,
         settings: {
           freeDownload: freeDownloadToggle,
           watermarkEnabled: photoSalesToggle ? watermarkToggle : false,
@@ -557,6 +567,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
             { icon: RiGroupLine, label: t("team"), show: true },
             { icon: RiBarChart2Line, label: ta("title"), show: !isPhotographer },
             { icon: RiSettings3Line, label: t("settings"), show: !isPhotographer },
+            { icon: RiImageLine, label: t("cover_tab") || "Обложка альбома", show: !isPhotographer && displayMode === "gallery" },
           ]
             .filter((tab) => tab.show)
             .map((tab) => (
@@ -568,7 +579,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
         <TabPanels>
           {/* Photos Tab */}
           <TabPanel>
-            <div className="space-y-4">
+            <div className="space-y-4 mt-6">
               {/* Upload Zone */}
               <PhotoUploadZone eventId={eventId} albumId={uploadAlbumId} />
 
@@ -793,7 +804,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
           {/* Team Tab */}
           <TabPanel>
-            <div className="space-y-4">
+            <div className="space-y-4 mt-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-text-secondary">
                   {t("team")}
@@ -839,7 +850,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {/* Analytics Tab (Owner only) */}
           {!isPhotographer && (
             <TabPanel>
-              <div className="space-y-6">
+              <div className="space-y-6 mt-6">
                 {chartData.length > 0 ? (
                   <Card className="p-5">
                     <h3 className="text-sm font-semibold mb-4">Поиски и скачивания</h3>
@@ -931,6 +942,30 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                       </Select>
                     </div>
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">{t("event_date")}</label>
+                      <DatePicker
+                        value={settingsDate}
+                        onValueChange={setSettingsDate}
+                        placeholder="дд.мм.гггг"
+                        displayFormat="dd.MM.yyyy"
+                        locale={ru}
+                        enableClear={true}
+                        enableYearNavigation
+                        weekStartsOn={1}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">{t("event_location")}</label>
+                      <TextInput
+                        icon={RiMapPinLine}
+                        placeholder={t("event_location")}
+                        value={settingsLocation ?? ""}
+                        onChange={(e) => setSettingsLocation(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </Card>
 
                 <Card className="p-5 space-y-4">
@@ -972,77 +1007,6 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     </button>
                   </div>
                 </Card>
-
-                {displayMode === "gallery" && (
-                  <Card className="p-5 space-y-4">
-                    <h3 className="text-sm font-semibold">Обложка проекта</h3>
-                    <p className="text-xs text-text-secondary">
-                      Загрузите обложку для hero-секции открытого альбома. Рекомендуемый размер: 1440×700px.
-                    </p>
-                    {event.coverUrl ? (
-                      <div className="space-y-3">
-                        <div className="relative w-full h-48 rounded-lg overflow-hidden bg-bg-secondary">
-                          <img
-                            src={event.coverUrl}
-                            alt="Обложка"
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/40" />
-                          <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
-                            {event.title}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="xs"
-                            onClick={() => coverInputRef.current?.click()}
-                            disabled={coverUploading}
-                          >
-                            {coverUploading ? (
-                              <RiLoader4Line className="w-4 h-4 animate-spin" />
-                            ) : (
-                              "Заменить обложку"
-                            )}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="xs"
-                            onClick={handleCoverDelete}
-                            disabled={coverUploading}
-                            className="!text-red-500 hover:!text-red-500 border-red-200 hover:bg-red-50"
-                          >
-                            Удалить
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => coverInputRef.current?.click()}
-                        disabled={coverUploading}
-                        className="w-full h-40 rounded-lg border-2 border-dashed border-border hover:border-primary/50
-                          flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer"
-                      >
-                        {coverUploading ? (
-                          <RiLoader4Line className="w-8 h-8 text-text-secondary animate-spin" />
-                        ) : (
-                          <>
-                            <RiUploadLine className="w-8 h-8 text-text-secondary" />
-                            <span className="text-sm text-text-secondary">Загрузить обложку</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                    <input
-                      ref={coverInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      onChange={handleCoverUpload}
-                    />
-                  </Card>
-                )}
 
                 <Card className="p-5 space-y-4">
                   <h3 className="text-sm font-semibold">Настройки</h3>
@@ -1131,6 +1095,82 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                       Удалить проект
                     </Button>
                   </div>
+                </Card>
+              </div>
+            </TabPanel>
+          )}
+
+          {/* Cover Tab (Owner only, gallery mode) */}
+          {!isPhotographer && displayMode === "gallery" && (
+            <TabPanel>
+              <div className="space-y-6 mt-6">
+                <Card className="p-5 space-y-4">
+                  <h3 className="text-sm font-semibold">{t("cover_tab") || "Обложка альбома"}</h3>
+                  <p className="text-xs text-text-secondary">
+                    Загрузите обложку для hero-секции открытого альбома. Рекомендуемый размер: 1440×700px.
+                  </p>
+                  {event.coverUrl ? (
+                    <div className="space-y-3">
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-bg-secondary">
+                        <img
+                          src={event.coverUrl}
+                          alt="Обложка"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40" />
+                        <div className="absolute bottom-3 left-3 text-white text-sm font-medium">
+                          {event.title}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="xs"
+                          onClick={() => coverInputRef.current?.click()}
+                          disabled={coverUploading}
+                        >
+                          {coverUploading ? (
+                            <RiLoader4Line className="w-4 h-4 animate-spin" />
+                          ) : (
+                            "Заменить обложку"
+                          )}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="xs"
+                          onClick={handleCoverDelete}
+                          disabled={coverUploading}
+                          className="!text-red-500 hover:!text-red-500 border-red-200 hover:bg-red-50"
+                        >
+                          Удалить
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={coverUploading}
+                      className="w-full h-40 rounded-lg border-2 border-dashed border-border hover:border-primary/50
+                        flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      {coverUploading ? (
+                        <RiLoader4Line className="w-8 h-8 text-text-secondary animate-spin" />
+                      ) : (
+                        <>
+                          <RiUploadLine className="w-8 h-8 text-text-secondary" />
+                          <span className="text-sm text-text-secondary">Загрузить обложку</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleCoverUpload}
+                  />
                 </Card>
               </div>
             </TabPanel>
