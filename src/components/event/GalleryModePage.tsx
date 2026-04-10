@@ -435,12 +435,9 @@ export function GalleryModePage({
       {/* Search Mode Info */}
       {searchMode && !isSearching && (
         <div className="px-4 md:px-8 pt-4">
-          <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
-            <span>Найдено {matchedPhotoIds.size} фото по вашему запросу</span>
-            <button onClick={clearSearch} className="text-blue-600 hover:underline font-medium">
-              Показать все фото
-            </button>
-          </div>
+          <h2 className="text-sm font-medium text-gray-700">
+            Найдено {matchedPhotoIds.size} фото по вашему запросу
+          </h2>
         </div>
       )}
 
