@@ -570,7 +570,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <TabPanel>
             <div className="space-y-4">
               {/* Upload Zone */}
-              <PhotoUploadZone eventId={eventId} albumId={uploadAlbumId} albums={albumsData} onAlbumChange={setUploadAlbumId} />
+              <PhotoUploadZone eventId={eventId} albumId={uploadAlbumId} />
 
               {/* Album Strip */}
               {(albumsData.length > 0 || !isPhotographer) && (
@@ -862,22 +862,46 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 )}
 
                 <Card className="p-5">
-                  <h3 className="text-sm font-semibold mb-4">Воронка</h3>
-                  <div className="flex items-center justify-between gap-2 sm:gap-6 sm:justify-start">
-                    {[
-                      { label: "Посетители", value: (event.participants || 0) + (event.searches || 0) },
-                      { label: "Искали фото", value: event.searches || 0 },
-                      { label: "Скачали", value: event.downloads || 0 },
-                    ].map((step, i) => (
-                      <div key={step.label} className="flex items-center gap-2 sm:gap-4">
-                        <div className="text-center">
-                          <p className="text-lg sm:text-xl font-bold">{step.value.toLocaleString("ru-RU")}</p>
-                          <p className="text-xs text-text-secondary">{step.label}</p>
-                        </div>
-                        {i < 2 && <span className="text-text-secondary">→</span>}
+                  <h3 className="text-sm font-semibold mb-5">Воронка</h3>
+                  {(() => {
+                    const funnelSteps = [
+                      { label: "Посетители", value: (event.participants || 0) + (event.searches || 0), color: "bg-blue-500" },
+                      { label: "Искали фото", value: event.searches || 0, color: "bg-indigo-500" },
+                      { label: "Скачали", value: event.downloads || 0, color: "bg-emerald-500" },
+                    ];
+                    const maxVal = Math.max(funnelSteps[0].value, 1);
+                    return (
+                      <div className="space-y-4">
+                        {funnelSteps.map((step, i) => {
+                          const pct = Math.round((step.value / maxVal) * 100);
+                          const prevValue = i > 0 ? funnelSteps[i - 1].value : null;
+                          const convRate = prevValue && prevValue > 0 ? Math.round((step.value / prevValue) * 100) : null;
+                          return (
+                            <div key={step.label}>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-2 h-2 rounded-full ${step.color}`} />
+                                  <span className="text-sm font-medium text-text">{step.label}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {convRate !== null && (
+                                    <span className="text-xs text-text-secondary">{convRate}%</span>
+                                  )}
+                                  <span className="text-sm font-bold tabular-nums">{step.value.toLocaleString("ru-RU")}</span>
+                                </div>
+                              </div>
+                              <div className="w-full h-2 bg-bg-secondary rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${step.color} transition-all duration-500`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
                 </Card>
               </div>
             </TabPanel>
@@ -886,7 +910,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           {/* Settings Tab (Owner only) */}
           {!isPhotographer && (
             <TabPanel>
-              <div className="space-y-6">
+              <div className="space-y-6 mt-6">
                 <Card className="p-5 space-y-4">
                   <h3 className="text-sm font-semibold">Основное</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -986,7 +1010,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                             size="xs"
                             onClick={handleCoverDelete}
                             disabled={coverUploading}
-                            className="text-red-500 hover:text-red-600"
+                            className="!text-red-500 hover:!text-red-500 border-red-200 hover:bg-red-50"
                           >
                             Удалить
                           </Button>
@@ -1101,7 +1125,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     <Button
                       variant="secondary"
                       size="xs"
-                      className="border-red-200 hover:bg-red-50 text-red-500 hover:text-red-500"
+                      className="border-red-200 hover:bg-red-50 !text-red-500 hover:!text-red-500"
                       onClick={() => setDeleteEventOpen(true)}
                     >
                       Удалить проект

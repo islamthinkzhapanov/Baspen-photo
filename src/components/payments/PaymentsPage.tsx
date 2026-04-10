@@ -14,8 +14,11 @@ import {
   RiCloseCircleLine,
   RiRefundLine,
   RiLoader4Line,
+  RiMore2Line,
+  RiEyeLine,
+  RiDeleteBinLine,
 } from "@remixicon/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import {
@@ -64,6 +67,19 @@ function formatDate(iso: string, locale: string) {
 export function PaymentsPage() {
   const t = useTranslations("payments");
   const [filter, setFilter] = useState<"all" | "completed" | "pending">("all");
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpenId) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpenId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpenId]);
 
   const { data, isLoading, error } = useQuery<PaymentsData>({
     queryKey: ["payments"],
@@ -265,6 +281,7 @@ export function PaymentsPage() {
                 <TableHeaderCell className="text-right hidden sm:table-cell">
                   {t("col_status")}
                 </TableHeaderCell>
+                <TableHeaderCell className="w-10" />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -281,13 +298,13 @@ export function PaymentsPage() {
                         </div>
                         <div>
                           <p className="font-medium">{tx.description}</p>
-                          <p className="text-xs text-text-secondary">
+                          <p className="text-sm text-text-secondary">
                             {formatDate(tx.date, "ru-RU")}
                           </p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-text-secondary hidden sm:table-cell">
+                    <TableCell className="text-text-secondary text-sm hidden sm:table-cell">
                       {tx.event}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -296,13 +313,13 @@ export function PaymentsPage() {
                           size={14}
                           className="text-text-secondary"
                         />
-                        <span className="text-text-secondary text-xs">
+                        <span className="text-text-secondary text-sm">
                           {tx.method}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="font-semibold tabular-nums text-success">
+                      <span className="font-semibold tabular-nums text-sm text-success">
                         +{tx.amount.toLocaleString("ru-RU")} ₸
                       </span>
                     </TableCell>
@@ -310,6 +327,34 @@ export function PaymentsPage() {
                       <Badge color={status.color} icon={StatusIcon} size="xs">
                         {status.label}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="relative" ref={menuOpenId === tx.id ? menuRef : undefined}>
+                        <button
+                          onClick={() => setMenuOpenId(menuOpenId === tx.id ? null : tx.id)}
+                          className="p-1 rounded hover:bg-bg-secondary transition-colors cursor-pointer"
+                        >
+                          <RiMore2Line size={16} className="text-text-secondary" />
+                        </button>
+                        {menuOpenId === tx.id && (
+                          <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-20 min-w-[140px] py-1">
+                            <button
+                              onClick={() => setMenuOpenId(null)}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-bg-secondary transition-colors w-full text-left cursor-pointer"
+                            >
+                              <RiEyeLine size={14} />
+                              {t("view") || "Изменить"}
+                            </button>
+                            <button
+                              onClick={() => setMenuOpenId(null)}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                            >
+                              <RiDeleteBinLine size={14} />
+                              {t("delete") || "Удалить"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

@@ -8,8 +8,11 @@ import {
   RiMapPinLine,
   RiSearchLine,
   RiCameraLine,
+  RiMore2Line,
+  RiEditLine,
+  RiDeleteBinLine,
 } from "@remixicon/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Badge,
   Card,
@@ -23,7 +26,7 @@ import {
   TextInput,
 } from "@tremor/react";
 
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, useDeleteEvent } from "@/hooks/useEvents";
 
 // --- Component ---
 
@@ -44,6 +47,20 @@ export function EventsPage() {
   const t = useTranslations("events");
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const deleteEventMutation = useDeleteEvent();
+
+  useEffect(() => {
+    if (!menuOpenId) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpenId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpenId]);
 
   const { data: events = [] } = useEvents();
 
@@ -135,6 +152,7 @@ export function EventsPage() {
                 <TableHeaderCell className="text-right hidden sm:table-cell">{t("col_participants")}</TableHeaderCell>
                 <TableHeaderCell className="text-right">{t("col_status")}</TableHeaderCell>
                 <TableHeaderCell className="text-right hidden md:table-cell">{t("col_pricing")}</TableHeaderCell>
+                <TableHeaderCell className="w-10" />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -169,13 +187,13 @@ export function EventsPage() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="text-right tabular-nums text-sm">
                     {(event.photoCount || 0).toLocaleString("ru-RU")}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums hidden sm:table-cell">
+                  <TableCell className="text-right tabular-nums text-sm hidden sm:table-cell">
                     {(event.searches || 0).toLocaleString("ru-RU")}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums hidden sm:table-cell">
+                  <TableCell className="text-right tabular-nums text-sm hidden sm:table-cell">
                     {event.participants || 0}
                   </TableCell>
                   <TableCell className="text-right">
@@ -184,9 +202,49 @@ export function EventsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right hidden md:table-cell">
-                    <span className="text-xs text-text-secondary">
+                    <span className="text-sm text-text-secondary">
                       {event.pricingMode === "exclusive" ? t("exclusive") : t("commission")}
                     </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="relative" ref={menuOpenId === event.id ? menuRef : undefined}>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setMenuOpenId(menuOpenId === event.id ? null : event.id);
+                        }}
+                        className="p-1 rounded hover:bg-bg-secondary transition-colors cursor-pointer"
+                      >
+                        <RiMore2Line size={16} className="text-text-secondary" />
+                      </button>
+                      {menuOpenId === event.id && (
+                        <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-20 min-w-[140px] py-1">
+                          <Link
+                            href={`/events/${event.id}`}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-bg-secondary transition-colors"
+                            onClick={() => setMenuOpenId(null)}
+                          >
+                            <RiEditLine size={14} />
+                            {t("edit") || "Изменить"}
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (confirm(t("delete_confirm") || "Удалить проект?")) {
+                                deleteEventMutation.mutate(event.id);
+                              }
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                          >
+                            <RiDeleteBinLine size={14} />
+                            {t("delete") || "Удалить"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

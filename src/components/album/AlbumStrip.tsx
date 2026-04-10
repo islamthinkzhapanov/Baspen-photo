@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   RiAddLine,
   RiEditLine,
@@ -36,8 +36,22 @@ export function AlbumStrip({
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const createInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!activeMenuId) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setActiveMenuId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [activeMenuId]);
 
   useEffect(() => {
     if (creating) createInputRef.current?.focus();
@@ -90,7 +104,7 @@ export function AlbumStrip({
 
       {/* Album chips */}
       {albums.map((album) => (
-        <div key={album.id} className="flex items-center gap-0.5 group">
+        <div key={album.id} className="relative flex items-center gap-0.5" ref={activeMenuId === album.id ? menuRef : undefined}>
           {editingId === album.id ? (
             <div className="flex items-center gap-1">
               <input
@@ -118,7 +132,12 @@ export function AlbumStrip({
             </div>
           ) : (
             <button
-              onClick={() => onFilterChange(album.id)}
+              onClick={() => {
+                onFilterChange(album.id);
+                if (isOwner) {
+                  setActiveMenuId(activeMenuId === album.id ? null : album.id);
+                }
+              }}
               className={`${chipBase} ${activeFilter === album.id ? chipActive : chipInactive}`}
             >
               <RiFolderLine size={14} />
@@ -127,14 +146,15 @@ export function AlbumStrip({
             </button>
           )}
 
-          {/* Edit/Delete buttons - only for owners, visible on hover */}
-          {isOwner && editingId !== album.id && (
-            <div className="hidden group-hover:flex items-center gap-0.5 ml-0.5">
+          {/* Edit/Delete buttons - only for owners, visible on click */}
+          {isOwner && activeMenuId === album.id && editingId !== album.id && (
+            <div className="flex items-center gap-0.5 ml-0.5">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setEditingId(album.id);
                   setEditName(album.name);
+                  setActiveMenuId(null);
                 }}
                 className="p-1 text-text-secondary hover:text-text hover:bg-bg-secondary rounded cursor-pointer"
               >
@@ -144,6 +164,7 @@ export function AlbumStrip({
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteAlbum(album.id);
+                  setActiveMenuId(null);
                 }}
                 className="p-1 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded cursor-pointer"
               >

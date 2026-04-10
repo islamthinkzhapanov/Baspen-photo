@@ -20,12 +20,15 @@ const currentPlan = {
   usedEvents: 5,
   usedPhotos: 12480,
   usedStorageGb: 34,
+  currentPackagePhotos: "7 500",
+  currentPackagePrice: "300 000",
+  currentPackagePerPhoto: "40",
 };
 
 const eventPackages = [
   { photos: "2 500", price: "200 000", perPhoto: "80" },
   { photos: "5 000", price: "250 000", perPhoto: "50" },
-  { photos: "7 500", price: "300 000", perPhoto: "40", popular: true, current: true },
+  { photos: "7 500", price: "300 000", perPhoto: "40", current: true },
   { photos: "15 000", price: "400 000", perPhoto: "27" },
   { photos: "15 001+", price: "500 000", perPhoto: "~33" },
 ];
@@ -77,6 +80,9 @@ export function BillingPage() {
             <p className="text-sm text-text-secondary mt-0.5">
               {currentPlan.priceMonthly.toLocaleString("ru-RU")} {t("kzt_month")}
             </p>
+            <p className="text-xs text-text-secondary mt-1">
+              Пакет: до {currentPlan.currentPackagePhotos} фото/событие · {currentPlan.currentPackagePrice} ₸ · ~{currentPlan.currentPackagePerPhoto} ₸/фото
+            </p>
           </div>
           <button className="text-sm text-text-secondary hover:text-text-primary border border-border rounded-lg px-4 py-2 transition-colors w-fit">
             {t("cancel_subscription")}
@@ -124,20 +130,14 @@ export function BillingPage() {
               className={`relative flex flex-col items-center rounded-xl border p-5 text-center transition-shadow hover:shadow-md cursor-pointer ${
                 pkg.current
                   ? "border-primary bg-primary/[0.03] ring-2 ring-primary/30"
-                  : pkg.popular
-                    ? "border-primary bg-primary/[0.03] ring-1 ring-primary/20"
-                    : "border-border"
+                  : "border-border"
               }`}
             >
-              {pkg.current ? (
+              {pkg.current && (
                 <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white whitespace-nowrap">
                   Текущий тариф
                 </span>
-              ) : pkg.popular ? (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  Выгодный
-                </span>
-              ) : null}
+              )}
 
               <p className="text-xs text-text-secondary mb-1">до</p>
               <p className="text-2xl font-bold tabular-nums leading-tight">{pkg.photos}</p>

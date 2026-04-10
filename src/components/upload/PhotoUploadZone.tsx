@@ -10,22 +10,16 @@ import {
   RiCheckboxCircleLine,
   RiCloseCircleLine,
 } from "@remixicon/react";
-import { AlbumSelector } from "@/components/album/AlbumSelector";
-import { useCreateAlbum, type Album } from "@/hooks/useAlbums";
-
 interface Props {
   eventId: string;
   albumId?: string | null;
-  albums?: Album[];
-  onAlbumChange?: (albumId: string | null) => void;
 }
 
 type Phase = "idle" | "uploading" | "processing" | "done";
 
-export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Props) {
+export function PhotoUploadZone({ eventId, albumId }: Props) {
   const t = useTranslations("upload");
   const qc = useQueryClient();
-  const createAlbumMutation = useCreateAlbum(eventId);
   const [phase, setPhase] = useState<Phase>("idle");
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [uploadedCount, setUploadedCount] = useState(0);
@@ -103,21 +97,6 @@ export function PhotoUploadZone({ eventId, albumId, albums, onAlbumChange }: Pro
 
   return (
     <div>
-      {/* Album selector for upload target */}
-      {albums && albums.length > 0 && onAlbumChange && (
-        <AlbumSelector
-          albums={albums}
-          value={albumId ?? null}
-          onChange={onAlbumChange}
-          onCreateAlbum={(name) =>
-            createAlbumMutation.mutate({ name }, {
-              onSuccess: (newAlbum: Album) => onAlbumChange(newAlbum.id),
-            })
-          }
-          className="mb-3"
-        />
-      )}
-
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
