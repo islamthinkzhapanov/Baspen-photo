@@ -4,7 +4,13 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { DatePicker, Select, SelectItem } from "@tremor/react";
+import {
+  DatePicker,
+  Select,
+  SelectItem,
+  TextInput,
+  NumberInput,
+} from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { useCreateEvent } from "@/hooks/useEvents";
@@ -21,6 +27,10 @@ import {
   RiUserLine,
   RiSmartphoneLine,
   RiBriefcaseLine,
+  RiCalendarLine,
+  RiTimeLine,
+  RiPriceTag3Line,
+  RiPercentLine,
 } from "@remixicon/react";
 
 interface CreateProjectModalProps {
@@ -28,29 +38,15 @@ interface CreateProjectModalProps {
   onClose: () => void;
 }
 
-/* ── Styled input (AuthModal pattern) ── */
-type IconComponent = React.ComponentType<{ size?: number | string; className?: string }>;
-
-function ModalInput({
-  icon: Icon,
-  ...props
-}: {
-  icon: IconComponent;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
-  return (
-    <div className="group relative flex items-center rounded-xl border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-      <Icon
-        size={18}
-        className="pointer-events-none absolute left-3.5 text-text-secondary transition-colors duration-200 group-focus-within:text-primary"
-      />
-      <input
-        type="text"
-        {...props}
-        className="w-full rounded-xl bg-transparent py-3 pl-10 pr-4 text-[15px] text-text placeholder:text-text-secondary/60 outline-none"
-      />
-    </div>
-  );
-}
+/* ── Consistent height class for all Tremor inputs/selects ── */
+const inputClassName =
+  "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
+const selectClassName =
+  "!rounded-xl [&>button]:!h-[42px] [&>button]:!text-[15px]";
+const datePickerClassName =
+  "!rounded-xl [&>button]:!h-[42px] [&>button]:!text-[15px]";
+const numberInputClassName =
+  "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 
 /* ── Phone formatting (from ProfilePage) ── */
 function formatPhone(d: string) {
@@ -85,7 +81,9 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
   const [retentionMonths, setRetentionMonths] = useState(12);
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [location, setLocation] = useState("");
-  const [displayMode, setDisplayMode] = useState<"search" | "gallery">("search");
+  const [displayMode, setDisplayMode] = useState<"search" | "gallery">(
+    "search"
+  );
   const [freeDownload, setFreeDownload] = useState(true);
   const [bibSearchEnabled, setBibSearchEnabled] = useState(false);
   const [photoSalesEnabled, setPhotoSalesEnabled] = useState(false);
@@ -161,7 +159,10 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/user/avatar", { method: "POST", body: formData });
+      const res = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: formData,
+      });
       if (!res.ok) throw new Error();
       const { url } = await res.json();
       setCardAvatarUrl(url);
@@ -242,7 +243,7 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[480px] max-h-[90vh] animate-[fade-in-up_300ms_ease-out] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
+      <div className="relative w-full max-w-[560px] max-h-[90vh] animate-[fade-in-up_300ms_ease-out] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
         {/* Header */}
         <div className="relative px-7 pt-7 pb-0 shrink-0">
           <button
@@ -295,13 +296,11 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                   <label className="block text-[13px] font-medium text-text mb-1.5">
                     {t("event_name")} <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    required
+                  <TextInput
+                    placeholder={t("event_name")}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder={t("event_name")}
-                    className="w-full rounded-xl border border-border bg-white py-3 px-4 text-[15px] text-text placeholder:text-text-secondary/60 outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    className={inputClassName}
                   />
                 </div>
 
@@ -313,6 +312,8 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     value={String(retentionMonths)}
                     onValueChange={(val) => setRetentionMonths(Number(val))}
                     enableClear={false}
+                    icon={RiTimeLine}
+                    className={selectClassName}
                   >
                     <SelectItem value="1">1 мес</SelectItem>
                     <SelectItem value="6">6 мес</SelectItem>
@@ -336,17 +337,19 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     enableClear={true}
                     enableYearNavigation
                     weekStartsOn={1}
+                    className={datePickerClassName}
                   />
                 </div>
                 <div>
                   <label className="block text-[13px] font-medium text-text mb-1.5">
                     {t("event_location")}
                   </label>
-                  <ModalInput
+                  <TextInput
                     icon={RiMapPinLine}
                     placeholder={t("event_location")}
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -366,8 +369,12 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                         : "border-border bg-white hover:border-primary/30"
                     }`}
                   >
-                    <RiCameraLine className={`w-5 h-5 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`} />
-                    <span className={`text-xs font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}>
+                    <RiCameraLine
+                      className={`w-5 h-5 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`}
+                    />
+                    <span
+                      className={`text-xs font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}
+                    >
                       {t("display_mode_search")}
                     </span>
                   </button>
@@ -380,8 +387,12 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                         : "border-border bg-white hover:border-primary/30"
                     }`}
                   >
-                    <RiGridLine className={`w-5 h-5 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`} />
-                    <span className={`text-xs font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}>
+                    <RiGridLine
+                      className={`w-5 h-5 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`}
+                    />
+                    <span
+                      className={`text-xs font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}
+                    >
                       {t("display_mode_gallery")}
                     </span>
                   </button>
@@ -393,7 +404,9 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                 <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
                   <div className="flex items-center gap-3">
                     <RiDownloadLine className="w-4 h-4 text-text-secondary" />
-                    <span className="text-sm font-medium text-text">{t("free_download")}</span>
+                    <span className="text-sm font-medium text-text">
+                      {t("free_download")}
+                    </span>
                   </div>
                   <Switch checked={freeDownload} onChange={setFreeDownload} />
                 </div>
@@ -402,19 +415,31 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                   <div className="flex items-center gap-3">
                     <RiHashtag className="w-4 h-4 text-text-secondary" />
                     <div>
-                      <span className="text-sm font-medium text-text">{t("bib_search")}</span>
-                      <p className="text-xs text-text-secondary">{t("bib_search_hint")}</p>
+                      <span className="text-sm font-medium text-text">
+                        {t("bib_search")}
+                      </span>
+                      <p className="text-xs text-text-secondary">
+                        {t("bib_search_hint")}
+                      </p>
                     </div>
                   </div>
-                  <Switch checked={bibSearchEnabled} onChange={setBibSearchEnabled} />
+                  <Switch
+                    checked={bibSearchEnabled}
+                    onChange={setBibSearchEnabled}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
                   <div className="flex items-center gap-3">
                     <RiShoppingCartLine className="w-4 h-4 text-text-secondary" />
-                    <span className="text-sm font-medium text-text">{t("photo_sales")}</span>
+                    <span className="text-sm font-medium text-text">
+                      {t("photo_sales")}
+                    </span>
                   </div>
-                  <Switch checked={photoSalesEnabled} onChange={setPhotoSalesEnabled} />
+                  <Switch
+                    checked={photoSalesEnabled}
+                    onChange={setPhotoSalesEnabled}
+                  />
                 </div>
 
                 {photoSalesEnabled && (
@@ -422,30 +447,39 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
                       <div className="flex items-center gap-3">
                         <RiDropLine className="w-4 h-4 text-text-secondary" />
-                        <span className="text-sm font-medium text-text">{t("watermark")}</span>
+                        <span className="text-sm font-medium text-text">
+                          {t("watermark")}
+                        </span>
                       </div>
-                      <Switch checked={watermarkEnabled} onChange={setWatermarkEnabled} />
+                      <Switch
+                        checked={watermarkEnabled}
+                        onChange={setWatermarkEnabled}
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-text-secondary mb-1">{t("price_per_photo")}</label>
-                        <input
-                          type="number"
+                        <label className="block text-xs text-text-secondary mb-1">
+                          {t("price_per_photo")}
+                        </label>
+                        <NumberInput
+                          icon={RiPriceTag3Line}
                           min={0}
                           value={pricePerPhoto}
-                          onChange={(e) => setPricePerPhoto(Number(e.target.value))}
-                          className="w-full rounded-xl border border-border bg-white py-2.5 px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                          onValueChange={setPricePerPhoto}
+                          className={numberInputClassName}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-text-secondary mb-1">{t("package_discount")}</label>
-                        <input
-                          type="number"
+                        <label className="block text-xs text-text-secondary mb-1">
+                          {t("package_discount")}
+                        </label>
+                        <NumberInput
+                          icon={RiPercentLine}
                           min={0}
                           max={100}
                           value={packageDiscount}
-                          onChange={(e) => setPackageDiscount(Number(e.target.value))}
-                          className="w-full rounded-xl border border-border bg-white py-2.5 px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                          onValueChange={setPackageDiscount}
+                          className={numberInputClassName}
                         />
                       </div>
                     </div>
@@ -460,13 +494,17 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
             <div className="space-y-5">
               {/* Enable switch */}
               <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
-                <span className="text-sm font-medium text-text">{t("business_card_enabled")}</span>
+                <span className="text-sm font-medium text-text">
+                  {t("business_card_enabled")}
+                </span>
                 <Switch checked={cardEnabled} onChange={setCardEnabled} />
               </div>
 
               {cardEnabled && (
                 <div className="space-y-4">
-                  <p className="text-xs text-text-secondary">{t("pull_from_profile")}</p>
+                  <p className="text-xs text-text-secondary">
+                    {t("pull_from_profile")}
+                  </p>
 
                   {/* Avatar */}
                   <div className="flex items-center gap-4">
@@ -476,13 +514,23 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                       className="relative w-16 h-16 rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden group cursor-pointer"
                     >
                       {cardAvatarUrl ? (
-                        <img src={cardAvatarUrl} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={cardAvatarUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
-                        <RiCameraLine size={24} className="text-text-secondary" />
+                        <RiCameraLine
+                          size={24}
+                          className="text-text-secondary"
+                        />
                       )}
                       {cardAvatarUploading && (
                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                          <RiLoader4Line size={20} className="animate-spin text-primary" />
+                          <RiLoader4Line
+                            size={20}
+                            className="animate-spin text-primary"
+                          />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -490,8 +538,12 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                       </div>
                     </button>
                     <div>
-                      <p className="text-sm font-medium">{tp("avatar_upload")}</p>
-                      <p className="text-xs text-text-secondary">JPG, PNG · 5 МБ</p>
+                      <p className="text-sm font-medium">
+                        {tp("avatar_upload")}
+                      </p>
+                      <p className="text-xs text-text-secondary">
+                        JPG, PNG · 5 МБ
+                      </p>
                     </div>
                     <input
                       ref={cardFileRef}
@@ -507,11 +559,12 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     <label className="block text-[13px] font-medium text-text">
                       {tp("name")}
                     </label>
-                    <ModalInput
+                    <TextInput
                       icon={RiUserLine}
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
                       placeholder={tp("name")}
+                      className={inputClassName}
                     />
                   </div>
 
@@ -520,15 +573,20 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     <label className="block text-[13px] font-medium text-text">
                       {tp("phone")}
                     </label>
-                    <ModalInput
+                    <TextInput
                       icon={RiSmartphoneLine}
                       value={formatPhone(cardPhoneDigits)}
                       onChange={(e) => {
                         const digits = e.target.value.replace(/\D/g, "");
-                        const clean = digits.startsWith("7") ? digits.slice(1) : digits.startsWith("8") ? digits.slice(1) : digits;
+                        const clean = digits.startsWith("7")
+                          ? digits.slice(1)
+                          : digits.startsWith("8")
+                            ? digits.slice(1)
+                            : digits;
                         setCardPhoneDigits(clean.slice(0, 10));
                       }}
                       placeholder={tp("phone_placeholder")}
+                      className={inputClassName}
                     />
                   </div>
 
@@ -537,11 +595,12 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     <label className="block text-[13px] font-medium text-text">
                       {tp("occupation")}
                     </label>
-                    <ModalInput
+                    <TextInput
                       icon={RiBriefcaseLine}
                       value={cardOccupation}
                       onChange={(e) => setCardOccupation(e.target.value)}
                       placeholder={tp("occupation_placeholder")}
+                      className={inputClassName}
                     />
                   </div>
                 </div>

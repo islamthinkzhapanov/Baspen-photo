@@ -101,7 +101,7 @@ export function EventsPage() {
           placeholder={t("search_placeholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="sm:max-w-xs"
+          className="sm:max-w-xs [&>input]:text-sm [&>input]:font-medium"
         />
         <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 w-fit">
           {filterTabs.map((tab) => (
@@ -142,9 +142,9 @@ export function EventsPage() {
           </div>
         </Card>
       ) : (
-        <Card className="p-0">
-          <div className="overflow-x-auto">
-          <Table className="min-w-[500px]">
+        <Card className="p-0 overflow-visible">
+          <div className="overflow-x-auto overflow-y-visible">
+          <Table className="min-w-[500px] [&_td]:text-sm [&_th]:text-sm">
             <TableHead>
               <TableRow>
                 <TableHeaderCell className="w-12">№</TableHeaderCell>

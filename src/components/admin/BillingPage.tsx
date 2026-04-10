@@ -37,22 +37,26 @@ export function BillingPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
-        <p className="text-sm text-text-secondary mt-1">
-          {t("valid_until", {
-            date: new Date(currentPlan.currentPeriodEnd).toLocaleDateString("ru-RU"),
-          })}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
+          <p className="text-sm text-text-secondary mt-1">
+            {t("valid_until", {
+              date: new Date(currentPlan.currentPeriodEnd).toLocaleDateString("ru-RU"),
+            })}
+          </p>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="text-amber-600 border-amber-300 hover:bg-amber-50 hover:text-amber-600 shrink-0"
+        >
+          Отписаться
+        </Button>
       </div>
 
       {/* Event Photo Packages */}
       <div>
-        <h2 className="text-lg font-semibold mb-1">Пакеты фотографий</h2>
-        <p className="text-sm text-text-secondary mb-5">
-          Разовая покупка — выберите нужный объём фото для мероприятия
-        </p>
-
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {eventPackages.map((pkg, i) => (
             <div

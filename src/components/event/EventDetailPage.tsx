@@ -32,6 +32,7 @@ import {
   RiCameraLine,
   RiGridLine,
   RiUploadLine,
+  RiMoreFill,
 } from "@remixicon/react";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
@@ -226,6 +227,19 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [confirmAction, setConfirmAction] = useState<"selected" | "all" | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
+  const photoMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!photoMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (photoMenuRef.current && !photoMenuRef.current.contains(e.target as Node)) {
+        setPhotoMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [photoMenuOpen]);
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
@@ -542,7 +556,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -561,7 +575,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
       {/* Tabs */}
       <TabGroup>
-        <TabList className="overflow-x-auto overflow-y-hidden flex-nowrap whitespace-nowrap [&>button]:shrink-0">
+        <TabList className="overflow-x-auto overflow-y-hidden flex-nowrap whitespace-nowrap [&>button]:shrink-0 [&>button]:text-sm">
           {[
             { icon: RiImageLine, label: t("photos"), show: true },
             { icon: RiGroupLine, label: t("team"), show: true },
@@ -626,15 +640,29 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                           <RiCheckboxLine size={14} />
                           {tp("select")}
                         </button>
-                        <button
-                          onClick={() => setConfirmAction("all")}
-                          className="h-8 px-3 text-xs font-medium rounded-lg border border-red-200
-                            text-red-500 hover:bg-red-50 transition-colors cursor-pointer
-                            flex items-center gap-1.5"
-                        >
-                          <RiDeleteBinLine size={14} />
-                          {tp("delete_all")}
-                        </button>
+                        <div className="relative" ref={photoMenuRef}>
+                          <button
+                            onClick={() => setPhotoMenuOpen(!photoMenuOpen)}
+                            className="h-8 w-8 flex items-center justify-center rounded-lg border border-border
+                              hover:bg-bg-secondary transition-colors cursor-pointer"
+                          >
+                            <RiMoreFill size={16} className="text-text-secondary" />
+                          </button>
+                          {photoMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-50 min-w-[160px] py-1">
+                              <button
+                                onClick={() => {
+                                  setPhotoMenuOpen(false);
+                                  setConfirmAction("all");
+                                }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                              >
+                                <RiDeleteBinLine size={14} />
+                                {tp("delete_all")}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     ) : (
                       <>
