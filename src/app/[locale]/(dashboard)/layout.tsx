@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
+import { ProfileGate } from "@/components/profile/ProfileGate";
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,7 @@ export default function DashboardLayout({
         <main className="flex-1 min-w-0 p-4 md:p-6 pb-20 md:pb-6 overflow-x-hidden">{children}</main>
       </div>
       <BottomTabBar />
+      <ProfileGate />
     </SidebarProvider>
   );
 }

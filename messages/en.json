@@ -810,5 +810,16 @@
     "move_to_album": "Move to folder",
     "photos_moved": "Photos moved",
     "delete_album_confirm": "Delete this folder? Photos will become unsorted."
+  },
+  "profileCompletion": {
+    "title": "Complete your profile",
+    "subtitle": "One last step! Fill in your contacts so gallery visitors can reach you.",
+    "name_label": "Name",
+    "name_placeholder": "John Doe",
+    "phone_label": "Phone",
+    "occupation_label": "Occupation",
+    "occupation_placeholder": "e.g. Wedding photographer",
+    "submit": "Get started",
+    "save_error": "Failed to save profile"
   }
 }

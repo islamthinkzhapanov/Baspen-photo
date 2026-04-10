@@ -55,16 +55,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        // Fetch role from DB
+      }
+      // Fetch role + profile status on login and after session update
+      if (user || trigger === "update") {
         const [dbUser] = await db
-          .select({ role: users.role })
+          .select({
+            role: users.role,
+            phone: users.phone,
+            occupation: users.occupation,
+          })
           .from(users)
-          .where(eq(users.id, user.id!))
+          .where(eq(users.id, token.id as string))
           .limit(1);
         token.role = dbUser?.role || "user";
+        token.profileCompleted = !!(dbUser?.phone && dbUser?.occupation);
       }
       return token;
     },
@@ -72,6 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.profileCompleted = token.profileCompleted as boolean;
       }
       return session;
     },

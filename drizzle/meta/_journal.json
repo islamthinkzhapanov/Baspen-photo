@@ -29,6 +29,13 @@
       "when": 1775593643473,
       "tag": "0003_performance_hnsw_avif",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775795986165,
+      "tag": "0004_funny_living_lightning",
+      "breakpoints": true
     }
   ]
 }
