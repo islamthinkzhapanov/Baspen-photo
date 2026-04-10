@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button, TextInput } from "@tremor/react";
+import { TextInput } from "@tremor/react";
+import confetti from "canvas-confetti";
 
 export function ProfileCompletionModal() {
   const { data: session, update } = useSession();
   const t = useTranslations("profileCompletion");
 
-  const [name, setName] = useState(session?.user?.name || "");
+  const [name, setName] = useState("");
   const [phoneDigits, setPhoneDigits] = useState("");
 
   function formatPhone(d: string) {
@@ -46,6 +47,9 @@ export function ProfileCompletionModal() {
       });
 
       if (!res.ok) throw new Error();
+
+      // Fire confetti
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
       // Re-fetch session so profileCompleted updates
       await update();
@@ -110,14 +114,19 @@ export function ProfileCompletionModal() {
             />
           </div>
 
-          <Button
+          <button
             type="submit"
-            loading={loading}
-            disabled={!isValid}
-            className="mt-6 w-full cursor-pointer text-white bg-blue-500 hover:bg-blue-500/80 relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.7)_50%,transparent_75%,transparent_100%)] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0]"
+            disabled={!isValid || loading}
+            className="mt-6 w-full py-3 px-4 inline-flex items-center justify-center gap-x-2 text-sm font-medium rounded-lg bg-[var(--color-tremor-brand)] border border-[var(--color-tremor-brand)] text-white hover:bg-[var(--color-tremor-brand-emphasis)] focus:outline-none focus:bg-[var(--color-tremor-brand-emphasis)] disabled:opacity-50 disabled:pointer-events-none cursor-pointer relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.7)_50%,transparent_75%,transparent_100%)] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0]"
           >
+            {loading ? (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : null}
             {t("submit")}
-          </Button>
+          </button>
         </form>
       </div>
     </div>
