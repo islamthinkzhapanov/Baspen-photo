@@ -27,7 +27,6 @@ import {
   RiUserLine,
   RiSmartphoneLine,
   RiBriefcaseLine,
-  RiCalendarLine,
   RiTimeLine,
   RiPriceTag3Line,
   RiPercentLine,
@@ -42,9 +41,9 @@ interface CreateProjectModalProps {
 const inputClassName =
   "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 const selectClassName =
-  "!rounded-xl [&>button]:!h-[42px] [&>button]:!text-[15px]";
+  "!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const datePickerClassName =
-  "!rounded-xl [&>button]:!h-[42px] [&>button]:!text-[15px]";
+  "!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const numberInputClassName =
   "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 
@@ -243,7 +242,7 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[560px] max-h-[90vh] animate-[fade-in-up_300ms_ease-out] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
+      <div className="relative w-full max-w-[560px] max-h-[90vh] animate-[fade-in-up_300ms_ease-out] overflow-visible rounded-2xl bg-white shadow-2xl flex flex-col">
         {/* Header */}
         <div className="relative px-7 pt-7 pb-0 shrink-0">
           <button

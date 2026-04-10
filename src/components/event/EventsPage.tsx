@@ -49,6 +49,7 @@ export function EventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const deleteEventMutation = useDeleteEvent();
@@ -58,6 +59,7 @@ export function EventsPage() {
     function handleClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpenId(null);
+        setMenuPos(null);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -215,14 +217,23 @@ export function EventsPage() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setMenuOpenId(menuOpenId === event.id ? null : event.id);
+                          if (menuOpenId === event.id) {
+                            setMenuOpenId(null);
+                            setMenuPos(null);
+                          } else {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                            setMenuOpenId(event.id);
+                          }
                         }}
                         className="p-1 rounded hover:bg-bg-secondary transition-colors cursor-pointer"
                       >
                         <RiMore2Line size={16} className="text-text-secondary" />
                       </button>
                       {menuOpenId === event.id && (
-                        <div className="absolute right-0 top-full mt-1 bg-bg border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1">
+                        <div
+                          className="fixed bg-bg border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1"
+                          style={{ top: menuPos?.top, right: menuPos?.right }}>
                           <Link
                             href={`/events/${event.id}`}
                             className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-bg-secondary transition-colors"
