@@ -813,12 +813,12 @@
   },
   "profileCompletion": {
     "title": "Complete your profile",
-    "subtitle": "One last step! Fill in your contacts so gallery visitors can reach you.",
+    "subtitle": "Add your contact details so clients can get in touch with you.",
     "name_label": "Name",
     "name_placeholder": "John Doe",
     "phone_label": "Phone",
     "occupation_label": "Occupation",
-    "occupation_placeholder": "e.g. Wedding photographer",
+    "occupation_placeholder": "e.g. Photographer",
     "submit": "Get started",
     "save_error": "Failed to save profile"
   }

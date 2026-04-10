@@ -11,11 +11,27 @@ export function ProfileCompletionModal() {
   const t = useTranslations("profileCompletion");
 
   const [name, setName] = useState(session?.user?.name || "");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+7 ");
+
+  function formatPhone(value: string) {
+    // Strip everything except digits
+    const digits = value.replace(/\D/g, "");
+    // Always start with 7
+    const d = digits.startsWith("7") ? digits.slice(1) : digits.startsWith("8") ? digits.slice(1) : digits;
+    let result = "+7";
+    if (d.length > 0) result += ` (${d.slice(0, 3)}`;
+    if (d.length >= 3) result += `) ${d.slice(3, 6)}`;
+    if (d.length >= 6) result += `-${d.slice(6, 8)}`;
+    if (d.length >= 8) result += `-${d.slice(8, 10)}`;
+    return result;
+  }
+
+  const phoneDigits = phone.replace(/\D/g, "");
+  const isPhoneValid = phoneDigits.length === 11;
   const [occupation, setOccupation] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isValid = name.trim() && phone.trim() && occupation.trim();
+  const isValid = name.trim() && isPhoneValid && occupation.trim();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +44,7 @@ export function ProfileCompletionModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          phone: phone.trim(),
+          phone: `+${phone.replace(/\D/g, "")}`,
           occupation: occupation.trim(),
         }),
       });
@@ -71,8 +87,11 @@ export function ProfileCompletionModal() {
             <TextInput
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+77758803866"
+              onChange={(e) => {
+                const formatted = formatPhone(e.target.value);
+                if (formatted.length <= 18) setPhone(formatted);
+              }}
+              placeholder="+7 (775) 880-38-66"
             />
           </div>
 
