@@ -5,7 +5,7 @@ import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { TextInput, NumberInput, Textarea, Button, DatePicker } from "@tremor/react";
+import { TextInput, NumberInput, Button, DatePicker, Select, SelectItem } from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
@@ -35,6 +35,7 @@ interface EventFormProps {
       packageDiscount?: number;
       bibSearchEnabled?: boolean;
       displayMode?: "search" | "gallery";
+      retentionMonths?: number;
     } | null;
   };
 }
@@ -47,9 +48,8 @@ export function EventForm({ event }: EventFormProps) {
   const updateMutation = useUpdateEvent(event?.id || "");
   const isEdit = !!event;
 
-  const [slug, setSlug] = useState(event?.slug || "");
   const [title, setTitle] = useState(event?.title || "");
-  const [description, setDescription] = useState(event?.description || "");
+  const [retentionMonths, setRetentionMonths] = useState(event?.settings?.retentionMonths ?? 12);
   const [eventDate, setEventDate] = useState<Date | undefined>(
     event?.date ? new Date(event.date) : undefined
   );
@@ -68,13 +68,8 @@ export function EventForm({ event }: EventFormProps) {
   const [bibSearchEnabled, setBibSearchEnabled] = useState(event?.settings?.bibSearchEnabled ?? false);
   const [displayMode, setDisplayMode] = useState<"search" | "gallery">(event?.settings?.displayMode ?? "search");
 
-  function generateSlug(title: string) {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 100);
+  function generateRandomSlug() {
+    return `event-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -82,8 +77,7 @@ export function EventForm({ event }: EventFormProps) {
 
     const data = {
       title,
-      slug,
-      description: description || undefined,
+      slug: event?.slug || generateRandomSlug(),
       date: eventDate
         ? (() => {
             const d = new Date(eventDate);
@@ -103,6 +97,7 @@ export function EventForm({ event }: EventFormProps) {
         packageDiscount: photoSalesEnabled ? packageDiscount : 0,
         bibSearchEnabled,
         displayMode,
+        retentionMonths,
       },
     };
 
@@ -178,45 +173,23 @@ export function EventForm({ event }: EventFormProps) {
             placeholder={t("event_name")}
             required
             value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (!isEdit) setSlug(generateSlug(e.target.value));
-            }}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-text mb-1.5">
-            {t("slug")} <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-text mb-1.5">
+            {t("retention_period")}
           </label>
-          <div className="flex">
-            <span className="inline-flex items-center px-3 rounded-l-tremor-default border border-r-0 border-tremor-border bg-tremor-background-subtle text-sm text-text-secondary select-none">
-              /e/
-            </span>
-            <div className="flex-1 [&_.tremor-TextInput-root]:rounded-l-none">
-              <TextInput
-                id="slug"
-                name="slug"
-                required
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-text mb-1.5">
-            {t("event_description")}
-          </label>
-          <Textarea
-            id="description"
-            name="description"
-            rows={3}
-            placeholder={t("event_description")}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+          <Select
+            value={String(retentionMonths)}
+            onValueChange={(val) => setRetentionMonths(Number(val))}
+            enableClear={false}
+          >
+            <SelectItem value="1">1 мес</SelectItem>
+            <SelectItem value="6">6 мес</SelectItem>
+            <SelectItem value="12">12 мес</SelectItem>
+          </Select>
         </div>
       </section>
 

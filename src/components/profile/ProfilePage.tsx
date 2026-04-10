@@ -38,7 +38,6 @@ function extractDigits(phone: string): string {
 export function ProfilePage() {
   const t = useTranslations("profile");
   const tc = useTranslations("common");
-  const ts = useTranslations("settings");
   const { data: session, update } = useSession();
 
   const [name, setName] = useState(session?.user?.name || "");
@@ -232,9 +231,6 @@ export function ProfilePage() {
             <div className="min-w-0">
               <p className="text-lg font-semibold">{name || "—"}</p>
               <p className="text-sm text-text-secondary">{email}</p>
-              <p className="text-xs text-primary mt-0.5 capitalize">
-                {ts("role_user")}
-              </p>
               <div className="flex gap-2 mt-2">
                 <button
                   type="button"
@@ -421,7 +417,7 @@ export function ProfilePage() {
             <Button
               variant="secondary"
               size="xs"
-              className="border-red-200 hover:bg-red-50 text-red-500"
+              className="border-red-200 hover:bg-red-50 text-red-500 hover:text-red-500"
               onClick={() => setShowDeleteModal(true)}
             >
               {t("delete_account")}

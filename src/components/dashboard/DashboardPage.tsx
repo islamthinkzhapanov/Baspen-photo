@@ -7,19 +7,10 @@ import {
   RiSearchLine,
   RiArrowUpLine,
   RiAddLine,
-  RiArrowRightUpLine,
   RiImageLine,
-  RiEyeLine,
 } from "@remixicon/react";
 import {
   Card,
-  Table,
-  TableHead,
-  TableRow,
-  TableHeaderCell,
-  TableBody,
-  TableCell,
-  Badge,
   Button,
 } from "@tremor/react";
 import { useEvents } from "@/hooks/useEvents";
@@ -71,10 +62,6 @@ export function DashboardPage() {
     },
   ];
 
-  const topEvents = eventsArr
-    .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
-    .slice(0, 4);
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -108,68 +95,7 @@ export function DashboardPage() {
         })}
       </div>
 
-      {topEvents.length > 0 ? (
-        <>
-          {/* Projects Table */}
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">{t("dashboard.top_projects")}</h2>
-              <Link
-                href="/events"
-                className="text-xs text-primary hover:underline flex items-center gap-1"
-              >
-                {t("dashboard.view_all")}
-                <RiArrowRightUpLine size={12} />
-              </Link>
-            </div>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableHeaderCell className="w-12">№</TableHeaderCell>
-                  <TableHeaderCell>{t("dashboard.project")}</TableHeaderCell>
-                  <TableHeaderCell className="text-right">{t("dashboard.photos_col")}</TableHeaderCell>
-                  <TableHeaderCell className="text-right">{t("dashboard.searches_col")}</TableHeaderCell>
-                  <TableHeaderCell className="text-right">{t("dashboard.revenue_col")}</TableHeaderCell>
-                  <TableHeaderCell className="text-right">{t("dashboard.status_col")}</TableHeaderCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {topEvents.map((event, index) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="tabular-nums text-text-secondary">{index + 1}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{event.title}</p>
-                        {event.date && (
-                          <p className="text-xs text-text-secondary">
-                            {new Date(event.date).toLocaleDateString("ru-RU", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{(event.photoCount || 0).toLocaleString("ru-RU")}</TableCell>
-                    <TableCell className="text-right tabular-nums">{(event.searches || 0).toLocaleString("ru-RU")}</TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
-                      {(event.revenue || 0).toLocaleString("ru-RU")} ₸
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge color={event.isPublished ? "green" : "gray"} size="xs">
-                        {event.isPublished
-                          ? t("dashboard.status_active")
-                          : t("dashboard.status_completed")}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </>
-      ) : (
+      {eventsArr.length === 0 && (
         <Card className="p-12">
           <div className="text-center max-w-md mx-auto">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">

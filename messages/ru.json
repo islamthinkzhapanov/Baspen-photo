@@ -209,6 +209,7 @@
     "event_description": "Описание",
     "slug": "Ссылка",
     "slug_hint": "Уникальная ссылка для участников",
+    "retention_period": "Срок хранения проекта",
     "cover": "Обложка",
     "pricing_mode": "Модель продаж",
     "exclusive": "Эксклюзив",

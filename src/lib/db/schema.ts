@@ -197,6 +197,7 @@ export const events = pgTable(
       commissionPercent?: number;
       bibSearchEnabled?: boolean;
       displayMode?: "search" | "gallery";
+      retentionMonths?: number;
     }>(),
     geofence: jsonb("geofence").$type<{
       lat: number;

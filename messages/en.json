@@ -206,6 +206,7 @@
     "event_description": "Description",
     "slug": "Link",
     "slug_hint": "Unique link for participants",
+    "retention_period": "Project retention period",
     "cover": "Cover",
     "pricing_mode": "Pricing model",
     "exclusive": "Exclusive",

@@ -41,7 +41,6 @@ import {
   Badge,
   Button,
   TextInput,
-  Textarea,
   NumberInput,
   TabGroup,
   TabList,
@@ -50,6 +49,8 @@ import {
   TabPanel,
   Dialog,
   DialogPanel,
+  Select,
+  SelectItem,
 } from "@tremor/react";
 import { Switch } from "@/components/ui/switch";
 import { LineChart } from "@/components/charts";
@@ -187,10 +188,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [bibSearchToggle, setBibSearchToggle] = useState(false);
   const [displayMode, setDisplayMode] = useState<"search" | "gallery">("search");
   const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
-  const [settingsSlug, setSettingsSlug] = useState<string | undefined>();
-  const [settingsDescription, setSettingsDescription] = useState<string | undefined>();
   const [settingsPrice, setSettingsPrice] = useState<number | undefined>();
   const [settingsDiscount, setSettingsDiscount] = useState<number | undefined>();
+  const [settingsRetention, setSettingsRetention] = useState<number | undefined>();
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -231,8 +231,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   // Initialize settings state from event data
   if (event && !settingsInitialized) {
     setSettingsTitle(event.title);
-    setSettingsSlug(event.slug);
-    setSettingsDescription(event.description || "");
+    setSettingsRetention(event.settings?.retentionMonths ?? 12);
     setFreeDownloadToggle(!!event.settings?.freeDownload);
     setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
     setWatermarkToggle(event.settings?.watermarkEnabled !== false);
@@ -245,8 +244,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
   const settingsDirty = settingsInitialized && event ? (
     settingsTitle !== event.title ||
-    settingsSlug !== event.slug ||
-    settingsDescription !== (event.description || "") ||
+    settingsRetention !== (event.settings?.retentionMonths ?? 12) ||
     freeDownloadToggle !== !!event.settings?.freeDownload ||
     watermarkToggle !== (event.settings?.watermarkEnabled !== false) ||
     settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
@@ -323,8 +321,6 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     updateMutation.mutate(
       {
         title: settingsTitle,
-        slug: settingsSlug,
-        description: settingsDescription || undefined,
         settings: {
           freeDownload: freeDownloadToggle,
           watermarkEnabled: photoSalesToggle ? watermarkToggle : false,
@@ -332,6 +328,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           packageDiscount: photoSalesToggle ? settingsDiscount : 0,
           bibSearchEnabled: bibSearchToggle,
           displayMode,
+          retentionMonths: settingsRetention ?? 12,
         },
       },
       {
@@ -483,9 +480,6 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               {event.isPublished ? t("published") : t("draft")}
             </Badge>
           </div>
-          {event.description && (
-            <p className="text-sm text-text-secondary mt-1">{event.description}</p>
-          )}
           <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
             {event.date && (
               <span className="flex items-center gap-1">
@@ -528,7 +522,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               variant="secondary"
               size="sm"
               icon={RiEyeLine}
-              className="text-xs sm:text-sm text-amber-600 border-amber-300 hover:bg-amber-50"
+              className="text-xs sm:text-sm text-amber-600 border-amber-300 hover:bg-amber-50 hover:text-amber-600"
               onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
             >
               {t("preview")}
@@ -901,14 +895,17 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                       <TextInput value={settingsTitle ?? event.title} onChange={(e) => setSettingsTitle(e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-text-secondary block mb-1">{t("slug")}</label>
-                      <TextInput value={settingsSlug ?? event.slug} onChange={(e) => setSettingsSlug(e.target.value)} />
-                      <p className="text-xs text-text-secondary mt-1">{t("slug_hint")}</p>
+                      <label className="text-xs text-text-secondary block mb-1">{t("retention_period")}</label>
+                      <Select
+                        value={String(settingsRetention ?? event.settings?.retentionMonths ?? 12)}
+                        onValueChange={(val) => setSettingsRetention(Number(val))}
+                        enableClear={false}
+                      >
+                        <SelectItem value="1">1 мес</SelectItem>
+                        <SelectItem value="6">6 мес</SelectItem>
+                        <SelectItem value="12">12 мес</SelectItem>
+                      </Select>
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-text-secondary block mb-1">{t("event_description")}</label>
-                    <Textarea value={settingsDescription ?? (event.description || "")} onChange={(e) => setSettingsDescription(e.target.value)} rows={3} />
                   </div>
                 </Card>
 
@@ -1090,20 +1087,26 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 )}
 
                 {/* Delete Project */}
-                <Card className="p-5 border-red-200">
-                  <h3 className="text-sm font-semibold text-red-600">Удалить проект</h3>
-                  <p className="text-xs text-text-secondary mt-1 mb-4">
-                    Все фотографии, настройки и данные проекта будут удалены безвозвратно.
-                  </p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                    icon={RiDeleteBinLine}
-                    onClick={() => setDeleteEventOpen(true)}
-                  >
-                    Удалить проект
-                  </Button>
+                <Card className="p-5 border-red-200 dark:border-red-900/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                        <RiDeleteBinLine size={20} className="text-red-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-red-600 dark:text-red-400">Опасная зона</h3>
+                        <p className="text-xs text-text-secondary">Удаление проекта необратимо. Все данные будут потеряны.</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="xs"
+                      className="border-red-200 hover:bg-red-50 text-red-500 hover:text-red-500"
+                      onClick={() => setDeleteEventOpen(true)}
+                    >
+                      Удалить проект
+                    </Button>
+                  </div>
                 </Card>
               </div>
             </TabPanel>
