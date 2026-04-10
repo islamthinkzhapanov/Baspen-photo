@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -11,13 +11,10 @@ export function ProfileCompletionModal() {
   const t = useTranslations("profileCompletion");
 
   const [name, setName] = useState(session?.user?.name || "");
-  const [phone, setPhone] = useState("+7 ");
+  const [phoneDigits, setPhoneDigits] = useState(""); // digits after +7, max 10
+  const prevLenRef = useRef(0);
 
-  function formatPhone(value: string) {
-    // Strip everything except digits
-    const digits = value.replace(/\D/g, "");
-    // Always start with 7
-    const d = digits.startsWith("7") ? digits.slice(1) : digits.startsWith("8") ? digits.slice(1) : digits;
+  function formatFromDigits(d: string) {
     let result = "+7";
     if (d.length > 0) result += ` (${d.slice(0, 3)}`;
     if (d.length >= 3) result += `) ${d.slice(3, 6)}`;
@@ -26,8 +23,28 @@ export function ProfileCompletionModal() {
     return result;
   }
 
-  const phoneDigits = phone.replace(/\D/g, "");
-  const isPhoneValid = phoneDigits.length === 11;
+  const phone = formatFromDigits(phoneDigits);
+  const isPhoneValid = phoneDigits.length === 10;
+
+  function handlePhoneChange(value: string) {
+    // Extract all digits, strip leading 7/8
+    let raw = value.replace(/\D/g, "");
+    if (raw.startsWith("7")) raw = raw.slice(1);
+    else if (raw.startsWith("8")) raw = raw.slice(1);
+    const clamped = raw.slice(0, 10);
+
+    // If formatted length shrunk but digits didn't change, user deleted a format char — remove a digit
+    const newFormatted = formatFromDigits(clamped);
+    if (newFormatted.length < prevLenRef.current && clamped.length === phoneDigits.length && clamped.length > 0) {
+      const trimmed = clamped.slice(0, -1);
+      setPhoneDigits(trimmed);
+      prevLenRef.current = formatFromDigits(trimmed).length;
+      return;
+    }
+
+    setPhoneDigits(clamped);
+    prevLenRef.current = newFormatted.length;
+  }
   const [occupation, setOccupation] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +61,7 @@ export function ProfileCompletionModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          phone: `+${phone.replace(/\D/g, "")}`,
+          phone: `+7${phoneDigits}`,
           occupation: occupation.trim(),
         }),
       });
@@ -87,10 +104,7 @@ export function ProfileCompletionModal() {
             <TextInput
               type="tel"
               value={phone}
-              onChange={(e) => {
-                const formatted = formatPhone(e.target.value);
-                if (formatted.length <= 18) setPhone(formatted);
-              }}
+              onChange={(e) => handlePhoneChange(e.target.value)}
               placeholder="+7 (775) 880-38-66"
             />
           </div>
@@ -110,7 +124,7 @@ export function ProfileCompletionModal() {
             type="submit"
             loading={loading}
             disabled={!isValid}
-            className="w-full cursor-pointer"
+            className="mt-6 w-full cursor-pointer"
           >
             {t("submit")}
           </Button>
