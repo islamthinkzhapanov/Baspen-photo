@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -11,40 +11,19 @@ export function ProfileCompletionModal() {
   const t = useTranslations("profileCompletion");
 
   const [name, setName] = useState(session?.user?.name || "");
-  const [phoneDigits, setPhoneDigits] = useState(""); // digits after +7, max 10
-  const prevLenRef = useRef(0);
+  const [phoneDigits, setPhoneDigits] = useState("");
 
-  function formatFromDigits(d: string) {
-    let result = "+7";
-    if (d.length > 0) result += ` (${d.slice(0, 3)}`;
-    if (d.length >= 3) result += `) ${d.slice(3, 6)}`;
-    if (d.length >= 6) result += `-${d.slice(6, 8)}`;
-    if (d.length >= 8) result += `-${d.slice(8, 10)}`;
-    return result;
+  function formatPhone(d: string) {
+    let r = "+7";
+    if (d.length > 0) r += ` (${d.slice(0, 3)}`;
+    if (d.length >= 3) r += `) ${d.slice(3, 6)}`;
+    if (d.length >= 6) r += `-${d.slice(6, 8)}`;
+    if (d.length >= 8) r += `-${d.slice(8, 10)}`;
+    return r;
   }
 
-  const phone = formatFromDigits(phoneDigits);
+  const phone = formatPhone(phoneDigits);
   const isPhoneValid = phoneDigits.length === 10;
-
-  function handlePhoneChange(value: string) {
-    // Extract all digits, strip leading 7/8
-    let raw = value.replace(/\D/g, "");
-    if (raw.startsWith("7")) raw = raw.slice(1);
-    else if (raw.startsWith("8")) raw = raw.slice(1);
-    const clamped = raw.slice(0, 10);
-
-    // If formatted length shrunk but digits didn't change, user deleted a format char — remove a digit
-    const newFormatted = formatFromDigits(clamped);
-    if (newFormatted.length < prevLenRef.current && clamped.length === phoneDigits.length && clamped.length > 0) {
-      const trimmed = clamped.slice(0, -1);
-      setPhoneDigits(trimmed);
-      prevLenRef.current = formatFromDigits(trimmed).length;
-      return;
-    }
-
-    setPhoneDigits(clamped);
-    prevLenRef.current = newFormatted.length;
-  }
   const [occupation, setOccupation] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -101,11 +80,22 @@ export function ProfileCompletionModal() {
             <label className="block text-sm font-medium mb-1.5">
               {t("phone_label")}
             </label>
-            <TextInput
+            <input
               type="tel"
               value={phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               placeholder="+7 (775) 880-38-66"
+              onKeyDown={(e) => {
+                if (e.key === "Backspace") {
+                  e.preventDefault();
+                  setPhoneDigits((prev) => prev.slice(0, -1));
+                }
+              }}
+              onChange={(e) => {
+                const newDigits = e.target.value.replace(/\D/g, "");
+                const stripped = newDigits.startsWith("7") ? newDigits.slice(1) : newDigits.startsWith("8") ? newDigits.slice(1) : newDigits;
+                setPhoneDigits(stripped.slice(0, 10));
+              }}
             />
           </div>
 
@@ -124,7 +114,7 @@ export function ProfileCompletionModal() {
             type="submit"
             loading={loading}
             disabled={!isValid}
-            className="mt-6 w-full cursor-pointer"
+            className="mt-6 w-full cursor-pointer text-white bg-blue-500 hover:bg-blue-500/80 relative overflow-hidden before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.7)_50%,transparent_75%,transparent_100%)] before:bg-[length:250%_250%,100%_100%] before:bg-[position:200%_0,0_0] before:bg-no-repeat before:transition-[background-position_0s_ease] before:duration-1000 hover:before:bg-[position:-100%_0,0_0]"
           >
             {t("submit")}
           </Button>
