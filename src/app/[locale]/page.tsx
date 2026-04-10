@@ -31,6 +31,7 @@ import {
   RiCloseLine,
 } from "@remixicon/react";
 import { useState, useEffect } from "react";
+import AuthModal from "@/components/auth/AuthModal";
 
 /* ─── Animated counter ─── */
 function AnimatedNumber({ target, suffix }: { target: number; suffix: string }) {
@@ -114,6 +115,7 @@ export default function LandingPage() {
   const t = useTranslations("landing");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [authModal, setAuthModal] = useState<{ open: boolean; tab: "login" | "register" }>({ open: false, tab: "login" });
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -164,18 +166,18 @@ export default function LandingPage() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-text-secondary hover:text-text transition-colors px-4 py-2"
+            <button
+              onClick={() => setAuthModal({ open: true, tab: "login" })}
+              className="text-sm font-medium text-text-secondary hover:text-text transition-colors px-4 py-2 cursor-pointer"
             >
               {t("nav_login")}
-            </Link>
-            <Link
-              href="/register?role=owner"
-              className="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition-colors"
+            </button>
+            <button
+              onClick={() => setAuthModal({ open: true, tab: "register" })}
+              className="text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition-colors cursor-pointer"
             >
               {t("hero_cta_start")}
-            </Link>
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -203,18 +205,18 @@ export default function LandingPage() {
                 </a>
               ))}
               <div className="border-t border-border mt-2 pt-4 flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  className="text-center text-sm font-medium text-text-secondary py-2.5"
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setAuthModal({ open: true, tab: "login" }); }}
+                  className="text-center text-sm font-medium text-text-secondary py-2.5 cursor-pointer"
                 >
                   {t("nav_login")}
-                </Link>
-                <Link
-                  href="/register?role=owner"
-                  className="text-center text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-lg"
+                </button>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setAuthModal({ open: true, tab: "register" }); }}
+                  className="text-center text-sm font-medium bg-primary text-white px-5 py-2.5 rounded-lg cursor-pointer"
                 >
                   {t("hero_cta_start")}
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -264,13 +266,13 @@ export default function LandingPage() {
 
             {/* CTA buttons */}
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300">
-              <Link
-                href="/register?role=owner"
+              <button
+                onClick={() => setAuthModal({ open: true, tab: "register" })}
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-primary-hover transition-all hover:shadow-lg hover:shadow-primary/20 cursor-pointer"
               >
                 {t("hero_cta_start")}
                 <RiArrowRightLine size={18} />
-              </Link>
+              </button>
               <a
                 href="#features"
                 className="inline-flex items-center justify-center gap-2 bg-white text-text font-semibold text-base px-8 py-3.5 rounded-xl border border-border hover:bg-bg-secondary transition-colors cursor-pointer"
@@ -450,13 +452,13 @@ export default function LandingPage() {
                 <p className="text-text-secondary leading-relaxed mb-6">
                   {t(`monetize_${key}_desc`)}
                 </p>
-                <Link
-                  href="/register?role=owner"
+                <button
+                  onClick={() => setAuthModal({ open: true, tab: "register" })}
                   className="inline-flex items-center gap-1.5 text-primary font-medium text-sm hover:gap-2.5 transition-all cursor-pointer"
                 >
                   {t(`monetize_${key}_cta`)}
                   <RiArrowRightLine size={16} />
-                </Link>
+                </button>
               </div>
             ))}
           </div>
@@ -538,19 +540,19 @@ export default function LandingPage() {
             {t("final_cta_subtitle")}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register?role=owner"
+            <button
+              onClick={() => setAuthModal({ open: true, tab: "register" })}
               className="inline-flex items-center justify-center gap-2 bg-white text-primary font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-white/90 transition-colors shadow-lg cursor-pointer"
             >
               {t("final_cta_button")}
               <RiArrowRightLine size={18} />
-            </Link>
-            <Link
-              href="/register?role=photographer"
+            </button>
+            <button
+              onClick={() => setAuthModal({ open: true, tab: "register" })}
               className="inline-flex items-center justify-center bg-white/10 text-white border border-white/20 font-semibold text-base px-8 py-3.5 rounded-xl hover:bg-white/20 transition-colors cursor-pointer"
             >
               {t("cta_photographer")}
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -656,6 +658,12 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <AuthModal
+        open={authModal.open}
+        initialTab={authModal.tab}
+        onClose={() => setAuthModal({ open: false, tab: "login" })}
+      />
     </div>
   );
 }
