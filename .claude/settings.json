@@ -656,7 +656,9 @@
       "Bash(rsync -avz --delete --exclude-from=\"/Users/mobibrand/Documents/Baspen photo/.rsync-exclude\" \"/Users/mobibrand/Documents/Baspen photo/\" -e \"ssh -i ~/.ssh/hetzner\" baspen@204.168.229.127:~/app/)",
       "Bash(cp /tmp/login_page_original.tsx \"src/app/[locale]/\\(auth\\)/login/page.tsx\")",
       "Bash(cp /tmp/globals_original.css src/app/globals.css)",
-      "Bash(cp /tmp/package_original.json package.json)"
+      "Bash(cp /tmp/package_original.json package.json)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(python3 /Users/mobibrand/.claude/skills/ui-ux-pro-max/scripts/search.py \"photo service professional auth modal\" --design-system -p \"Baspen Photo\")"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

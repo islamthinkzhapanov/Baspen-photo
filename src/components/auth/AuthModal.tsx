@@ -3,14 +3,16 @@
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useState, useEffect } from "react";
-import { TextInput, Button, Callout } from "@tremor/react";
+import { useState, useEffect, useRef } from "react";
 import {
   RiEyeLine,
   RiEyeOffLine,
-  RiErrorWarningLine,
-  RiCheckLine,
   RiCloseLine,
+  RiMailLine,
+  RiLockLine,
+  RiErrorWarningFill,
+  RiCheckboxCircleFill,
+  RiLoader4Line,
 } from "@remixicon/react";
 
 type Tab = "login" | "register";
@@ -21,10 +23,74 @@ interface AuthModalProps {
   initialTab?: Tab;
 }
 
-export default function AuthModal({ open, onClose, initialTab = "login" }: AuthModalProps) {
+/* ── Icon type matching @remixicon/react ────────────────────────────── */
+type IconComponent = React.ComponentType<{ size?: number | string; className?: string }>;
+
+/* ── Reusable styled input ─────────────────────────────────────────── */
+function AuthInput({
+  icon: Icon,
+  type = "text",
+  ...props
+}: {
+  icon: IconComponent;
+  type?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  return (
+    <div className="group relative flex items-center rounded-xl border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+      <Icon
+        size={18}
+        className="pointer-events-none absolute left-3.5 text-text-secondary transition-colors duration-200 group-focus-within:text-primary"
+      />
+      <input
+        type={type}
+        {...props}
+        className="w-full rounded-xl bg-transparent py-3 pl-10 pr-4 text-[15px] text-text placeholder:text-text-secondary/60 outline-none"
+      />
+    </div>
+  );
+}
+
+function PasswordInput({
+  show,
+  onToggle,
+  ...props
+}: {
+  show: boolean;
+  onToggle: () => void;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  return (
+    <div className="group relative flex items-center rounded-xl border border-border bg-white transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+      <RiLockLine
+        size={18}
+        className="pointer-events-none absolute left-3.5 text-text-secondary transition-colors duration-200 group-focus-within:text-primary"
+      />
+      <input
+        type={show ? "text" : "password"}
+        {...props}
+        className="w-full rounded-xl bg-transparent py-3 pl-10 pr-11 text-[15px] text-text placeholder:text-text-secondary/60 outline-none"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-3 p-0.5 text-text-secondary hover:text-text transition-colors cursor-pointer"
+        tabIndex={-1}
+      >
+        {show ? <RiEyeLine size={18} /> : <RiEyeOffLine size={18} />}
+      </button>
+    </div>
+  );
+}
+
+/* ── Main modal ────────────────────────────────────────────────────── */
+export default function AuthModal({
+  open,
+  onClose,
+  initialTab = "login",
+}: AuthModalProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [tab, setTab] = useState<Tab>(initialTab);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) setTab(initialTab);
@@ -89,7 +155,11 @@ export default function AuthModal({ open, onClose, initialTab = "login" }: AuthM
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: regEmail, password: regPassword, name: regEmail.split("@")[0] }),
+        body: JSON.stringify({
+          email: regEmail,
+          password: regPassword,
+          name: regEmail.split("@")[0],
+        }),
       });
 
       if (res.status === 409) {
@@ -116,30 +186,62 @@ export default function AuthModal({ open, onClose, initialTab = "login" }: AuthM
     }
   }
 
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
+
+  const isLogin = tab === "login";
+  const isRegister = tab === "register";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div
+        ref={backdropRef}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-[fade-in_200ms_ease-out]"
+        onClick={onClose}
+      />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-text-secondary hover:text-text transition-colors cursor-pointer z-10"
-        >
-          <RiCloseLine size={20} />
-        </button>
+      <div className="relative w-full max-w-[420px] animate-[fade-in-up_300ms_ease-out] overflow-hidden rounded-2xl bg-white shadow-2xl">
+        {/* ── Header ──────────────────────────────────────────────── */}
+        <div className="relative px-7 pt-7 pb-0">
+          {/* Close */}
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full text-text-secondary hover:bg-bg-secondary hover:text-text transition-all duration-200 cursor-pointer"
+          >
+            <RiCloseLine size={20} />
+          </button>
 
-        {/* Tabs */}
-        <div className="flex border-b border-border">
+          {/* Title */}
+          <h2 className="text-[22px] font-bold tracking-tight text-text">
+            {isLogin
+              ? t("login_title") || t("login")
+              : t("register_title") || t("register")}
+          </h2>
+          <p className="mt-1 text-[14px] text-text-secondary">
+            {isLogin
+              ? t("login_subtitle") || "Войдите, чтобы продолжить"
+              : t("register_subtitle") || "Создайте аккаунт за минуту"}
+          </p>
+        </div>
+
+        {/* ── Tabs ────────────────────────────────────────────────── */}
+        <div className="mx-7 mt-5 flex rounded-lg bg-bg-secondary p-1">
           <button
             onClick={() => switchTab("login")}
-            className={`flex-1 py-4 text-sm font-semibold transition-colors cursor-pointer ${
-              tab === "login"
-                ? "text-primary border-b-2 border-primary"
+            className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
+              isLogin
+                ? "bg-white text-text shadow-sm"
                 : "text-text-secondary hover:text-text"
             }`}
           >
@@ -147,9 +249,9 @@ export default function AuthModal({ open, onClose, initialTab = "login" }: AuthM
           </button>
           <button
             onClick={() => switchTab("register")}
-            className={`flex-1 py-4 text-sm font-semibold transition-colors cursor-pointer ${
-              tab === "register"
-                ? "text-primary border-b-2 border-primary"
+            className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
+              isRegister
+                ? "bg-white text-text shadow-sm"
                 : "text-text-secondary hover:text-text"
             }`}
           >
@@ -157,142 +259,166 @@ export default function AuthModal({ open, onClose, initialTab = "login" }: AuthM
           </button>
         </div>
 
-        <div className="p-6">
-          {/* ─── Login Tab ─── */}
-          {tab === "login" && (
-            <div>
+        {/* ── Forms ───────────────────────────────────────────────── */}
+        <div className="px-7 pt-5 pb-7">
+          {/* ── Login ── */}
+          {isLogin && (
+            <form onSubmit={handleLogin} className="space-y-4">
               {loginError && (
-                <div className="mb-5">
-                  <Callout title={loginError} icon={RiErrorWarningLine} color="red" />
+                <div className="flex items-center gap-2.5 rounded-lg bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                  <RiErrorWarningFill size={16} className="shrink-0" />
+                  {loginError}
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">
-                    {t("email")}
-                  </label>
-                  <TextInput
-                    type="email"
-                    required
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="baspen@inbox.com"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className="block text-[13px] font-medium text-text">
+                  {t("email")}
+                </label>
+                <AuthInput
+                  icon={RiMailLine}
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="baspen@inbox.com"
+                  autoComplete="email"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">
-                    {t("password")}
-                  </label>
-                  <div className="relative flex items-center rounded-tremor-default border border-tremor-border bg-tremor-background shadow-tremor-input focus-within:ring-1 focus-within:ring-tremor-brand">
-                    <input
-                      type={showLoginPassword ? "text" : "password"}
-                      required
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder={t("password_placeholder") || "Введите пароль"}
-                      className="w-full bg-transparent py-2 pl-3 pr-10 text-tremor-default text-tremor-content-emphasis placeholder:text-tremor-content-subtle outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute right-2 p-1 text-tremor-content-subtle hover:text-tremor-content-emphasis transition-colors cursor-pointer"
-                    >
-                      {showLoginPassword ? <RiEyeLine size={16} /> : <RiEyeOffLine size={16} />}
-                    </button>
-                  </div>
-                </div>
+              <div className="space-y-1.5">
+                <label className="block text-[13px] font-medium text-text">
+                  {t("password")}
+                </label>
+                <PasswordInput
+                  required
+                  show={showLoginPassword}
+                  onToggle={() => setShowLoginPassword(!showLoginPassword)}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder={t("password_placeholder") || "Введите пароль"}
+                  autoComplete="current-password"
+                />
+              </div>
 
-                <Button type="submit" loading={loginLoading} className="w-full cursor-pointer">
-                  {t("login")}
-                </Button>
-              </form>
-            </div>
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+              >
+                {loginLoading && (
+                  <RiLoader4Line size={18} className="animate-spin" />
+                )}
+                {t("login")}
+              </button>
+
+              <p className="text-center text-[13px] text-text-secondary">
+                {t("no_account") || "Нет аккаунта?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => switchTab("register")}
+                  className="font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  {t("register_title") || t("register")}
+                </button>
+              </p>
+            </form>
           )}
 
-          {/* ─── Register Tab ─── */}
-          {tab === "register" && (
-            <div>
+          {/* ── Register ── */}
+          {isRegister && (
+            <>
               {regSuccess ? (
-                <div className="py-4">
-                  <Callout title={t("register_success")} icon={RiCheckLine} color="green" />
+                <div className="flex flex-col items-center gap-3 py-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
+                    <RiCheckboxCircleFill size={28} className="text-success" />
+                  </div>
+                  <p className="text-[15px] font-medium text-text">
+                    {t("register_success")}
+                  </p>
                 </div>
               ) : (
-                <>
+                <form onSubmit={handleRegister} className="space-y-4">
                   {regError && (
-                    <div className="mb-5">
-                      <Callout title={regError} icon={RiErrorWarningLine} color="red" />
+                    <div className="flex items-center gap-2.5 rounded-lg bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                      <RiErrorWarningFill size={16} className="shrink-0" />
+                      {regError}
                     </div>
                   )}
 
-                  <form onSubmit={handleRegister} className="space-y-5">
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-1.5">
-                        {t("email")}
-                      </label>
-                      <TextInput
-                        type="email"
-                        required
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder="baspen@inbox.com"
-                      />
-                    </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[13px] font-medium text-text">
+                      {t("email")}
+                    </label>
+                    <AuthInput
+                      icon={RiMailLine}
+                      type="email"
+                      required
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="baspen@inbox.com"
+                      autoComplete="email"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-1.5">
-                        {t("password")}
-                      </label>
-                      <div className="relative flex items-center rounded-tremor-default border border-tremor-border bg-tremor-background shadow-tremor-input focus-within:ring-1 focus-within:ring-tremor-brand">
-                        <input
-                          type={showRegPassword ? "text" : "password"}
-                          required
-                          value={regPassword}
-                          onChange={(e) => setRegPassword(e.target.value)}
-                          placeholder={t("password_placeholder") || "Введите пароль"}
-                          className="w-full bg-transparent py-2 pl-3 pr-10 text-tremor-default text-tremor-content-emphasis placeholder:text-tremor-content-subtle outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowRegPassword(!showRegPassword)}
-                          className="absolute right-2 p-1 text-tremor-content-subtle hover:text-tremor-content-emphasis transition-colors cursor-pointer"
-                        >
-                          {showRegPassword ? <RiEyeLine size={16} /> : <RiEyeOffLine size={16} />}
-                        </button>
-                      </div>
-                    </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[13px] font-medium text-text">
+                      {t("password")}
+                    </label>
+                    <PasswordInput
+                      required
+                      show={showRegPassword}
+                      onToggle={() => setShowRegPassword(!showRegPassword)}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder={
+                        t("password_placeholder") || "Введите пароль"
+                      }
+                      autoComplete="new-password"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-1.5">
-                        {t("confirm_password_label") || "Подтвердить пароль"}
-                      </label>
-                      <div className="relative flex items-center rounded-tremor-default border border-tremor-border bg-tremor-background shadow-tremor-input focus-within:ring-1 focus-within:ring-tremor-brand">
-                        <input
-                          type={showRegConfirm ? "text" : "password"}
-                          required
-                          value={regConfirm}
-                          onChange={(e) => setRegConfirm(e.target.value)}
-                          placeholder={t("password_placeholder") || "Введите пароль"}
-                          className="w-full bg-transparent py-2 pl-3 pr-10 text-tremor-default text-tremor-content-emphasis placeholder:text-tremor-content-subtle outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowRegConfirm(!showRegConfirm)}
-                          className="absolute right-2 p-1 text-tremor-content-subtle hover:text-tremor-content-emphasis transition-colors cursor-pointer"
-                        >
-                          {showRegConfirm ? <RiEyeLine size={16} /> : <RiEyeOffLine size={16} />}
-                        </button>
-                      </div>
-                    </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[13px] font-medium text-text">
+                      {t("confirm_password_label") || "Подтвердить пароль"}
+                    </label>
+                    <PasswordInput
+                      required
+                      show={showRegConfirm}
+                      onToggle={() => setShowRegConfirm(!showRegConfirm)}
+                      value={regConfirm}
+                      onChange={(e) => setRegConfirm(e.target.value)}
+                      placeholder={
+                        t("password_placeholder") || "Введите пароль"
+                      }
+                      autoComplete="new-password"
+                    />
+                  </div>
 
-                    <Button type="submit" loading={regLoading} className="w-full cursor-pointer">
-                      {t("register_submit")}
-                    </Button>
-                  </form>
-                </>
+                  <button
+                    type="submit"
+                    disabled={regLoading}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+                  >
+                    {regLoading && (
+                      <RiLoader4Line size={18} className="animate-spin" />
+                    )}
+                    {t("register_submit")}
+                  </button>
+
+                  <p className="text-center text-[13px] text-text-secondary">
+                    {t("have_account") || "Уже есть аккаунт?"}{" "}
+                    <button
+                      type="button"
+                      onClick={() => switchTab("login")}
+                      className="font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      {t("login")}
+                    </button>
+                  </p>
+                </form>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
