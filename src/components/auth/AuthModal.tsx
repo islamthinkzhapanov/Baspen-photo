@@ -224,14 +224,10 @@ export default function AuthModal({
 
           {/* Title */}
           <h2 className="text-[22px] font-bold tracking-tight text-text">
-            {isLogin
-              ? t("login_title") || t("login")
-              : t("register_title") || t("register")}
+            {isLogin ? t("login_title") : t("register_title")}
           </h2>
           <p className="mt-1 text-[14px] text-text-secondary">
-            {isLogin
-              ? t("login_subtitle") || "Войдите, чтобы продолжить"
-              : t("register_subtitle") || "Создайте аккаунт за минуту"}
+            {isLogin ? t("login_subtitle") : t("register_subtitle")}
           </p>
         </div>
 
@@ -313,7 +309,7 @@ export default function AuthModal({
               </button>
 
               <p className="text-center text-[13px] text-text-secondary">
-                {t("no_account") || "Нет аккаунта?"}{" "}
+                {t("no_account")}{" "}
                 <button
                   type="button"
                   onClick={() => switchTab("register")}
@@ -407,7 +403,7 @@ export default function AuthModal({
                   </button>
 
                   <p className="text-center text-[13px] text-text-secondary">
-                    {t("have_account") || "Уже есть аккаунт?"}{" "}
+                    {t("has_account")}{" "}
                     <button
                       type="button"
                       onClick={() => switchTab("login")}

@@ -125,6 +125,7 @@ export function DashboardPage() {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableHeaderCell className="w-12">№</TableHeaderCell>
                   <TableHeaderCell>{t("dashboard.project")}</TableHeaderCell>
                   <TableHeaderCell className="text-right">{t("dashboard.photos_col")}</TableHeaderCell>
                   <TableHeaderCell className="text-right">{t("dashboard.searches_col")}</TableHeaderCell>
@@ -133,8 +134,9 @@ export function DashboardPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {topEvents.map((event) => (
+                {topEvents.map((event, index) => (
                   <TableRow key={event.id}>
+                    <TableCell className="tabular-nums text-text-secondary">{index + 1}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-medium">{event.title}</p>

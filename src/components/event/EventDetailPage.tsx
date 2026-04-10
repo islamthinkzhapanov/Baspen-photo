@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
 
   RiFileCopyLine,
@@ -55,7 +55,7 @@ import { Switch } from "@/components/ui/switch";
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
 import { toast } from "sonner";
-import { useEvent, useEventMembers, useUpdateEvent } from "@/hooks/useEvents";
+import { useEvent, useEventMembers, useUpdateEvent, useDeleteEvent } from "@/hooks/useEvents";
 import { useEventPhotos, useDeletePhoto, useBulkDeletePhotos } from "@/hooks/usePhotos";
 import { useEventAnalytics } from "@/hooks/useAnalytics";
 import { useEventAlbums, useCreateAlbum, useUpdateAlbum, useDeleteAlbum, useMovePhotosToAlbum } from "@/hooks/useAlbums";
@@ -196,9 +196,12 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  const router = useRouter();
   const updateMutation = useUpdateEvent(eventId);
   const deleteMutation = useDeletePhoto(eventId);
   const bulkDeleteMutation = useBulkDeletePhotos(eventId);
+  const deleteEventMutation = useDeleteEvent();
+  const [deleteEventOpen, setDeleteEventOpen] = useState(false);
 
   // Albums
   const { data: albumsData = [] } = useEventAlbums(eventId);
@@ -460,7 +463,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   return (
     <div className="w-full">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm mb-4">
+      <nav className="flex items-center gap-1.5 text-sm mb-6">
         <Link
           href="/events"
           className="text-text-secondary hover:text-text transition-colors"
@@ -503,10 +506,10 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap w-full sm:w-auto">
-          <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm" className="text-xs sm:text-sm">
+          <Button variant="secondary" onClick={copyLink} icon={copied ? RiCheckLine : RiFileCopyLine} size="sm" className="text-xs sm:text-sm !text-text !border-border hover:!bg-bg-secondary">
             {t("copy_link")}
           </Button>
-          <Button variant="secondary" onClick={openQr} icon={RiQrCodeLine} size="sm" className="text-xs sm:text-sm">
+          <Button variant="secondary" onClick={openQr} icon={RiQrCodeLine} size="sm" className="text-xs sm:text-sm !text-text !border-border hover:!bg-bg-secondary">
             QR
           </Button>
           {!isPhotographer && (
@@ -1085,6 +1088,23 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                     </Button>
                   </div>
                 )}
+
+                {/* Delete Project */}
+                <Card className="p-5 border-red-200">
+                  <h3 className="text-sm font-semibold text-red-600">Удалить проект</h3>
+                  <p className="text-xs text-text-secondary mt-1 mb-4">
+                    Все фотографии, настройки и данные проекта будут удалены безвозвратно.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    icon={RiDeleteBinLine}
+                    onClick={() => setDeleteEventOpen(true)}
+                  >
+                    Удалить проект
+                  </Button>
+                </Card>
               </div>
             </TabPanel>
           )}
@@ -1180,6 +1200,51 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   <RiLoader4Line size={16} className="animate-spin" />
                 )}
                 {tp("delete")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Event Confirmation */}
+      {deleteEventOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+          <div className="bg-bg rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-base font-semibold text-text mb-1">
+              Удалить проект?
+            </h3>
+            <p className="text-sm text-text-secondary mb-5">
+              Все фотографии, настройки и данные проекта будут удалены безвозвратно. Это действие нельзя отменить.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteEventOpen(false)}
+                disabled={deleteEventMutation.isPending}
+                className="flex-1 h-10 rounded-xl border border-border text-sm font-medium
+                  hover:bg-bg-secondary transition-colors cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {tc("cancel")}
+              </button>
+              <button
+                onClick={() => {
+                  deleteEventMutation.mutate(eventId, {
+                    onSuccess: () => {
+                      toast.success("Проект удалён");
+                      router.push("/events");
+                    },
+                  });
+                }}
+                disabled={deleteEventMutation.isPending}
+                className="flex-1 h-10 rounded-xl bg-red-500 text-white text-sm font-medium
+                  hover:bg-red-600 transition-colors cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  flex items-center justify-center gap-2"
+              >
+                {deleteEventMutation.isPending && (
+                  <RiLoader4Line size={16} className="animate-spin" />
+                )}
+                Удалить
               </button>
             </div>
           </div>

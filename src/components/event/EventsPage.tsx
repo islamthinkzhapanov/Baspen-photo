@@ -127,6 +127,7 @@ export function EventsPage() {
           <Table className="min-w-[500px]">
             <TableHead>
               <TableRow>
+                <TableHeaderCell className="w-12">№</TableHeaderCell>
                 <TableHeaderCell>{t("col_project")}</TableHeaderCell>
                 <TableHeaderCell className="hidden md:table-cell">{t("col_date")}</TableHeaderCell>
                 <TableHeaderCell className="text-right">{t("col_photos")}</TableHeaderCell>
@@ -137,8 +138,9 @@ export function EventsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.map((event) => (
+              {filtered.map((event, index) => (
                 <TableRow key={event.id}>
+                  <TableCell className="tabular-nums text-text-secondary">{index + 1}</TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`} className="group">
                       <div className="min-w-0">

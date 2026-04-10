@@ -251,6 +251,7 @@ export function PaymentsPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableHeaderCell className="w-12">№</TableHeaderCell>
                 <TableHeaderCell>{t("col_transaction")}</TableHeaderCell>
                 <TableHeaderCell className="hidden sm:table-cell">
                   {t("col_project")}
@@ -267,11 +268,12 @@ export function PaymentsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.map((tx) => {
+              {filtered.map((tx, index) => {
                 const status = statusConfig[tx.status];
                 const StatusIcon = status.icon;
                 return (
                   <TableRow key={tx.id}>
+                    <TableCell className="tabular-nums text-text-secondary">{index + 1}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-emerald-50 text-emerald-600">
