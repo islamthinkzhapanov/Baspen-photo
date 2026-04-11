@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 function fmt(n: number) {
@@ -74,6 +74,18 @@ export function PublicEventPage({
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [numberSearchQuery, setNumberSearchQuery] = useState("");
+
+  // Block right-click on images to prevent casual download
+  const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+    const handler = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).tagName === "IMG") e.preventDefault();
+    };
+    el.addEventListener("contextmenu", handler);
+    return () => el.removeEventListener("contextmenu", handler);
+  }, []);
 
   const faceSearch = useFaceSearch();
 
@@ -334,7 +346,7 @@ export function PublicEventPage({
     "linear-gradient(90deg, rgba(38,192,255,0.4) 0%, rgba(230,0,194,0.4) 20%, rgba(255,73,78,0.4) 40%, rgba(255,161,62,0.4) 60%, rgba(255,200,55,0.4) 80%, rgba(0,204,61,0.4) 100%)";
 
   return (
-    <div className={`relative h-screen flex items-center justify-center overflow-hidden bg-white`}>
+    <div ref={pageRef} className={`relative h-screen flex items-center justify-center overflow-hidden bg-white`}>
       {/* Background container with gradient + rainbow beams */}
       <div
         className="absolute inset-0 overflow-hidden"

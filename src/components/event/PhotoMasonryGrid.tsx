@@ -6,6 +6,7 @@ import {
   RiCheckLine,
 } from "@remixicon/react";
 import type { SearchPhoto } from "@/hooks/useSearch";
+import { ProtectedImage } from "@/components/ui/ProtectedImage";
 
 interface PhotoMasonryGridProps {
   photos: SearchPhoto[];
@@ -41,7 +42,7 @@ export const PhotoMasonryGrid = memo(function PhotoMasonryGrid({
               onClick={() => onPhotoClick(index)}
             >
               {imgSrc ? (
-                <img
+                <ProtectedImage
                   src={imgSrc}
                   alt=""
                   loading="lazy"

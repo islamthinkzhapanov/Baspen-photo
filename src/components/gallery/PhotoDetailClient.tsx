@@ -13,6 +13,7 @@ import {
 } from "@remixicon/react";
 import { RiInformationLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
+import { ProtectedImage } from "@/components/ui/ProtectedImage";
 
 interface PhotoDetail {
   photo: {
@@ -152,7 +153,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
 
       {/* Main image */}
       <div className="flex-1 flex items-center justify-center p-4">
-        <img
+        <ProtectedImage
           src={imageUrl}
           alt=""
           className="max-h-[80vh] max-w-full object-contain rounded-lg"

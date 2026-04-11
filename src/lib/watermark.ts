@@ -36,21 +36,30 @@ export async function generateWatermarkedImage(
   const meta = await sharp(resizedBuffer).metadata();
   const w = meta.width || 1200;
   const h = meta.height || 900;
-  const opacity = config.opacity ?? 0.25;
+  const opacity = config.opacity ?? 0.35;
   const text = config.text || "BASPEN";
 
   const fontSize = Math.max(24, Math.floor(w / 20));
   const fillOpacity = opacity;
+  const strokeOpacity = Math.min(fillOpacity * 0.5, 0.2);
+  const patternW = fontSize * 8;
+  const patternH = fontSize * 4;
+  const escapedText = escapeXml(text);
 
   const svgWatermark = Buffer.from(`
     <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="watermark" patternUnits="userSpaceOnUse"
-          width="${fontSize * 12}" height="${fontSize * 6}"
+          width="${patternW}" height="${patternH}"
           patternTransform="rotate(-30)">
-          <text x="0" y="${fontSize}" font-family="sans-serif"
-            font-size="${fontSize}" fill="rgba(255,255,255,${fillOpacity})"
-            font-weight="bold">${escapeXml(text)}</text>
+          <text x="0" y="${fontSize}"
+            font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
+            fill="rgba(255,255,255,${fillOpacity})"
+            stroke="rgba(0,0,0,${strokeOpacity})" stroke-width="2">${escapedText}</text>
+          <text x="${patternW / 2}" y="${fontSize * 3}"
+            font-family="sans-serif" font-size="${fontSize}" font-weight="bold"
+            fill="rgba(255,255,255,${fillOpacity})"
+            stroke="rgba(0,0,0,${strokeOpacity})" stroke-width="2">${escapedText}</text>
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#watermark)" />

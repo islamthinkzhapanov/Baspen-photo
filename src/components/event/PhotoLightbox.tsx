@@ -14,6 +14,7 @@ import {
   RiImageLine,
 } from "@remixicon/react";
 import type { SearchPhoto } from "@/hooks/useSearch";
+import { ProtectedImage } from "@/components/ui/ProtectedImage";
 
 interface PhotoLightboxProps {
   photos: SearchPhoto[];
@@ -103,7 +104,7 @@ export function PhotoLightbox({
       >
         <div className="w-full h-full flex items-center justify-center relative">
           {(photo.watermarked_path || photo.thumbnail_path) ? (
-            <img
+            <ProtectedImage
               src={photo.watermarked_path || photo.thumbnail_path || undefined}
               alt=""
               className="w-full h-full object-contain"

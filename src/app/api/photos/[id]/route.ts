@@ -20,8 +20,6 @@ export const GET = withHandler(async function GET(
       eventId: photos.eventId,
       thumbnailPath: photos.thumbnailPath,
       watermarkedPath: photos.watermarkedPath,
-      storagePath: photos.storagePath,
-      originalFilename: photos.originalFilename,
       width: photos.width,
       height: photos.height,
       exifData: photos.exifData,

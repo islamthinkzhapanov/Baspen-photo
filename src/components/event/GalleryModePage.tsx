@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
   RiCameraLine,
   RiHashtag,
@@ -119,6 +119,18 @@ export function GalleryModePage({
 
   // Mobile tab
   const [mobileTab, setMobileTab] = useState<MobileTab>("files");
+
+  // Block right-click on images to prevent casual download
+  const galleryRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = galleryRef.current;
+    if (!el) return;
+    const handler = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).tagName === "IMG") e.preventDefault();
+    };
+    el.addEventListener("contextmenu", handler);
+    return () => el.removeEventListener("contextmenu", handler);
+  }, []);
 
   const faceSearch = useFaceSearch();
 
@@ -299,7 +311,7 @@ export function GalleryModePage({
     : null;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div ref={galleryRef} className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
         {heroImage ? (

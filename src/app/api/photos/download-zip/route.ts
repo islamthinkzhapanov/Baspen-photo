@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { photos, events } from "@/lib/db/schema";
+import { photos, events, orders, orderItems } from "@/lib/db/schema";
 import { eq, inArray, and } from "drizzle-orm";
 import { s3, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -12,6 +12,7 @@ import { withHandler } from "@/lib/api-handler";
 export const POST = withHandler(async function POST(request: NextRequest) {
   const body = await request.json();
   const photoIds: string[] = body.ids;
+  const downloadToken: string | undefined = body.token;
 
   if (!Array.isArray(photoIds) || photoIds.length === 0) {
     return new Response(JSON.stringify({ error: "No photo IDs" }), {
@@ -61,6 +62,29 @@ export const POST = withHandler(async function POST(request: NextRequest) {
 
   const isFree = event?.settings?.freeDownload === true;
 
+  // For paid events, require a valid download token
+  let hasPaidAccess = false;
+  if (!isFree && downloadToken) {
+    const [order] = await db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.downloadToken, downloadToken),
+          eq(orders.status, "paid")
+        )
+      )
+      .limit(1);
+    hasPaidAccess = !!order;
+  }
+
+  if (!isFree && !hasPaidAccess) {
+    return new Response(
+      JSON.stringify({ error: "Purchase required" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   // Track filenames to avoid duplicates
   const usedNames = new Map<string, number>();
 
@@ -81,7 +105,7 @@ export const POST = withHandler(async function POST(request: NextRequest) {
   (async () => {
     for (let i = 0; i < allRows.length; i++) {
       const photo = allRows[i];
-      const key = isFree
+      const key = isFree || hasPaidAccess
         ? photo.storagePath
         : photo.watermarkedPath ||
           photo.storagePath.replace("/originals/", "/watermarked/");
