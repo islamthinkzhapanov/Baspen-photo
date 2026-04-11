@@ -9,8 +9,6 @@ import {
   RiSearchLine,
   RiDownloadLine,
   RiWalletLine,
-  RiArrowUpLine,
-  RiMoneyDollarCircleLine,
   RiCloseCircleLine,
   RiRefundLine,
   RiMore2Line,
@@ -215,14 +213,10 @@ export function PaymentsPage() {
     {
       label: t("total_earned"),
       value: `${stats.totalEarned.toLocaleString("ru-RU")} ₸`,
-      icon: RiArrowUpLine,
-      color: "bg-emerald-50 text-emerald-600",
     },
     {
       label: t("pending_balance"),
       value: `${stats.pending.toLocaleString("ru-RU")} ₸`,
-      icon: RiTimeLine,
-      color: "bg-amber-50 text-amber-600",
       extra:
         stats.pendingCount > 0 ? (
           <p className="text-xs text-amber-600 mt-1">
@@ -233,8 +227,6 @@ export function PaymentsPage() {
     {
       label: t("orders_total"),
       value: String(transactions.length),
-      icon: RiMoneyDollarCircleLine,
-      color: "bg-violet-50 text-violet-600",
     },
   ];
 
@@ -248,25 +240,13 @@ export function PaymentsPage() {
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {statCards.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.label} className="p-4 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}
-                >
-                  <Icon size={20} />
-                </div>
-                <p className="text-xs text-text-secondary">{stat.label}</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                {"extra" in stat && stat.extra}
-              </div>
+        {statCards.map((stat) => (
+            <Card key={stat.label} className="p-4 flex flex-col gap-2">
+              <p className="text-xs text-text-secondary">{stat.label}</p>
+              <p className="text-3xl font-medium">{stat.value}</p>
+              {"extra" in stat && stat.extra}
             </Card>
-          );
-        })}
+          ))}
       </div>
 
       {/* Filters + Search */}
@@ -313,8 +293,9 @@ export function PaymentsPage() {
           </div>
         </Card>
       ) : (
-        <Card className="p-0 overflow-hidden">
-          <Table>
+        <Card className="p-0 overflow-visible">
+          <div className="overflow-x-auto overflow-y-visible">
+          <Table className="min-w-[500px] [&_td]:text-sm [&_th]:text-sm">
             <TableHead>
               <TableRow>
                 <TableHeaderCell className="w-12">№</TableHeaderCell>
@@ -411,6 +392,7 @@ export function PaymentsPage() {
               })}
             </TableBody>
           </Table>
+          </div>
 
           {filtered.length === 0 && (
             <div className="py-12 text-center">

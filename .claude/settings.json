@@ -673,7 +673,20 @@
       "Bash(grep \"from \\\\\"next/server\\\\\"\" \"/Users/mobibrand/Documents/Baspen photo/src/app/api\"/*/*/route.ts)",
       "Bash(node -e \"const s = require\\('fs'\\).readFileSync\\('node_modules/@tremor/react/dist/components/input-elements/Button/Button.js','utf8'\\); const m = s.match\\(/disabled.*?loading|loading.*?disabled/g\\); console.log\\(m?.slice\\(0,3\\)\\)\")",
       "Bash(export PATH=\"$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/*/bin:$PATH\")",
-      "Read(//opt/**)"
+      "Read(//opt/**)",
+      "Bash(find \"/Users/mobibrand/.claude/projects/-Users-mobibrand-Documents-Baspen-photo/memory/\" -type f -name \"*.md\" -exec grep -l \"AWS\\\\|Hetzner\\\\|cost\\\\|cost\\\\|price\\\\|budget\\\\|€\" {} \\\\;)",
+      "WebFetch(domain:www.hetzner.com)",
+      "WebFetch(domain:wfolio.ru)",
+      "WebFetch(domain:docs.wfolio.pro)",
+      "WebFetch(domain:costgoat.com)",
+      "Bash(find src/components -name \"*.tsx\" -exec grep -l \"secondary\" {} \\\\;)",
+      "Bash(node -e \"const s = require\\('./node_modules/@tremor/react/dist/components/input-elements/Button/styles.cjs'\\); console.log\\(JSON.stringify\\(s, null, 2\\)\\)\")",
+      "WebFetch(domain:wfolio.com)",
+      "WebFetch(domain:360.yandex.ru)",
+      "WebFetch(domain:picktech.ru)",
+      "WebFetch(domain:uguide.ru)",
+      "WebFetch(domain:yandex.cloud)",
+      "WebFetch(domain:sabini.ch)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

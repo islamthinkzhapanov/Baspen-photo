@@ -553,3 +553,14 @@ html {
 .tremor-Badge-root.text-yellow-600 { color: #ca8a04 !important; }
 .tremor-Badge-root.text-emerald-600 { color: #059669 !important; }
 .tremor-Badge-root.text-violet-600 { color: #7c3aed !important; }
+
+/* Secondary buttons — gray border instead of brand (black) */
+button.border-tremor-brand.bg-transparent {
+  border-color: var(--tremor-border-default) !important;
+}
+
+/* Tab icons — slightly smaller */
+[role="tablist"] button svg {
+  width: 16px !important;
+  height: 16px !important;
+}

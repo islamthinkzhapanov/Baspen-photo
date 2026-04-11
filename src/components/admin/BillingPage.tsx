@@ -150,7 +150,7 @@ export function BillingPage() {
         <Button
           variant="secondary"
           size="sm"
-          className="text-amber-600 border-amber-300 hover:bg-amber-50 hover:text-amber-600 shrink-0"
+          className="shrink-0"
         >
           {t("cancel_subscription")}
         </Button>
@@ -256,13 +256,10 @@ export function BillingPage() {
                 key={item.step}
                 className="relative flex flex-col items-center text-center rounded-xl border border-border p-5"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold mb-3">
-                  {item.step}
-                </div>
                 <div className="w-10 h-10 rounded-lg bg-bg-secondary flex items-center justify-center mb-3">
                   <StepIcon size={20} className="text-text-secondary" />
                 </div>
-                <p className="text-sm font-semibold mb-1">{item.title}</p>
+                <p className="text-sm font-semibold mb-1">{item.step}. {item.title}</p>
                 <p className="text-xs text-text-secondary leading-relaxed">{item.desc}</p>
               </div>
             );

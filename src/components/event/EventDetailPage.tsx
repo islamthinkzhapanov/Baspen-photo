@@ -546,16 +546,16 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.key} className="p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Icon size={16} className={stat.color} />
-                <span className="text-xs text-text-secondary">{stat.label}</span>
-              </div>
-              <p className="text-lg font-bold">
+            <Card key={stat.key} className="p-4 flex flex-col gap-2">
+              <p className="text-xs text-text-secondary flex items-center gap-1.5">
+                <Icon size={14} className={stat.color} />
+                {stat.label}
+              </p>
+              <p className="text-3xl font-medium">
                 {typeof stat.value === "number" ? stat.value.toLocaleString("ru-RU") : stat.value}
               </p>
             </Card>
@@ -589,6 +589,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
               {/* Album Strip */}
               {(albumsData.length > 0 || !isPhotographer) && (
+                <div className="!mt-16">
                 <AlbumStrip
                   albums={albumsData}
                   activeFilter={activeAlbumFilter}
@@ -603,6 +604,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   onDeleteAlbum={(albumId) => setDeleteAlbumTarget(albumId)}
                   isOwner={!isPhotographer}
                 />
+                </div>
               )}
 
               {/* Photo count + actions */}

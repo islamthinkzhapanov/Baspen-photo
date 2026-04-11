@@ -4,10 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   RiCameraLine,
-  RiSearchLine,
-  RiArrowUpLine,
   RiAddLine,
-  RiImageLine,
 } from "@remixicon/react";
 import {
   Card,
@@ -36,30 +33,10 @@ export function DashboardPage() {
   const totalRevenue = eventsArr.reduce((sum, e) => sum + (e.revenue || 0), 0);
 
   const stats = [
-    {
-      key: "active_projects",
-      value: eventsArr.length,
-      icon: RiCameraLine,
-      color: "bg-primary/10 text-primary",
-    },
-    {
-      key: "total_photos",
-      value: totalPhotos.toLocaleString("ru-RU"),
-      icon: RiImageLine,
-      color: "bg-emerald-50 text-emerald-600",
-    },
-    {
-      key: "searches",
-      value: totalSearches.toLocaleString("ru-RU"),
-      icon: RiSearchLine,
-      color: "bg-amber-50 text-amber-600",
-    },
-    {
-      key: "revenue",
-      value: `${totalRevenue.toLocaleString("ru-RU")} ₸`,
-      icon: RiArrowUpLine,
-      color: "bg-violet-50 text-violet-600",
-    },
+    { key: "active_projects", value: eventsArr.length },
+    { key: "total_photos", value: totalPhotos.toLocaleString("ru-RU") },
+    { key: "searches", value: totalSearches.toLocaleString("ru-RU") },
+    { key: "revenue", value: `${totalRevenue.toLocaleString("ru-RU")} ₸` },
   ];
 
   return (
@@ -79,20 +56,12 @@ export function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.key} className="p-4 flex flex-col gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
-                <Icon size={20} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs text-text-secondary mt-0.5">{t(`dashboard.${stat.key}`)}</p>
-              </div>
+        {stats.map((stat) => (
+            <Card key={stat.key} className="p-4 flex flex-col gap-2">
+              <p className="text-xs text-text-secondary">{t(`dashboard.${stat.key}`)}</p>
+              <p className="text-3xl font-medium">{stat.value}</p>
             </Card>
-          );
-        })}
+          ))}
       </div>
 
       {eventsArr.length === 0 && (
