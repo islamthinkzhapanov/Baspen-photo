@@ -43,6 +43,13 @@
       "when": 1775901241488,
       "tag": "0005_clammy_franklin_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775935614921,
+      "tag": "0006_tense_boomerang",
+      "breakpoints": true
     }
   ]
 }

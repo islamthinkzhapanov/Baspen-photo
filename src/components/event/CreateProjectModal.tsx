@@ -23,6 +23,7 @@ import {
   RiSmartphoneLine,
   RiBriefcaseLine,
   RiTimeLine,
+  RiClockwiseLine,
 } from "@remixicon/react";
 
 interface CreateProjectModalProps {
@@ -32,11 +33,11 @@ interface CreateProjectModalProps {
 
 /* ── Consistent height class for all Tremor inputs/selects ── */
 const inputClassName =
-  "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
+  "!rounded-full [&>input]:!h-[42px] [&>input]:!text-[15px]";
 const selectClassName =
-  "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "!rounded-full [&_button]:!rounded-full [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const datePickerClassName =
-  "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "!rounded-full !h-[42px] [&_button]:!rounded-full [&_button]:!h-[42px] [&_button]:!text-[15px]";
 
 /* ── Phone formatting (from ProfilePage) ── */
 function formatPhone(d: string) {
@@ -71,6 +72,7 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
   const [retentionMonths, setRetentionMonths] = useState(12);
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [location, setLocation] = useState("");
+  const [eventTime, setEventTime] = useState("");
   const [faceSearchEnabled, setFaceSearchEnabled] = useState(true);
   const [bibSearchEnabled, setBibSearchEnabled] = useState(false);
 
@@ -183,6 +185,7 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
         slug,
         date: eventDate ? eventDate.toISOString() : undefined,
         location: location || undefined,
+        eventTime: eventTime || undefined,
         pricingMode: "commission" as const,
         settings: {
           freeDownload: true,
@@ -301,7 +304,7 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                 </div>
               </div>
 
-              {/* Date + Location */}
+              {/* Date + Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-medium text-text mb-1.5">
@@ -321,16 +324,41 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                 </div>
                 <div>
                   <label className="block text-[13px] font-medium text-text mb-1.5">
-                    {t("event_location")}
+                    Время
                   </label>
-                  <TextInput
-                    icon={RiMapPinLine}
-                    placeholder={t("event_location")}
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className={inputClassName}
-                  />
+                  <Select
+                    value={eventTime}
+                    onValueChange={setEventTime}
+                    placeholder="Время"
+                    enableClear={true}
+                    icon={RiClockwiseLine}
+                    className={selectClassName}
+                  >
+                    {Array.from({ length: 48 }, (_, i) => {
+                      const h = String(Math.floor(i / 2)).padStart(2, "0");
+                      const m = i % 2 === 0 ? "00" : "30";
+                      return (
+                        <SelectItem key={i} value={`${h}:${m}`}>
+                          {h}:{m}
+                        </SelectItem>
+                      );
+                    })}
+                  </Select>
                 </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-[13px] font-medium text-text mb-1.5">
+                  {t("event_location")}
+                </label>
+                <TextInput
+                  icon={RiMapPinLine}
+                  placeholder="Город / Адрес"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className={inputClassName}
+                />
               </div>
 
               {/* Toggles */}

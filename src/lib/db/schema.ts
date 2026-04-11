@@ -179,6 +179,7 @@ export const events = pgTable(
     description: text("description"),
     date: timestamp("date", { mode: "date" }),
     location: text("location"),
+    eventTime: text("event_time"),
     coverUrl: text("cover_url"),
     pricingMode: pricingModeEnum("pricing_mode")
       .notNull()

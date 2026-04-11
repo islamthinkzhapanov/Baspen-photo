@@ -12,6 +12,7 @@ export const createEventSchema = z.object({
   isPublished: z.boolean().optional(),
   date: z.string().optional(),
   location: z.string().max(500).optional(),
+  eventTime: z.string().max(10).optional(),
   pricingMode: z.enum(["exclusive", "commission"]).default("commission"),
   settings: z
     .object({

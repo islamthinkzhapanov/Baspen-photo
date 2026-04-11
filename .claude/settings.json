@@ -686,7 +686,12 @@
       "WebFetch(domain:picktech.ru)",
       "WebFetch(domain:uguide.ru)",
       "WebFetch(domain:yandex.cloud)",
-      "WebFetch(domain:sabini.ch)"
+      "WebFetch(domain:sabini.ch)",
+      "Bash(grep -n \"Фото\\\\|Поисков\\\\|Скачиваний\\\\|Доход\" \"/Users/mobibrand/Documents/Baspen photo/messages\"/*.json)",
+      "Bash(grep -l \"RiMapPin2Line\" node_modules/@remixicon/react/dist/*.mjs)",
+      "Bash(grep -l \"RiClockwiseLine\" node_modules/@remixicon/react/dist/*.mjs)",
+      "Bash(node -e \"const r = require\\('@remixicon/react'\\); console.log\\('RiMapPin2Line:', !!r.RiMapPin2Line\\); console.log\\('RiClockwiseLine:', !!r.RiClockwiseLine\\); console.log\\('RiTimeLine:', !!r.RiTimeLine\\); console.log\\('RiTime2Line:', !!r.RiTime2Line\\);\")",
+      "Bash(npx tsx:*)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
