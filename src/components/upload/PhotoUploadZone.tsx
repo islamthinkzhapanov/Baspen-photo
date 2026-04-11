@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useUploadPhotos, useProcessingStatus } from "@/hooks/usePhotos";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 import {
   RiUploadLine,
@@ -57,6 +58,10 @@ export function PhotoUploadZone({ eventId, albumId }: Props) {
           const done = results.filter(
             (r: PromiseSettledResult<unknown>) => r.status === "fulfilled"
           ).length;
+          const failed = acceptedFiles.length - done;
+          if (failed > 0) {
+            toast.error(`${failed} file(s) failed to upload`);
+          }
           setUploadedCount(done);
           setUploadProgress({ total: acceptedFiles.length, done });
           // Move to processing phase — wait for worker

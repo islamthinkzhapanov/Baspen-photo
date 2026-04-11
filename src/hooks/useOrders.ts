@@ -1,19 +1,12 @@
 "use client";
 
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch";
+import type { EventPricing, Order } from "@/types/api";
 import type { CreateOrderInput } from "@/lib/validators/order";
 
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
-
 export function useEventPricing(eventId: string) {
-  return useQuery({
+  return useQuery<EventPricing>({
     queryKey: ["events", eventId, "pricing"],
     queryFn: () => fetchJson(`/api/events/${eventId}/pricing`),
     enabled: !!eventId,
@@ -23,7 +16,7 @@ export function useEventPricing(eventId: string) {
 export function useCreateOrder() {
   return useMutation({
     mutationFn: (data: CreateOrderInput) =>
-      fetchJson("/api/orders", {
+      fetchJson<any>("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -34,13 +27,13 @@ export function useCreateOrder() {
 export function useDownloadPhotos(token: string | null) {
   return useQuery({
     queryKey: ["download", token],
-    queryFn: () => fetchJson(`/api/orders/download?token=${token}`),
+    queryFn: () => fetchJson<any>(`/api/orders/download?token=${token}`),
     enabled: !!token,
   });
 }
 
 export function useOrderStatus(orderId: string | null) {
-  return useQuery({
+  return useQuery<Order>({
     queryKey: ["orders", orderId, "status"],
     queryFn: () => fetchJson(`/api/orders/${orderId}`),
     enabled: !!orderId,

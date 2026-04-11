@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   RiAddLine,
   RiDeleteBinLine,
@@ -35,6 +36,7 @@ export function SponsorsSection({ eventId }: { eventId: string }) {
   const [name, setName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Sponsor | null>(null);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -61,10 +63,7 @@ export function SponsorsSection({ eventId }: { eventId: string }) {
   }
 
   function handleDelete(sponsor: Sponsor) {
-    if (!confirm(t("delete_confirm", { name: sponsor.name }))) return;
-    deleteSponsor.mutate(sponsor.id, {
-      onError: (err: Error) => toast.error(err.message),
-    });
+    setDeleteTarget(sponsor);
   }
 
   if (isLoading) {
@@ -72,6 +71,7 @@ export function SponsorsSection({ eventId }: { eventId: string }) {
   }
 
   return (
+    <>
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold">{t("title")}</h2>
@@ -171,5 +171,24 @@ export function SponsorsSection({ eventId }: { eventId: string }) {
         </div>
       )}
     </Card>
+    <ConfirmDialog
+      open={!!deleteTarget}
+      onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+      title={t("delete_confirm_title")}
+      description={t("delete_confirm", { name: deleteTarget?.name ?? "" })}
+      confirmText={tc("delete")}
+      cancelText={tc("cancel")}
+      variant="danger"
+      isPending={deleteSponsor.isPending}
+      onConfirm={() => {
+        if (deleteTarget) {
+          deleteSponsor.mutate(deleteTarget.id, {
+            onSuccess: () => setDeleteTarget(null),
+            onError: (err: Error) => toast.error(err.message),
+          });
+        }
+      }}
+    />
+    </>
   );
 }

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, auditLog } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { withHandler } from "@/lib/api-handler";
 
 const profileSchema = z.object({
   name: z.string().min(1),
@@ -11,7 +12,7 @@ const profileSchema = z.object({
   occupation: z.string().min(1).optional(),
 });
 
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,9 +35,9 @@ export async function GET() {
   }
 
   return NextResponse.json(user);
-}
+});
 
-export async function PATCH(req: Request) {
+export const PATCH = withHandler(async function PATCH(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -69,16 +70,28 @@ export async function PATCH(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE() {
+export const DELETE = withHandler(async function DELETE() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    await db.delete(users).where(eq(users.id, session.user.id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ deletedAt: new Date() })
+        .where(eq(users.id, session.user.id));
+
+      await tx.insert(auditLog).values({
+        userId: session.user.id,
+        action: "delete",
+        entityType: "user",
+        entityId: session.user.id,
+      });
+    });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("DELETE /api/user/profile error:", err);
@@ -87,4 +100,4 @@ export async function DELETE() {
       { status: 500 }
     );
   }
-}
+});

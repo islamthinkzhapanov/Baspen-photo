@@ -4,6 +4,8 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-handler";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -11,7 +13,16 @@ const registerSchema = z.object({
   name: z.string().min(1),
 });
 
-export async function POST(request: Request) {
+export const POST = withHandler(async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const { allowed, retryAfter } = await rateLimit(`rl:register:${ip}`, 5, 3600);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter },
+      { status: 429 }
+    );
+  }
+
   const body = await request.json();
   const parsed = registerSchema.safeParse(body);
 
@@ -50,4 +61,4 @@ export async function POST(request: Request) {
     .returning({ id: users.id, email: users.email, name: users.name });
 
   return NextResponse.json(user, { status: 201 });
-}
+});

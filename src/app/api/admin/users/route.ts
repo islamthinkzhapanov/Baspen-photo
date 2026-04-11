@@ -3,9 +3,10 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { users, events, userSubscriptions, subscriptionPlans } from "@/lib/db/schema";
 import { eq, desc, like, count, sql } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/admin/users — list all users with pagination
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -78,10 +79,10 @@ export async function GET(request: NextRequest) {
     page,
     limit,
   });
-}
+});
 
 // PATCH /api/admin/users — update user role
-export async function PATCH(request: NextRequest) {
+export const PATCH = withHandler(async function PATCH(request: NextRequest) {
   const { error, session } = await requireAdmin();
   if (error) return error;
 
@@ -113,4 +114,4 @@ export async function PATCH(request: NextRequest) {
   }
 
   return NextResponse.json(updated);
-}
+});

@@ -5,9 +5,10 @@ import { embedWidgets } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { createWidgetSchema } from "@/lib/validators/sponsor";
 import { requireEventRole } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]/widget
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -20,10 +21,10 @@ export async function GET(
     .limit(1);
 
   return NextResponse.json(widget || null);
-}
+});
 
 // POST /api/events/[id]/widget -- create or update widget config
-export async function POST(
+export const POST = withHandler(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -76,4 +77,4 @@ export async function POST(
     .returning();
 
   return NextResponse.json(created, { status: 201 });
-}
+});

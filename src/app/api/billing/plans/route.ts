@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { subscriptionPlans } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/billing/plans — list available plans
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,4 +19,4 @@ export async function GET() {
     .orderBy(subscriptionPlans.priceMonthly);
 
   return NextResponse.json(plans);
-}
+});

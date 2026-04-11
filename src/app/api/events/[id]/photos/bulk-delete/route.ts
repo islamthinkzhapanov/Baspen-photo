@@ -5,10 +5,11 @@ import { photos, events, faceEmbeddings } from "@/lib/db/schema";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import { deleteObject } from "@/lib/storage/s3";
 import { getEventAccess } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // DELETE /api/events/[id]/photos/bulk-delete
 // Body: { photoIds: string[] } or { all: true }
-export async function DELETE(
+export const DELETE = withHandler(async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -51,11 +52,23 @@ export async function DELETE(
 
   const targetIds = targetPhotos.map((p) => p.id);
 
-  // Delete S3 objects in parallel (non-blocking)
+  // Delete DB records in a transaction to keep data consistent
+  await db.transaction(async (tx) => {
+    await tx.delete(faceEmbeddings).where(inArray(faceEmbeddings.photoId, targetIds));
+    await tx.delete(photos).where(inArray(photos.id, targetIds));
+    await tx
+      .update(events)
+      .set({
+        photoCount: sql`greatest(${events.photoCount} - ${targetPhotos.length}, 0)`,
+        updatedAt: new Date(),
+      })
+      .where(eq(events.id, eventId));
+  });
+
+  // Delete S3 objects after DB transaction succeeds
   const s3Keys = targetPhotos.flatMap((p) =>
     [p.storagePath, p.thumbnailPath, p.watermarkedPath].filter(Boolean) as string[]
   );
-  // Fire-and-forget S3 deletion in batches of 20
   const BATCH = 20;
   for (let i = 0; i < s3Keys.length; i += BATCH) {
     await Promise.allSettled(
@@ -63,20 +76,5 @@ export async function DELETE(
     );
   }
 
-  // Delete face embeddings
-  await db.delete(faceEmbeddings).where(inArray(faceEmbeddings.photoId, targetIds));
-
-  // Delete photo records
-  await db.delete(photos).where(inArray(photos.id, targetIds));
-
-  // Update event photo count
-  await db
-    .update(events)
-    .set({
-      photoCount: sql`greatest(${events.photoCount} - ${targetPhotos.length}, 0)`,
-      updatedAt: new Date(),
-    })
-    .where(eq(events.id, eventId));
-
   return NextResponse.json({ deleted: targetPhotos.length });
-}
+});

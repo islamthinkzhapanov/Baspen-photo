@@ -11,6 +11,7 @@ import {
   RiLoader4Line,
 } from "@remixicon/react";
 import { useEffect, useCallback, useState, useRef } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface Photo {
@@ -86,7 +87,7 @@ export function Lightbox({ photos, currentIndex, onClose, onChange, onDelete }: 
       a.click();
       document.body.removeChild(a);
     } catch {
-      // Ignore
+      toast.error("Failed to download photo");
     } finally {
       setDownloading(false);
     }

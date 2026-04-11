@@ -3,9 +3,10 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { auditLog, users } from "@/lib/db/schema";
 import { eq, desc, and, gte, lte, sql, count } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/admin/audit — audit log with filters
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -71,4 +72,4 @@ export async function GET(request: NextRequest) {
     page,
     limit,
   });
-}
+});

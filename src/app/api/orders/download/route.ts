@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { orders, orderItems, photos } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getDownloadUrl } from "@/lib/storage/s3";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/orders/download?token=xxx -- get download URLs for paid photos
-export async function GET(request: Request) {
+export const GET = withHandler(async function GET(request: Request) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
 
@@ -67,4 +68,4 @@ export async function GET(request: Request) {
     expiresAt: order.downloadExpiresAt,
     photos: downloads,
   });
-}
+});

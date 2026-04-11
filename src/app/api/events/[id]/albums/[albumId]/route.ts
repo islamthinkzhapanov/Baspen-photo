@@ -5,9 +5,10 @@ import { albums } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { updateAlbumSchema } from "@/lib/validators/album";
 import { requireEventRole } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // PATCH /api/events/[id]/albums/[albumId]
-export async function PATCH(
+export const PATCH = withHandler(async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; albumId: string }> }
 ) {
@@ -47,10 +48,10 @@ export async function PATCH(
   }
 
   return NextResponse.json(updated);
-}
+});
 
 // DELETE /api/events/[id]/albums/[albumId]
-export async function DELETE(
+export const DELETE = withHandler(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string; albumId: string }> }
 ) {
@@ -80,4 +81,4 @@ export async function DELETE(
   }
 
   return NextResponse.json({ success: true });
-}
+});

@@ -36,6 +36,13 @@
       "when": 1775795986165,
       "tag": "0004_funny_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775901241488,
+      "tag": "0005_clammy_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

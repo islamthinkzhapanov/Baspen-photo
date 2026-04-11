@@ -16,9 +16,10 @@ import {
   getPaymentProvider,
 } from "@/lib/payments/provider";
 import { nanoid } from "nanoid";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/orders -- create a new order (participant purchase)
-export async function POST(request: Request) {
+export const POST = withHandler(async function POST(request: Request) {
   const body = await request.json();
   const parsed = createOrderSchema.safeParse(body);
 
@@ -192,4 +193,4 @@ export async function POST(request: Request) {
       packageDiscount: isPackage ? pricing.packageDiscount : 0,
     },
   });
-}
+});

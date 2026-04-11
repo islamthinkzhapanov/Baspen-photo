@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userSubscriptions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/billing/cancel — cancel active subscription
-export async function POST() {
+export const POST = withHandler(async function POST() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,4 +35,4 @@ export async function POST() {
   }
 
   return NextResponse.json({ success: true });
-}
+});

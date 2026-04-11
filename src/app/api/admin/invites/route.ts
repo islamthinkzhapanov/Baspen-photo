@@ -6,11 +6,12 @@ import { eq, desc, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { createInviteSchema } from "@/lib/validators/invite";
 import { sendInviteEmail } from "@/lib/email";
+import { withHandler } from "@/lib/api-handler";
 
 const TOKEN_EXPIRY_HOURS = 48;
 
 // POST /api/admin/invites — create user (status=invited) + token + send email
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -83,10 +84,10 @@ export async function POST(request: NextRequest) {
   await sendInviteEmail({ to: email.toLowerCase(), name, token });
 
   return NextResponse.json({ success: true, userId }, { status: 201 });
-}
+});
 
 // PATCH /api/admin/invites — resend invite (regenerate token + resend email)
-export async function PATCH(request: NextRequest) {
+export const PATCH = withHandler(async function PATCH(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -133,4 +134,4 @@ export async function PATCH(request: NextRequest) {
   await sendInviteEmail({ to: user.email, name: user.name, token });
 
   return NextResponse.json({ success: true });
-}
+});

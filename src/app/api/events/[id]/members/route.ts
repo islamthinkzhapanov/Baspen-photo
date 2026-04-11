@@ -5,9 +5,10 @@ import { eventMembers, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { inviteMemberSchema } from "@/lib/validators/event";
 import { getEventAccess, requireEventRole } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]/members
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -40,10 +41,10 @@ export async function GET(
     .where(eq(eventMembers.eventId, id));
 
   return NextResponse.json(members);
-}
+});
 
 // POST /api/events/[id]/members — invite by email (owner only)
-export async function POST(
+export const POST = withHandler(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -111,4 +112,4 @@ export async function POST(
     .returning();
 
   return NextResponse.json(member, { status: 201 });
-}
+});

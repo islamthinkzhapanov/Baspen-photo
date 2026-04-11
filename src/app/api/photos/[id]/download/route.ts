@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { photos, events, orders, orderItems } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getDownloadUrl } from "@/lib/storage/s3";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/photos/[id]/download -- get a signed download URL for a photo
-export async function GET(
+export const GET = withHandler(async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -83,4 +84,4 @@ export async function GET(
     filename: photo.originalFilename || "photo.jpg",
     watermarked: true,
   });
-}
+});

@@ -4,6 +4,7 @@ import { users, passwordResetTokens } from "@/lib/db/schema";
 import { eq, and, isNull, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { withHandler } from "@/lib/api-handler";
 
 const schema = z.object({
   token: z.string().min(1),
@@ -11,7 +12,7 @@ const schema = z.object({
 });
 
 // GET /api/auth/reset-password?token=xxx — validate token
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token");
 
   if (!token) {
@@ -31,10 +32,10 @@ export async function GET(request: NextRequest) {
     .limit(1);
 
   return NextResponse.json({ valid: !!resetToken });
-}
+});
 
 // POST /api/auth/reset-password — set new password
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const body = await request.json();
   const parsed = schema.safeParse(body);
 
@@ -82,4 +83,4 @@ export async function POST(request: NextRequest) {
     .where(eq(passwordResetTokens.id, resetToken.id));
 
   return NextResponse.json({ success: true });
-}
+});

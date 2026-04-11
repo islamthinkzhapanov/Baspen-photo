@@ -8,13 +8,22 @@ import {
   DeleteFacesCommand,
 } from "@aws-sdk/client-rekognition";
 
-const rekognition = new RekognitionClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+let _rekognition: RekognitionClient | null = null;
+
+function getRekognition(): RekognitionClient {
+  if (!_rekognition) {
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error("AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY env vars are required");
+    }
+    _rekognition = new RekognitionClient({
+      region: process.env.AWS_REGION || "us-east-1",
+      credentials: { accessKeyId, secretAccessKey },
+    });
+  }
+  return _rekognition;
+}
 
 const SIMILARITY_THRESHOLD = parseFloat(
   process.env.FACE_SIMILARITY_THRESHOLD || "80"
@@ -25,14 +34,14 @@ export function getCollectionId(eventId: string): string {
 }
 
 export async function createCollection(collectionId: string) {
-  await rekognition.send(
+  await getRekognition().send(
     new CreateCollectionCommand({ CollectionId: collectionId })
   );
 }
 
 export async function deleteCollection(collectionId: string) {
   try {
-    await rekognition.send(
+    await getRekognition().send(
       new DeleteCollectionCommand({ CollectionId: collectionId })
     );
   } catch (err: unknown) {
@@ -63,7 +72,7 @@ export async function indexFaces(
   imageBytes: Buffer,
   externalImageId: string
 ): Promise<IndexedFace[]> {
-  const response = await rekognition.send(
+  const response = await getRekognition().send(
     new IndexFacesCommand({
       CollectionId: collectionId,
       Image: { Bytes: imageBytes },
@@ -107,7 +116,7 @@ export async function searchFacesByImage(
   maxFaces = 200,
   threshold?: number
 ): Promise<FaceMatch[]> {
-  const response = await rekognition.send(
+  const response = await getRekognition().send(
     new SearchFacesByImageCommand({
       CollectionId: collectionId,
       Image: { Bytes: imageBytes },
@@ -136,7 +145,7 @@ export async function searchFaces(
   maxFaces = 100,
   threshold?: number
 ): Promise<FaceMatch[]> {
-  const response = await rekognition.send(
+  const response = await getRekognition().send(
     new SearchFacesCommand({
       CollectionId: collectionId,
       FaceId: faceId,
@@ -164,7 +173,7 @@ export async function deleteFaces(
 ) {
   if (faceIds.length === 0) return;
 
-  await rekognition.send(
+  await getRekognition().send(
     new DeleteFacesCommand({
       CollectionId: collectionId,
       FaceIds: faceIds,

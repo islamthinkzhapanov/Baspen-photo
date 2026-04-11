@@ -6,6 +6,7 @@ import {
   type MatchNotification,
   type PhotoReadyNotification,
 } from "@/lib/realtime/redis-pubsub";
+import { withHandler } from "@/lib/api-handler";
 
 /**
  * GET /api/events/[id]/stream — Server-Sent Events for realtime updates.
@@ -18,7 +19,7 @@ import {
  * - "match": new photo matched to this participant's face
  * - "ping": keepalive every 30s
  */
-export async function GET(
+export const GET = withHandler(async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -101,4 +102,4 @@ export async function GET(
       "X-Accel-Buffering": "no",
     },
   });
-}
+});

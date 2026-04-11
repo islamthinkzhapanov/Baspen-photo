@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { apiKeys, eventMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { generateApiKey } from "@/lib/api-key";
+import { withHandler } from "@/lib/api-handler";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -12,7 +13,7 @@ type RouteContext = { params: Promise<{ id: string }> };
  *
  * List API keys for an event (owner/photographer only).
  */
-export async function GET(request: NextRequest, context: RouteContext) {
+export const GET = withHandler(async function GET(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     .orderBy(apiKeys.createdAt);
 
   return NextResponse.json({ keys });
-}
+});
 
 /**
  * POST /api/events/[id]/api-keys
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
  * Create a new API key for camera auto-upload.
  * The raw key is returned ONCE — it cannot be retrieved again.
  */
-export async function POST(request: NextRequest, context: RouteContext) {
+export const POST = withHandler(async function POST(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -108,14 +109,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     rawKey, // Shown once!
     createdAt: created.createdAt,
   });
-}
+});
 
 /**
  * DELETE /api/events/[id]/api-keys?keyId=xxx
  *
  * Revoke an API key.
  */
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export const DELETE = withHandler(async function DELETE(request: NextRequest, context: RouteContext) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -140,4 +141,4 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     );
 
   return NextResponse.json({ success: true });
-}
+});

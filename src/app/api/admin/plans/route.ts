@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { subscriptionPlans, userSubscriptions } from "@/lib/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { z } from "zod";
+import { withHandler } from "@/lib/api-handler";
 
 const planSchema = z.object({
   name: z.string().min(1).max(100),
@@ -15,7 +16,7 @@ const planSchema = z.object({
 });
 
 // GET /api/admin/plans — list all plans with subscriber counts
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -51,10 +52,10 @@ export async function GET() {
   }));
 
   return NextResponse.json(enriched);
-}
+});
 
 // POST /api/admin/plans — create plan
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -73,10 +74,10 @@ export async function POST(request: NextRequest) {
     .returning();
 
   return NextResponse.json(plan, { status: 201 });
-}
+});
 
 // PATCH /api/admin/plans — update plan
-export async function PATCH(request: NextRequest) {
+export const PATCH = withHandler(async function PATCH(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -106,4 +107,4 @@ export async function PATCH(request: NextRequest) {
   }
 
   return NextResponse.json(updated);
-}
+});

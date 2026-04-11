@@ -19,7 +19,8 @@ interface Photo {
 
 export function PhotoGrid({ eventId }: { eventId: string }) {
   const t = useTranslations("gallery");
-  const { data: photos, isLoading } = useEventPhotos(eventId);
+  const { data: photosData, isLoading } = useEventPhotos(eventId);
+  const photos = photosData?.photos;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const deleteMutation = useDeletePhoto(eventId);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);

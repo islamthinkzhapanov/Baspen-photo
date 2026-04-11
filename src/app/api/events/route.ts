@@ -5,9 +5,10 @@ import { events, eventMembers } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { createEventSchema } from "@/lib/validators/event";
 import { createCollection, getCollectionId } from "@/lib/rekognition/client";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events — list user's events
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,10 +51,10 @@ export async function GET() {
   }
 
   return NextResponse.json(result);
-}
+});
 
 // POST /api/events — create event
-export async function POST(request: Request) {
+export const POST = withHandler(async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -108,4 +109,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(event, { status: 201 });
-}
+});

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   RiDownloadLine,
   RiShareLine,
@@ -64,7 +65,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
       a.click();
       document.body.removeChild(a);
     } catch {
-      // Ignore download errors
+      toast.error("Failed to download photo");
     } finally {
       setDownloading(false);
     }

@@ -1,32 +1,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { FaceSearchResult, NumberSearchResult } from "@/types/api";
 
-export interface SearchPhoto {
-  id: string;
-  thumbnail_path: string | null;
-  thumbnail_avif_path: string | null;
-  watermarked_path: string | null;
-  placeholder: string | null;
-  width: number | null;
-  height: number | null;
-  created_at: string;
-  similarity?: number;
-  album_id?: string | null;
-  albumId?: string | null;
-}
-
-interface FaceSearchResult {
-  photos: SearchPhoto[];
-  sessionToken: string;
-  total: number;
-  error?: string;
-}
-
-interface NumberSearchResult {
-  photos: SearchPhoto[];
-  total: number;
-}
+export type { SearchPhoto, FaceSearchResult, NumberSearchResult } from "@/types/api";
 
 export function useFaceSearch() {
   return useMutation({

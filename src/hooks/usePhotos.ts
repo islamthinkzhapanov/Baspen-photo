@@ -5,20 +5,13 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch";
+import type { PhotosResponse } from "@/types/api";
 
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
-
-export function useEventPhotos(eventId: string) {
-  return useQuery({
-    queryKey: ["events", eventId, "photos"],
-    queryFn: () => fetchJson(`/api/events/${eventId}/photos`),
+export function useEventPhotos(eventId: string, page = 1, limit = 100) {
+  return useQuery<PhotosResponse>({
+    queryKey: ["events", eventId, "photos", page, limit],
+    queryFn: () => fetchJson(`/api/events/${eventId}/photos?page=${page}&limit=${limit}`),
     enabled: !!eventId,
   });
 }
@@ -44,7 +37,7 @@ export function useUploadPhotos(
         const batch = files.slice(i, i + BATCH_SIZE);
 
         // 1. Get presigned URLs for this batch
-        const { urls } = await fetchJson("/api/upload", {
+        const { urls } = await fetchJson<any>("/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -161,7 +154,7 @@ export function useBulkDeletePhotos(eventId: string) {
 export function useProcessingStatus(eventId: string, enabled = true) {
   return useQuery({
     queryKey: ["events", eventId, "processing-status"],
-    queryFn: () => fetchJson(`/api/events/${eventId}/processing-status`),
+    queryFn: () => fetchJson<any>(`/api/events/${eventId}/processing-status`),
     enabled: !!eventId && enabled,
     refetchInterval: 3000, // Poll every 3s while processing
   });

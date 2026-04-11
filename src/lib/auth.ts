@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .where(eq(users.email, parsed.data.email))
           .limit(1);
 
-        if (!user || !user.passwordHash) return null;
+        if (!user || !user.passwordHash || user.deletedAt) return null;
 
         // Dynamic import bcrypt only on server
         const bcrypt = await import("bcryptjs");
@@ -72,9 +72,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .limit(1);
         token.role = dbUser?.role || "user";
         token.profileCompleted = !!(dbUser?.phone && dbUser?.occupation);
-      } else if (trigger === "update" && session?.profileCompleted) {
-        // Client confirmed profile was just completed — trust it
-        token.profileCompleted = true;
+      } else if (trigger === "update") {
+        const [dbUser] = await db
+          .select({ phone: users.phone, occupation: users.occupation })
+          .from(users)
+          .where(eq(users.id, token.id as string))
+          .limit(1);
+        token.profileCompleted = !!(dbUser?.phone && dbUser?.occupation);
       }
       return token;
     },

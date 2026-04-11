@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 /**
  * GET /api/search/session — Return cached matches for a participant session.
@@ -11,7 +12,7 @@ import { sql } from "drizzle-orm";
  *
  * Returns previously matched photos without re-running face search.
  */
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const eventId = request.nextUrl.searchParams.get("eventId");
   const sessionToken = request.nextUrl.searchParams.get("sessionToken");
 
@@ -55,4 +56,4 @@ export async function GET(request: NextRequest) {
     sessionToken,
     total: (matchedPhotos as unknown[]).length,
   });
-}
+});

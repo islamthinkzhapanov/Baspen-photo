@@ -4,9 +4,10 @@ import { db } from "@/lib/db";
 import { photos } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { getEventAccess } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]/processing-status — get photo processing stats
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -33,4 +34,4 @@ export async function GET(
     .where(eq(photos.eventId, id));
 
   return NextResponse.json(stats);
-}
+});

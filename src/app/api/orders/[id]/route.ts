@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders, orderItems, paymentTransactions, events } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/orders/[id] -- public order status (for checkout redirect)
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -62,4 +63,4 @@ export async function GET(
     paymentProvider: tx?.provider ?? "manual",
     createdAt: order.createdAt,
   });
-}
+});

@@ -1,12 +1,16 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { AdminBottomTabBar } from "@/components/admin/AdminBottomTabBar";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "super_admin") redirect("/login");
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">

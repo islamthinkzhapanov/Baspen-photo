@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useTranslations } from "next-intl";
 import { useAdminEvents, useAdminDeleteEvent } from "@/hooks/useAdmin";
 import {
@@ -33,18 +34,16 @@ export function AdminEventsPage() {
 
   const { data } = useAdminEvents({ page, search });
   const deleteEvent = useAdminDeleteEvent();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   const totalPages = data ? Math.ceil(data.total / 20) : 1;
 
   function handleDelete(eventId: string, title: string) {
-    if (!confirm(t("delete_event_confirm", { name: title }))) return;
-    deleteEvent.mutate(eventId, {
-      onSuccess: () => toast.success(t("event_deleted")),
-      onError: (err) => toast.error(err.message),
-    });
+    setDeleteTarget({ id: eventId, title });
   }
 
   return (
+    <>
     <div className="space-y-6">
       <h1 className="text-2xl font-bold font-display">{t("events_title")}</h1>
 
@@ -156,5 +155,26 @@ export function AdminEventsPage() {
         </div>
       )}
     </div>
+    <ConfirmDialog
+      open={!!deleteTarget}
+      onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+      title={t("delete_event_confirm_title")}
+      description={t("delete_event_confirm", { name: deleteTarget?.title ?? "" })}
+      confirmText={t("delete")}
+      variant="danger"
+      isPending={deleteEvent.isPending}
+      onConfirm={() => {
+        if (deleteTarget) {
+          deleteEvent.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              toast.success(t("event_deleted"));
+              setDeleteTarget(null);
+            },
+            onError: (err) => toast.error(err.message),
+          });
+        }
+      }}
+    />
+    </>
   );
 }

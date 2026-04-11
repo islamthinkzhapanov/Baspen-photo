@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { haversineDistance } from "@/lib/utils/geo";
+import { withHandler } from "@/lib/api-handler";
 
 /**
  * GET /api/events/nearby?lat=XX&lng=YY — Find published events near a location.
@@ -10,7 +11,7 @@ import { haversineDistance } from "@/lib/utils/geo";
  * Returns events whose geofence includes the given coordinates,
  * sorted by distance (closest first).
  */
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const lat = parseFloat(request.nextUrl.searchParams.get("lat") || "");
   const lng = parseFloat(request.nextUrl.searchParams.get("lng") || "");
 
@@ -59,4 +60,4 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => a.distance - b.distance);
 
   return NextResponse.json({ events: nearby });
-}
+});

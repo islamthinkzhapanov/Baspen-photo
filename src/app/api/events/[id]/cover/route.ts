@@ -6,12 +6,13 @@ import { events } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireEventRole } from "@/lib/event-auth";
 import { getUploadUrl, getPublicUrl, deleteObject } from "@/lib/storage/s3";
+import { withHandler } from "@/lib/api-handler";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 // POST /api/events/[id]/cover — get presigned upload URL
-export async function POST(
+export const POST = withHandler(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -45,10 +46,10 @@ export async function POST(
   const publicUrl = getPublicUrl(key);
 
   return NextResponse.json({ uploadUrl, publicUrl, key });
-}
+});
 
 // DELETE /api/events/[id]/cover — remove cover image
-export async function DELETE(
+export const DELETE = withHandler(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -89,4 +90,4 @@ export async function DELETE(
     .where(eq(events.id, id));
 
   return NextResponse.json({ success: true });
-}
+});

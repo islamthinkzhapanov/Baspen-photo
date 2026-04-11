@@ -346,11 +346,11 @@ export function PhotographerEventPage({ eventId }: { eventId: string }) {
   const [confirmAction, setConfirmAction] = useState<"selected" | "all" | null>(null);
 
   const { data: event, isLoading: eventLoading } = useEvent(eventId);
-  const { data: allPhotos, isLoading: photosLoading } = useEventPhotos(eventId);
+  const { data: photosData, isLoading: photosLoading } = useEventPhotos(eventId);
   const deleteMutation = useDeletePhoto(eventId);
   const bulkDeleteMutation = useBulkDeletePhotos(eventId);
 
-  const photos: Photo[] = allPhotos ?? [];
+  const photos: Photo[] = photosData?.photos ?? [];
   const readyPhotos = photos.filter((p: Photo) => p.status === "ready");
 
   const pagePhotos = readyPhotos.slice(

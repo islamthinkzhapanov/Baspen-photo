@@ -5,11 +5,12 @@ import { albums, photos } from "@/lib/db/schema";
 import { eq, asc, sql, count } from "drizzle-orm";
 import { createAlbumSchema, reorderAlbumsSchema } from "@/lib/validators/album";
 import { requireEventRole, getEventAccess } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/events/[id]/albums
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -40,10 +41,10 @@ export async function GET(
     .orderBy(asc(albums.sortOrder));
 
   return NextResponse.json(result);
-}
+});
 
 // POST /api/events/[id]/albums
-export async function POST(
+export const POST = withHandler(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -83,10 +84,10 @@ export async function POST(
     .returning();
 
   return NextResponse.json(album, { status: 201 });
-}
+});
 
 // PUT /api/events/[id]/albums — reorder albums
-export async function PUT(
+export const PUT = withHandler(async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -121,4 +122,4 @@ export async function PUT(
   );
 
   return NextResponse.json({ success: true });
-}
+});

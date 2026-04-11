@@ -8,9 +8,10 @@ import {
   events,
 } from "@/lib/db/schema";
 import { eq, and, sql, count as countFn, inArray } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/payments — organizer payment dashboard data
-export async function GET(request: Request) {
+export const GET = withHandler(async function GET(request: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -143,4 +144,4 @@ export async function GET(request: Request) {
       pendingCount,
     },
   });
-}
+});

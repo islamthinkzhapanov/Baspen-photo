@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { photos, events } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { enqueuePhotoProcessing } from "@/lib/queue/photo-queue";
+import { rateLimit } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-handler";
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_TYPES = [
@@ -27,15 +29,24 @@ const ALLOWED_TYPES = [
  * 1. mode=presigned — returns a presigned URL for the client to upload to S3 directly
  * 2. mode=direct (default) — accepts multipart file upload, stores to S3, enqueues processing
  */
-export async function POST(request: NextRequest) {
-  const keyInfo = await validateApiKey(
-    request.headers.get("authorization")
-  );
+export const POST = withHandler(async function POST(request: NextRequest) {
+  const apiKey = request.headers.get("authorization");
+
+  const keyInfo = await validateApiKey(apiKey);
 
   if (!keyInfo) {
     return NextResponse.json(
       { error: "Invalid or missing API key" },
       { status: 401 }
+    );
+  }
+
+  // Rate limit by API key: 200 requests per hour
+  const { allowed, retryAfter } = await rateLimit(`rl:camera:${apiKey}`, 200, 3600);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter },
+      { status: 429 }
     );
   }
 
@@ -59,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
 
   return handleDirectUpload(request, eventId, userId);
-}
+});
 
 /**
  * Mode: presigned — return presigned URLs for batch upload.
@@ -134,7 +145,7 @@ async function handleDirectUpload(
   // Upload to S3 directly
   const arrayBuffer = await file.arrayBuffer();
 
-  await s3.send(
+  await s3().send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -177,7 +188,7 @@ async function handleDirectUpload(
  *
  * Check processing status of a photo.
  */
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const keyInfo = await validateApiKey(
     request.headers.get("authorization")
   );
@@ -212,4 +223,4 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json(photo);
-}
+});

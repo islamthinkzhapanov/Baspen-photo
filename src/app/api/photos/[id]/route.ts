@@ -5,9 +5,10 @@ import { photos, events, faceEmbeddings } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { getDownloadUrl, getPublicUrl, deleteObject } from "@/lib/storage/s3";
 import { getEventAccess } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/photos/[id] — get photo details (public)
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -71,10 +72,10 @@ export async function GET(
       : null,
     freeDownload: isFreeDownload,
   });
-}
+});
 
 // DELETE /api/photos/[id] — delete photo (uploader or event owner)
-export async function DELETE(
+export const DELETE = withHandler(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -113,7 +114,20 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Delete files from S3
+  // Delete DB records in a transaction
+  await db.transaction(async (tx) => {
+    await tx.delete(faceEmbeddings).where(eq(faceEmbeddings.photoId, id));
+    await tx.delete(photos).where(eq(photos.id, id));
+    await tx
+      .update(events)
+      .set({
+        photoCount: sql`greatest(${events.photoCount} - 1, 0)`,
+        updatedAt: new Date(),
+      })
+      .where(eq(events.id, photo.eventId));
+  });
+
+  // Delete files from S3 after DB transaction succeeds
   const keysToDelete = [
     photo.storagePath,
     photo.thumbnailPath,
@@ -122,20 +136,5 @@ export async function DELETE(
 
   await Promise.allSettled(keysToDelete.map((key) => deleteObject(key)));
 
-  // Delete face embeddings
-  await db.delete(faceEmbeddings).where(eq(faceEmbeddings.photoId, id));
-
-  // Delete photo record
-  await db.delete(photos).where(eq(photos.id, id));
-
-  // Decrement event photo count
-  await db
-    .update(events)
-    .set({
-      photoCount: sql`greatest(${events.photoCount} - 1, 0)`,
-      updatedAt: new Date(),
-    })
-    .where(eq(events.id, photo.eventId));
-
   return NextResponse.json({ success: true });
-}
+});

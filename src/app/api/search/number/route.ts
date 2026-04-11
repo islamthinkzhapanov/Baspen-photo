@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { photos, events } from "@/lib/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-handler";
 
 /**
  * GET /api/search/number?eventId=xxx&number=1234
@@ -9,7 +11,16 @@ import { eq, and, sql, desc } from "drizzle-orm";
  * Search for photos by bib/race number.
  * Photos store bib_numbers as text[] — we search with ANY().
  */
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const { allowed, retryAfter } = await rateLimit(`rl:number:${ip}`, 60, 60);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter },
+      { status: 429 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const eventId = searchParams.get("eventId");
   const number = searchParams.get("number");
@@ -17,6 +28,13 @@ export async function GET(request: NextRequest) {
   if (!eventId || !number) {
     return NextResponse.json(
       { error: "Missing eventId or number" },
+      { status: 400 }
+    );
+  }
+
+  if (number.length > 10 || !/^\d+$/.test(number)) {
+    return NextResponse.json(
+      { error: "Invalid number" },
       { status: 400 }
     );
   }
@@ -60,4 +78,4 @@ export async function GET(request: NextRequest) {
     photos: matchedPhotos,
     total: matchedPhotos.length,
   });
-}
+});

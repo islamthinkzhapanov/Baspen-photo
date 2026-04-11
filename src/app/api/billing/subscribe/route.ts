@@ -6,9 +6,10 @@ import {
   subscriptionPlans,
 } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/billing/subscribe — subscribe to a plan (or change plan)
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,4 +63,4 @@ export async function POST(request: NextRequest) {
   // For now, subscription activates immediately
 
   return NextResponse.json(sub, { status: 201 });
-}
+});

@@ -10,9 +10,10 @@ import {
   userSubscriptions,
 } from "@/lib/db/schema";
 import { count, sql, gte, eq } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/admin/metrics — platform-wide metrics
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -109,4 +110,4 @@ export async function GET() {
       totalBytes: Number(photoVolume[0]?.totalBytes) || 0,
     },
   });
-}
+});

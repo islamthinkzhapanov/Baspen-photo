@@ -5,8 +5,9 @@ import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { s3, bucket, deleteObject } from "@/lib/storage/s3";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { withHandler } from "@/lib/api-handler";
 
-export async function POST(req: Request) {
+export const POST = withHandler(async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       }
     }
 
-    await s3.send(
+    await s3().send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: key,
@@ -65,9 +66,9 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE() {
+export const DELETE = withHandler(async function DELETE() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -100,4 +101,4 @@ export async function DELETE() {
       { status: 500 }
     );
   }
-}
+});

@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { inviteTokens, users } from "@/lib/db/schema";
 import { eq, and, isNull, gt } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/invite/validate?token=xxx — check if invite token is valid (public)
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token");
 
   if (!token) {
@@ -42,4 +43,4 @@ export async function GET(request: NextRequest) {
     name: invite.userName,
     email: invite.userEmail,
   });
-}
+});

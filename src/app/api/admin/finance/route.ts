@@ -11,9 +11,10 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, sql, gte, lte, and, desc, count, sum } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/admin/finance — platform finance summary
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -97,4 +98,4 @@ export async function GET(request: NextRequest) {
     revenueByDay,
     topEvents,
   });
-}
+});

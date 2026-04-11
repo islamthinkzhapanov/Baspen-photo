@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { embedWidgets, events } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/embed/resolve?domain=photos.example.com
 // Used by middleware to resolve custom domain → event slug + widget config
-export async function GET(request: Request) {
+export const GET = withHandler(async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get("domain");
 
@@ -28,4 +29,4 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ slug: widget.slug, config: widget.config });
-}
+});

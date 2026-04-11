@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { events, eventMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
-export async function GET() {
+export const GET = withHandler(async function GET() {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,4 +34,4 @@ export async function GET() {
     hasAssignments: assignments.length > 0,
     ownedEventIds: ownedEvents.map((e) => e.id),
   });
-}
+});

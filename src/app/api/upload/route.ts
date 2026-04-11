@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUploadUrl } from "@/lib/storage/s3";
+import { getEventAccess } from "@/lib/event-auth";
 import { nanoid } from "nanoid";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/upload — get presigned upload URLs
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,6 +20,11 @@ export async function POST(request: NextRequest) {
 
   if (!eventId || !files?.length) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  }
+
+  const access = await getEventAccess(eventId, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   if (files.length > 500) {
@@ -60,4 +67,4 @@ export async function POST(request: NextRequest) {
   );
 
   return NextResponse.json({ urls });
-}
+});

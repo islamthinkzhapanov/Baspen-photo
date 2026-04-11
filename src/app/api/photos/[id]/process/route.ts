@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { photos } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { s3, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getEventAccess } from "@/lib/event-auth";
 import sharp from "sharp";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/photos/[id]/process — generate thumbnail (Phase 1 simple version)
-export async function POST(
+export const POST = withHandler(async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   const [photo] = await db
@@ -23,13 +31,18 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const access = await getEventAccess(photo.eventId, session.user.id);
+  if (!access.hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     // Download original from S3
     const getCommand = new GetObjectCommand({
       Bucket: bucket,
       Key: photo.storagePath,
     });
-    const s3Object = await s3.send(getCommand);
+    const s3Object = await s3().send(getCommand);
     const bodyBytes = await s3Object.Body?.transformToByteArray();
 
     if (!bodyBytes) {
@@ -50,7 +63,7 @@ export async function POST(
       "/thumbnails/"
     );
 
-    await s3.send(
+    await s3().send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: thumbnailKey,
@@ -82,4 +95,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});

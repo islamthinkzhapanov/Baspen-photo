@@ -1,19 +1,12 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch";
+import type { Sponsor } from "@/types/api";
 import type { CreateSponsorInput, UpdateSponsorInput } from "@/lib/validators/sponsor";
 
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
-
 export function useSponsors(eventId: string) {
-  return useQuery({
+  return useQuery<Sponsor[]>({
     queryKey: ["events", eventId, "sponsors"],
     queryFn: () => fetchJson(`/api/events/${eventId}/sponsors`),
     enabled: !!eventId,
@@ -69,7 +62,7 @@ export function useDeleteSponsor(eventId: string) {
 export function useWidget(eventId: string) {
   return useQuery({
     queryKey: ["events", eventId, "widget"],
-    queryFn: () => fetchJson(`/api/events/${eventId}/widget`),
+    queryFn: () => fetchJson<any>(`/api/events/${eventId}/widget`),
     enabled: !!eventId,
   });
 }

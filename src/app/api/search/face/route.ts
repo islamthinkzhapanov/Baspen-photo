@@ -9,6 +9,8 @@ import {
   deleteFaces,
 } from "@/lib/rekognition/client";
 import { nanoid } from "nanoid";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-handler";
 
 const MAX_RESULTS = 200;
 
@@ -26,7 +28,16 @@ const MAX_RESULTS = 200;
  *
  * Returns matched photos sorted by similarity.
  */
-export async function POST(request: Request) {
+export const POST = withHandler(async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const { allowed, retryAfter } = await rateLimit(`rl:face:${ip}`, 20, 3600);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter },
+      { status: 429 }
+    );
+  }
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   const eventId = formData.get("eventId") as string;
@@ -193,4 +204,4 @@ export async function POST(request: Request) {
     sessionToken,
     total: sortedPhotos.length,
   });
-}
+});

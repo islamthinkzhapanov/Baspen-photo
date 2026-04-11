@@ -111,7 +111,7 @@ function OrderContent() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-text-secondary">
-                {t("photos_count", { count: data.photoCount })}
+                {t("photos_count", { count: data.photoCount ?? 0 })}
               </span>
               <span className="font-medium">
                 {data.isPackage ? "Package" : "Single"}
@@ -120,7 +120,7 @@ function OrderContent() {
             <div className="flex justify-between text-sm">
               <span className="text-text-secondary">{t("payment_method")}</span>
               <span className="font-medium">
-                {providerLabels[data.paymentProvider] || data.paymentProvider}
+                {providerLabels[data.paymentProvider ?? ""] || data.paymentProvider}
               </span>
             </div>
             <div className="border-t border-border my-2" />

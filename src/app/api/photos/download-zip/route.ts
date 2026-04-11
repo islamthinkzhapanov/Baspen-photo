@@ -6,9 +6,10 @@ import { s3, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import yazl from "yazl";
 import { Readable } from "stream";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/photos/download-zip — stream a zip with requested photo IDs
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const body = await request.json();
   const photoIds: string[] = body.ids;
 
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
 
       try {
         const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-        const response = await s3.send(command);
+        const response = await s3().send(command);
         const s3Stream = response.Body as Readable;
 
         if (s3Stream) {
@@ -122,4 +123,4 @@ export async function POST(request: NextRequest) {
       "Transfer-Encoding": "chunked",
     },
   });
-}
+});

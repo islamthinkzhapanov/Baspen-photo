@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useTranslations } from "next-intl";
 import {
   RiKeyLine,
@@ -30,6 +31,7 @@ export function ApiKeysPanel({ eventId }: { eventId: string }) {
   const [showCreate, setShowCreate] = useState(false);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<{ keys: ApiKey[] }>({
     queryKey: ["api-keys", eventId],
@@ -82,6 +84,7 @@ export function ApiKeysPanel({ eventId }: { eventId: string }) {
   const activeKeys = data?.keys?.filter((k) => !k.isRevoked) ?? [];
 
   return (
+    <>
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -210,11 +213,7 @@ curl "${typeof window !== "undefined" ? window.location.origin : ""}/api/camera/
                 )}
               </div>
               <button
-                onClick={() => {
-                  if (confirm(t("revoke_confirm"))) {
-                    revokeMutation.mutate(key.id);
-                  }
-                }}
+                onClick={() => setRevokeTarget(key.id)}
                 className="rounded p-2 text-red-500 hover:bg-red-50"
               >
                 <RiDeleteBinLine size={16} />
@@ -224,5 +223,22 @@ curl "${typeof window !== "undefined" ? window.location.origin : ""}/api/camera/
         </div>
       )}
     </div>
+    <ConfirmDialog
+      open={!!revokeTarget}
+      onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+      title={t("revoke_confirm_title")}
+      description={t("revoke_confirm")}
+      confirmText={t("revoke")}
+      variant="danger"
+      isPending={revokeMutation.isPending}
+      onConfirm={() => {
+        if (revokeTarget) {
+          revokeMutation.mutate(revokeTarget, {
+            onSuccess: () => setRevokeTarget(null),
+          });
+        }
+      }}
+    />
+    </>
   );
 }

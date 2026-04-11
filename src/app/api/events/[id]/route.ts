@@ -6,9 +6,10 @@ import { eq } from "drizzle-orm";
 import { updateEventSchema } from "@/lib/validators/event";
 import { getEventAccess, requireEventRole } from "@/lib/event-auth";
 import { deleteCollection, getCollectionId } from "@/lib/rekognition/client";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -34,10 +35,10 @@ export async function GET(
   }
 
   return NextResponse.json({ ...event, currentUserRole: access.role });
-}
+});
 
 // PATCH /api/events/[id]
-export async function PATCH(
+export const PATCH = withHandler(async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -78,10 +79,10 @@ export async function PATCH(
   }
 
   return NextResponse.json(updated);
-}
+});
 
 // DELETE /api/events/[id]
-export async function DELETE(
+export const DELETE = withHandler(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -113,4 +114,4 @@ export async function DELETE(
   }
 
   return NextResponse.json({ success: true });
-}
+});

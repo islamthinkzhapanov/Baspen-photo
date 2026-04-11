@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-handler";
 
 const schema = z.object({
   email: z.string().email(),
@@ -12,7 +14,7 @@ const schema = z.object({
 });
 
 // POST /api/auth/forgot-password — send reset link
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async function POST(request: NextRequest) {
   const body = await request.json();
   const parsed = schema.safeParse(body);
 
@@ -24,6 +26,15 @@ export async function POST(request: NextRequest) {
   }
 
   const { email, locale } = parsed.data;
+
+  // Rate limit by email: 3 requests per 15 minutes
+  const { allowed, retryAfter } = await rateLimit(`rl:forgot:${email.toLowerCase()}`, 3, 900);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter },
+      { status: 429 }
+    );
+  }
 
   // Always return success to prevent email enumeration
   const successResponse = NextResponse.json({ success: true });
@@ -56,4 +67,4 @@ export async function POST(request: NextRequest) {
   }
 
   return successResponse;
-}
+});

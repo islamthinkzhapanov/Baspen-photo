@@ -6,6 +6,7 @@ import { generateShareFrame } from "@/lib/share-frame";
 import { s3, s3Public, bucket } from "@/lib/storage/s3";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { withHandler } from "@/lib/api-handler";
 
 /**
  * GET /api/share/[photoId] — Generate branded share image.
@@ -13,7 +14,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
  * Returns a presigned URL to the generated share image.
  * Caches the result in S3 for repeated access.
  */
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ photoId: string }> }
 ) {
@@ -53,12 +54,12 @@ export async function GET(
   const shareKey = photo.storagePath.replace("/originals/", "/share/");
   try {
     // If the object exists, return it
-    const headRes = await s3.send(
+    const headRes = await s3().send(
       new GetObjectCommand({ Bucket: bucket, Key: shareKey })
     );
     if (headRes.Body) {
       const url = await getSignedUrl(
-        s3Public,
+        s3Public(),
         new GetObjectCommand({ Bucket: bucket, Key: shareKey }),
         { expiresIn: 3600 }
       );
@@ -80,7 +81,7 @@ export async function GET(
     ? extractKeyFromUrl(photo.watermarkedPath)
     : photo.storagePath;
 
-  const s3Obj = await s3.send(
+  const s3Obj = await s3().send(
     new GetObjectCommand({ Bucket: bucket, Key: imageKey })
   );
   const bodyBytes = await s3Obj.Body?.transformToByteArray();
@@ -105,7 +106,7 @@ export async function GET(
   });
 
   // Upload to S3
-  await s3.send(
+  await s3().send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: shareKey,
@@ -115,13 +116,13 @@ export async function GET(
   );
 
   const url = await getSignedUrl(
-    s3Public,
+    s3Public(),
     new GetObjectCommand({ Bucket: bucket, Key: shareKey }),
     { expiresIn: 3600 }
   );
 
   return NextResponse.json({ url, cached: false });
-}
+});
 
 function extractKeyFromUrl(fullUrl: string): string {
   // URL format: http://host:port/bucket/key → extract key after bucket

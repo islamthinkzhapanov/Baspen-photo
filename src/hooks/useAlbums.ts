@@ -5,24 +5,10 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch";
+import type { Album } from "@/types/api";
 
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
-
-export interface Album {
-  id: string;
-  eventId: string;
-  name: string;
-  sortOrder: number;
-  createdAt: string;
-  photoCount: number;
-}
+export type { Album } from "@/types/api";
 
 export function useEventAlbums(eventId: string) {
   return useQuery<Album[]>({

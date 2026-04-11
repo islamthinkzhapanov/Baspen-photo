@@ -5,9 +5,10 @@ import { photos } from "@/lib/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { movePhotosSchema } from "@/lib/validators/album";
 import { getEventAccess } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // POST /api/events/[id]/photos/move — bulk move photos to album
-export async function POST(
+export const POST = withHandler(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -44,4 +45,4 @@ export async function POST(
     );
 
   return NextResponse.json({ success: true, moved: photoIds.length });
-}
+});

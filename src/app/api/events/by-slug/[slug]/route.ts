@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { events, photos, albums, users } from "@/lib/db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/by-slug/[slug] — public event data
-export async function GET(
+export const GET = withHandler(async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -94,4 +95,4 @@ export async function GET(
     albums: eventAlbums,
     photos: eventPhotos,
   });
-}
+});

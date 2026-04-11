@@ -666,7 +666,14 @@
       "Bash(grep -l \"Select\\\\|Listbox\" node_modules/@tremor/react/dist/esm/*.js)",
       "Bash(ls node_modules/@tremor/react/dist/*.css)",
       "Bash(npx tailwindcss:*)",
-      "Bash(node -e \"const r = require\\('@remixicon/react'\\); const keys = Object.keys\\(r\\).filter\\(k => k.toLowerCase\\(\\).includes\\('whatsapp'\\)\\); console.log\\(keys\\);\")"
+      "Bash(node -e \"const r = require\\('@remixicon/react'\\); const keys = Object.keys\\(r\\).filter\\(k => k.toLowerCase\\(\\).includes\\('whatsapp'\\)\\); console.log\\(keys\\);\")",
+      "Bash(grep -l \"try {\" \"/Users/mobibrand/Documents/Baspen photo/src/app/api/\"*\"/route.ts\")",
+      "Bash(grep -c \"try {\" \"/Users/mobibrand/Documents/Baspen photo/src/app/api\"/**/route.ts)",
+      "Bash(grep -v \":0$\")",
+      "Bash(grep \"from \\\\\"next/server\\\\\"\" \"/Users/mobibrand/Documents/Baspen photo/src/app/api\"/*/*/route.ts)",
+      "Bash(node -e \"const s = require\\('fs'\\).readFileSync\\('node_modules/@tremor/react/dist/components/input-elements/Button/Button.js','utf8'\\); const m = s.match\\(/disabled.*?loading|loading.*?disabled/g\\); console.log\\(m?.slice\\(0,3\\)\\)\")",
+      "Bash(export PATH=\"$HOME/.local/share/pnpm:$HOME/.nvm/versions/node/*/bin:$PATH\")",
+      "Read(//opt/**)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

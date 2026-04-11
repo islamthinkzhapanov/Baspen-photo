@@ -11,9 +11,10 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql, count as countFn } from "drizzle-orm";
 import { requireEventRole } from "@/lib/event-auth";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]/analytics?from=&to=
-export async function GET(
+export const GET = withHandler(async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -179,4 +180,4 @@ export async function GET(
       number: Number(numberSearches[0]?.total || 0),
     },
   });
-}
+});

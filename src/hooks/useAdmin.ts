@@ -1,15 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
+import { fetchJson } from "@/lib/fetch";
 
 // --- Users ---
 export function useAdminUsers(params?: {
@@ -24,7 +16,7 @@ export function useAdminUsers(params?: {
 
   return useQuery({
     queryKey: ["admin", "users", params],
-    queryFn: () => fetchJson(`/api/admin/users?${sp.toString()}`),
+    queryFn: () => fetchJson<any>(`/api/admin/users?${sp.toString()}`),
     retry: false,
   });
 }
@@ -77,7 +69,7 @@ export function useAdminEvents(params?: { page?: number; search?: string }) {
 
   return useQuery({
     queryKey: ["admin", "events", params],
-    queryFn: () => fetchJson(`/api/admin/events?${sp.toString()}`),
+    queryFn: () => fetchJson<any>(`/api/admin/events?${sp.toString()}`),
     retry: false,
   });
 }
@@ -103,7 +95,7 @@ export function useAdminFinance(from?: string, to?: string) {
 
   return useQuery({
     queryKey: ["admin", "finance", from, to],
-    queryFn: () => fetchJson(`/api/admin/finance?${sp.toString()}`),
+    queryFn: () => fetchJson<any>(`/api/admin/finance?${sp.toString()}`),
     retry: false,
   });
 }
@@ -112,7 +104,7 @@ export function useAdminFinance(from?: string, to?: string) {
 export function useAdminPlans() {
   return useQuery({
     queryKey: ["admin", "plans"],
-    queryFn: () => fetchJson("/api/admin/plans"),
+    queryFn: () => fetchJson<any>("/api/admin/plans"),
     retry: false,
   });
 }
@@ -153,7 +145,7 @@ export function useUpdatePlan() {
 export function useAdminMetrics() {
   return useQuery({
     queryKey: ["admin", "metrics"],
-    queryFn: () => fetchJson("/api/admin/metrics"),
+    queryFn: () => fetchJson<any>("/api/admin/metrics"),
     retry: false,
   });
 }
@@ -175,7 +167,7 @@ export function useAdminAudit(params?: {
 
   return useQuery({
     queryKey: ["admin", "audit", params],
-    queryFn: () => fetchJson(`/api/admin/audit?${sp.toString()}`),
+    queryFn: () => fetchJson<any>(`/api/admin/audit?${sp.toString()}`),
     retry: false,
   });
 }

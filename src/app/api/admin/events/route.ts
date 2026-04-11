@@ -3,9 +3,10 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { events, users, photos } from "@/lib/db/schema";
 import { eq, desc, sql, count } from "drizzle-orm";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/admin/events — list all events with owner info
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async function GET(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -49,10 +50,10 @@ export async function GET(request: NextRequest) {
     page,
     limit,
   });
-}
+});
 
 // DELETE /api/admin/events — delete event by id (body: { eventId })
-export async function DELETE(request: NextRequest) {
+export const DELETE = withHandler(async function DELETE(request: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -73,4 +74,4 @@ export async function DELETE(request: NextRequest) {
   }
 
   return NextResponse.json({ success: true });
-}
+});

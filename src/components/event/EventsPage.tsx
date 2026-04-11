@@ -13,6 +13,7 @@ import {
   RiDeleteBinLine,
 } from "@remixicon/react";
 import { useState, useRef, useEffect } from "react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   Badge,
   Card,
@@ -53,6 +54,7 @@ export function EventsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const deleteEventMutation = useDeleteEvent();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     if (!menuOpenId) return;
@@ -246,9 +248,7 @@ export function EventsPage() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (confirm(t("delete_confirm"))) {
-                                deleteEventMutation.mutate(event.id);
-                              }
+                              setDeleteTarget(event.id);
                               setMenuOpenId(null);
                             }}
                             className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
@@ -276,6 +276,22 @@ export function EventsPage() {
         </Card>
       )}
       <CreateProjectModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title={t("delete_confirm_title")}
+        description={t("delete_confirm")}
+        confirmText={t("delete")}
+        variant="danger"
+        isPending={deleteEventMutation.isPending}
+        onConfirm={() => {
+          if (deleteTarget) {
+            deleteEventMutation.mutate(deleteTarget, {
+              onSuccess: () => setDeleteTarget(null),
+            });
+          }
+        }}
+      />
     </div>
   );
 }

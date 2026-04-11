@@ -56,6 +56,7 @@ import {
 } from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LineChart } from "@/components/charts";
 import { useEventRole } from "@/hooks/useEventRole";
 import { toast } from "sonner";
@@ -216,6 +217,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const movePhotosMutation = useMovePhotosToAlbum(eventId);
   const [activeAlbumFilter, setActiveAlbumFilter] = useState<string | null>(null);
   const [uploadAlbumId, setUploadAlbumId] = useState<string | null>(null);
+  const [deleteAlbumTarget, setDeleteAlbumTarget] = useState<string | null>(null);
   const [moveToAlbumOpen, setMoveToAlbumOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -247,20 +249,22 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const { data: analytics } = useEventAnalytics(eventId);
 
   // Initialize settings state from event data
-  if (event && !settingsInitialized) {
-    setSettingsTitle(event.title);
-    setSettingsRetention(event.settings?.retentionMonths ?? 12);
-    setFreeDownloadToggle(!!event.settings?.freeDownload);
-    setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
-    setWatermarkToggle(event.settings?.watermarkEnabled !== false);
-    setSettingsPrice(event.settings?.pricePerPhoto || 0);
-    setSettingsDiscount(event.settings?.packageDiscount || 0);
-    setBibSearchToggle(!!event.settings?.bibSearchEnabled);
-    setDisplayMode(event.settings?.displayMode ?? "search");
-    setSettingsDate(event.date ? new Date(event.date) : undefined);
-    setSettingsLocation(event.location || "");
-    setSettingsInitialized(true);
-  }
+  useEffect(() => {
+    if (event && !settingsInitialized) {
+      setSettingsTitle(event.title);
+      setSettingsRetention(event.settings?.retentionMonths ?? 12);
+      setFreeDownloadToggle(!!event.settings?.freeDownload);
+      setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
+      setWatermarkToggle(event.settings?.watermarkEnabled !== false);
+      setSettingsPrice(event.settings?.pricePerPhoto || 0);
+      setSettingsDiscount(event.settings?.packageDiscount || 0);
+      setBibSearchToggle(!!event.settings?.bibSearchEnabled);
+      setDisplayMode(event.settings?.displayMode ?? "search");
+      setSettingsDate(event.date ? new Date(event.date) : undefined);
+      setSettingsLocation(event.location || "");
+      setSettingsInitialized(true);
+    }
+  }, [event, settingsInitialized]);
 
   const settingsDirty = settingsInitialized && event ? (
     settingsTitle !== event.title ||
@@ -536,6 +540,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               size="sm"
               className="text-xs sm:text-sm"
               loading={updateMutation.isPending}
+              disabled={updateMutation.isPending}
               onClick={() => updateMutation.mutate({ isPublished: !event.isPublished })}
             >
               {event.isPublished ? t("unpublish") : t("publish")}
@@ -610,12 +615,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                   }}
                   onCreateAlbum={(name) => createAlbumMutation.mutate({ name })}
                   onRenameAlbum={(albumId, name) => updateAlbumMutation.mutate({ albumId, data: { name } })}
-                  onDeleteAlbum={(albumId) => {
-                    if (confirm(tAlb("delete_album_confirm"))) {
-                      deleteAlbumMutation.mutate(albumId);
-                      if (activeAlbumFilter === albumId) setActiveAlbumFilter(null);
-                    }
-                  }}
+                  onDeleteAlbum={(albumId) => setDeleteAlbumTarget(albumId)}
                   isOwner={!isPhotographer}
                 />
               )}
@@ -1403,6 +1403,28 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           </div>
         </DialogPanel>
       </Dialog>
+
+      {/* Delete Album Confirm */}
+      <ConfirmDialog
+        open={!!deleteAlbumTarget}
+        onOpenChange={(open) => { if (!open) setDeleteAlbumTarget(null); }}
+        title={tAlb("delete_album_confirm_title")}
+        description={tAlb("delete_album_confirm")}
+        confirmText={tc("delete")}
+        cancelText={tc("cancel")}
+        variant="danger"
+        isPending={deleteAlbumMutation.isPending}
+        onConfirm={() => {
+          if (deleteAlbumTarget) {
+            deleteAlbumMutation.mutate(deleteAlbumTarget, {
+              onSuccess: () => {
+                if (activeAlbumFilter === deleteAlbumTarget) setActiveAlbumFilter(null);
+                setDeleteAlbumTarget(null);
+              },
+            });
+          }
+        }}
+      />
     </div>
   );
 }

@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { events, photos } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { calculatePhotoPrice, calculateOrderTotal } from "@/lib/payments/provider";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/events/[id]/pricing -- get pricing info for an event (public)
-export async function GET(
+export const GET = withHandler(async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -54,4 +55,4 @@ export async function GET(
     packageEligible,
     packageTotal,
   });
-}
+});

@@ -1,26 +1,19 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch";
 import type { CreateEventInput, UpdateEventInput } from "@/lib/validators/event";
-
-async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
+import type { Event, EventMember } from "@/types/api";
 
 export function useEvents() {
-  return useQuery({
+  return useQuery<Event[]>({
     queryKey: ["events"],
     queryFn: () => fetchJson("/api/events"),
   });
 }
 
 export function useEvent(id: string) {
-  return useQuery({
+  return useQuery<Event>({
     queryKey: ["events", id],
     queryFn: () => fetchJson(`/api/events/${id}`),
     enabled: !!id,
@@ -31,7 +24,7 @@ export function useCreateEvent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateEventInput) =>
-      fetchJson("/api/events", {
+      fetchJson<{ id: string }>("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -44,7 +37,7 @@ export function useUpdateEvent(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateEventInput) =>
-      fetchJson(`/api/events/${id}`, {
+      fetchJson<any>(`/api/events/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -66,7 +59,7 @@ export function useDeleteEvent() {
 }
 
 export function useEventMembers(eventId: string) {
-  return useQuery({
+  return useQuery<EventMember[]>({
     queryKey: ["events", eventId, "members"],
     queryFn: () => fetchJson(`/api/events/${eventId}/members`),
     enabled: !!eventId,

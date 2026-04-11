@@ -11,7 +11,7 @@ type EventRole = "owner" | "photographer";
 export function useEventRole(eventId: string) {
   const { data, isLoading } = useEvent(eventId);
 
-  const role: EventRole | null = data?.currentUserRole ?? null;
+  const role = (data?.currentUserRole as EventRole | undefined) ?? null;
 
   return {
     role,

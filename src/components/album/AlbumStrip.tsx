@@ -61,7 +61,7 @@ export function AlbumStrip({
     if (editingId) editInputRef.current?.focus();
   }, [editingId]);
 
-  const totalPhotos = albums.reduce((sum, a) => sum + a.photoCount, 0);
+  const totalPhotos = albums.reduce((sum, a) => sum + (a.photoCount ?? 0), 0);
 
   function handleCreate() {
     const trimmed = newName.trim();

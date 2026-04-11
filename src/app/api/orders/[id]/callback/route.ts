@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import { orders, orderItems, paymentTransactions, events } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { withHandler } from "@/lib/api-handler";
 
 // GET /api/orders/[id]/callback -- payment provider redirects here after checkout
-export async function GET(
+export const GET = withHandler(async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -81,4 +82,4 @@ export async function GET(
   // Payment not completed yet
   const baseUrl = url.origin;
   return NextResponse.redirect(`${baseUrl}/order/${id}?status=pending`);
-}
+});
