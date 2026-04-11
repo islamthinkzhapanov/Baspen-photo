@@ -29,6 +29,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
+      - HOSTNAME=0.0.0.0
       - NODE_ENV=production
       - DATABASE_URL=postgresql://baspen:${DB_PASSWORD}@postgres:5432/baspen
       - REDIS_URL=redis://redis:6379
