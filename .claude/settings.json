@@ -708,7 +708,8 @@
       "Bash(awk '{print $NF}')",
       "Bash(grep -r \"useUploadClientPhoto\\\\|useClients\" /Users/mobibrand/Documents/Syntony-crm/crm/src/hooks/*.ts)",
       "Bash(find /Users/mobibrand/Documents/Syntony-crm/crm/src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec grep -l \"project\" {} \\\\;)",
-      "Bash(find /Users/mobibrand/Documents/Syntony-crm/crm/src/app/api -name \"route.ts\" -exec grep -l \"appointments\\\\|calendar\\\\|clients\" {} \\\\;)"
+      "Bash(find /Users/mobibrand/Documents/Syntony-crm/crm/src/app/api -name \"route.ts\" -exec grep -l \"appointments\\\\|calendar\\\\|clients\" {} \\\\;)",
+      "Bash(grep -r \"handleEventClick\\\\|router.push.*events\" src/components/calendar/ src/app/*/calendar/ --include=\"*.tsx\")"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

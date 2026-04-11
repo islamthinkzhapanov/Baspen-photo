@@ -11,18 +11,21 @@ import {
 } from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
-import { useCreateEvent } from "@/hooks/useEvents";
+import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
+import { useRouter } from "@/i18n/navigation";
+import type { Event } from "@/types/api";
 import {
   RiCloseLine,
   RiMapPinLine,
-  RiHashtag,
   RiCameraLine,
   RiLoader4Line,
   RiUserLine,
   RiSmartphoneLine,
   RiBriefcaseLine,
   RiTimeLine,
-  RiClockwiseLine,
+  RiCheckLine,
+  RiCloseFill,
+  RiArrowRightLine,
 } from "@remixicon/react";
 
 interface CreateProjectModalProps {
@@ -30,6 +33,7 @@ interface CreateProjectModalProps {
   onClose: () => void;
   defaultDate?: Date;
   defaultTime?: string;
+  editEvent?: Event | null;
 }
 
 /* ── Consistent height class for all Tremor inputs/selects ── */
@@ -58,11 +62,14 @@ function extractDigits(phone: string): string {
 }
 
 /* ── Main component ── */
-export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: CreateProjectModalProps) {
+export function CreateProjectModal({ open, onClose, defaultDate, defaultTime, editEvent }: CreateProjectModalProps) {
   const t = useTranslations("events");
   const tc = useTranslations("common");
   const tp = useTranslations("profile");
+  const router = useRouter();
   const createMutation = useCreateEvent();
+  const isEditMode = !!editEvent;
+  const updateMutation = useUpdateEvent(editEvent?.id ?? "");
 
   type Tab = "basic" | "card";
   const [tab, setTab] = useState<Tab>("basic");
@@ -73,8 +80,8 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [location, setLocation] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [faceSearchEnabled, setFaceSearchEnabled] = useState(true);
-  const [bibSearchEnabled, setBibSearchEnabled] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [price, setPrice] = useState<string>("");
 
   // Business card tab state
   const [cardEnabled, setCardEnabled] = useState(true);
@@ -86,9 +93,9 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
   const cardFileRef = useRef<HTMLInputElement>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  // Load profile data for business card tab
+  // Load profile data for business card tab (only in create mode)
   useEffect(() => {
-    if (!open || profileLoaded) return;
+    if (!open || profileLoaded || isEditMode) return;
     fetch("/api/user/profile")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -101,23 +108,36 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
         }
       })
       .catch(() => {});
-  }, [open, profileLoaded]);
+  }, [open, profileLoaded, isEditMode]);
 
   // Reset state when modal opens
   useEffect(() => {
     if (open) {
       setTab("basic");
-      setTitle("");
-      setRetentionMonths(12);
-      setEventDate(defaultDate ?? undefined);
-      setEventTime(defaultTime ?? "");
-      setLocation("");
-      setFaceSearchEnabled(true);
-      setBibSearchEnabled(false);
-      setCardEnabled(true);
-      setProfileLoaded(false);
+
+      if (editEvent) {
+        // Edit mode: pre-fill from event
+        setTitle(editEvent.title);
+        setRetentionMonths(editEvent.settings?.retentionMonths ?? 12);
+        setEventDate(editEvent.date ? new Date(editEvent.date) : undefined);
+        setEventTime(editEvent.eventTime ?? "");
+        setLocation(editEvent.location ?? "");
+        setNotes(editEvent.description ?? "");
+        setPrice(editEvent.price != null ? String(editEvent.price) : "");
+      } else {
+        // Create mode: reset
+        setTitle("");
+        setRetentionMonths(12);
+        setEventDate(defaultDate ?? undefined);
+        setEventTime(defaultTime ?? "");
+        setLocation("");
+        setNotes("");
+        setPrice("");
+        setCardEnabled(true);
+        setProfileLoaded(false);
+      }
     }
-  }, [open, defaultDate, defaultTime]);
+  }, [open, defaultDate, defaultTime, editEvent]);
 
   // Escape key
   useEffect(() => {
@@ -161,6 +181,34 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
       return;
     }
 
+    if (isEditMode) {
+      // Edit mode: save changes
+      updateMutation.mutate(
+        {
+          title,
+          date: eventDate ? eventDate.toISOString() : undefined,
+          description: notes || undefined,
+          price: price ? Number(price) : undefined,
+          location: location || undefined,
+          eventTime: eventTime || undefined,
+          settings: {
+            retentionMonths,
+          },
+        },
+        {
+          onSuccess: () => {
+            toast.success(tc("success"));
+            onClose();
+          },
+          onError: (err: Error) => {
+            toast.error(err.message);
+          },
+        }
+      );
+      return;
+    }
+
+    // Create mode
     // Save profile changes if card is enabled
     if (cardEnabled) {
       try {
@@ -185,6 +233,8 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
         title,
         slug,
         date: eventDate ? eventDate.toISOString() : undefined,
+        description: notes || undefined,
+        price: price ? Number(price) : undefined,
         location: location || undefined,
         eventTime: eventTime || undefined,
         pricingMode: "commission" as const,
@@ -193,8 +243,8 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
           watermarkEnabled: false,
           pricePerPhoto: 0,
           packageDiscount: 0,
-          bibSearchEnabled,
-          faceSearchEnabled,
+          bibSearchEnabled: false,
+          faceSearchEnabled: true,
           displayMode: "gallery" as const,
           retentionMonths,
         },
@@ -211,10 +261,27 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
     );
   }
 
+  function handleStatusChange(status: "completed" | "cancelled") {
+    if (!editEvent) return;
+    updateMutation.mutate(
+      { status },
+      {
+        onSuccess: () => {
+          toast.success(tc("success"));
+          onClose();
+        },
+        onError: (err: Error) => {
+          toast.error(err.message);
+        },
+      }
+    );
+  }
+
   if (!open) return null;
 
   const isBasic = tab === "basic";
   const isCard = tab === "card";
+  const isPending = isEditMode ? updateMutation.isPending : createMutation.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -236,39 +303,43 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
           </button>
 
           <h2 className="text-[22px] font-bold tracking-tight text-text">
-            {t("create_project")}
+            {isEditMode ? editEvent!.title : t("create_project")}
           </h2>
-          <p className="mt-1 text-[14px] text-text-secondary">
-            {t("new_event_desc")}
-          </p>
+          {!isEditMode && (
+            <p className="mt-1 text-[14px] text-text-secondary">
+              {t("new_event_desc")}
+            </p>
+          )}
         </div>
 
-        {/* Pill tabs */}
-        <div className="mx-7 mt-5 flex rounded-lg bg-bg-secondary p-1 shrink-0">
-          <button
-            onClick={() => setTab("basic")}
-            className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
-              isBasic
-                ? "bg-white text-text shadow-sm"
-                : "text-text-secondary hover:text-text"
-            }`}
-          >
-            {t("tab_basic")}
-          </button>
-          <button
-            onClick={() => setTab("card")}
-            className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
-              isCard
-                ? "bg-white text-text shadow-sm"
-                : "text-text-secondary hover:text-text"
-            }`}
-          >
-            {t("tab_business_card")}
-          </button>
-        </div>
+        {/* Pill tabs — only in create mode */}
+        {!isEditMode && (
+          <div className="mx-7 mt-5 flex rounded-lg bg-bg-secondary p-1 shrink-0">
+            <button
+              onClick={() => setTab("basic")}
+              className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
+                isBasic
+                  ? "bg-white text-text shadow-sm"
+                  : "text-text-secondary hover:text-text"
+              }`}
+            >
+              {t("tab_basic")}
+            </button>
+            <button
+              onClick={() => setTab("card")}
+              className={`flex-1 rounded-md py-2 text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
+                isCard
+                  ? "bg-white text-text shadow-sm"
+                  : "text-text-secondary hover:text-text"
+              }`}
+            >
+              {t("tab_business_card")}
+            </button>
+          </div>
+        )}
 
         {/* Scrollable content */}
-        <div className="px-7 pt-5 pb-7 overflow-y-auto flex-1">
+        <div className={`px-7 ${isEditMode ? "pt-5" : "pt-5"} pb-7 overflow-y-auto flex-1`}>
           {/* ── Basic Tab ── */}
           {isBasic && (
             <div className="space-y-5">
@@ -286,21 +357,36 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[13px] font-medium text-text mb-1.5">
-                    {t("retention_period")}
-                  </label>
-                  <Select
-                    value={String(retentionMonths)}
-                    onValueChange={(val) => setRetentionMonths(Number(val))}
-                    enableClear={false}
-                    icon={RiTimeLine}
-                    className={selectClassName}
-                  >
-                    <SelectItem value="1">1 мес</SelectItem>
-                    <SelectItem value="6">6 мес</SelectItem>
-                    <SelectItem value="12">12 мес</SelectItem>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[13px] font-medium text-text mb-1.5">
+                      {t("retention_period")}
+                    </label>
+                    <Select
+                      value={String(retentionMonths)}
+                      onValueChange={(val) => setRetentionMonths(Number(val))}
+                      enableClear={false}
+                      icon={RiTimeLine}
+                      className={selectClassName}
+                    >
+                      <SelectItem value="1">1 мес</SelectItem>
+                      <SelectItem value="6">6 мес</SelectItem>
+                      <SelectItem value="12">12 мес</SelectItem>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-medium text-text mb-1.5">
+                      Сумма
+                    </label>
+                    <TextInput
+                      placeholder="0"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value.replace(/\D/g, ""))}
+                      className={inputClassName}
+                      type="text"
+                      inputMode="numeric"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -331,7 +417,7 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
                     onValueChange={setEventTime}
                     placeholder="Время"
                     enableClear={true}
-                    icon={RiClockwiseLine}
+                    icon={RiTimeLine}
                     className={selectClassName}
                   >
                     {Array.from({ length: 48 }, (_, i) => {
@@ -361,46 +447,24 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
                 />
               </div>
 
-              {/* Toggles */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
-                  <div className="flex items-center gap-3">
-                    <RiCameraLine className="w-4 h-4 text-text-secondary" />
-                    <div>
-                      <span className="text-sm font-medium text-text">
-                        {t("face_search")}
-                      </span>
-                      <p className="text-xs text-text-secondary">
-                        {t("face_search_hint")}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch checked={faceSearchEnabled} onChange={setFaceSearchEnabled} />
-                </div>
-
-                <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
-                  <div className="flex items-center gap-3">
-                    <RiHashtag className="w-4 h-4 text-text-secondary" />
-                    <div>
-                      <span className="text-sm font-medium text-text">
-                        {t("bib_search")}
-                      </span>
-                      <p className="text-xs text-text-secondary">
-                        {t("bib_search_hint")}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={bibSearchEnabled}
-                    onChange={setBibSearchEnabled}
-                  />
-                </div>
+              {/* Notes */}
+              <div>
+                <label className="block text-[13px] font-medium text-text mb-1.5">
+                  Заметки
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Необязательно"
+                  rows={3}
+                  className="w-full rounded-xl border border-tremor-border bg-white px-3 py-2.5 text-[15px] text-text placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                />
               </div>
             </div>
           )}
 
-          {/* ── Business Card Tab ── */}
-          {isCard && (
+          {/* ── Business Card Tab (create mode only) ── */}
+          {isCard && !isEditMode && (
             <div className="space-y-5">
               {/* Enable switch */}
               <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
@@ -521,16 +585,71 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
 
         {/* Footer */}
         <div className="px-7 pb-7 pt-2 shrink-0">
-          <button
-            onClick={handleSubmit}
-            disabled={createMutation.isPending || !title.trim()}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
-          >
-            {createMutation.isPending && (
-              <RiLoader4Line size={18} className="animate-spin" />
-            )}
-            {tc("create")}
-          </button>
+          {isEditMode ? (
+            <div className="space-y-3">
+              {/* Save changes */}
+              <button
+                onClick={handleSubmit}
+                disabled={isPending || !title.trim()}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+              >
+                {isPending && (
+                  <RiLoader4Line size={18} className="animate-spin" />
+                )}
+                Сохранить
+              </button>
+
+              {/* Action buttons row */}
+              <div className="flex gap-2">
+                {/* More details */}
+                <button
+                  onClick={() => {
+                    onClose();
+                    router.push(`/events/${editEvent!.id}`);
+                  }}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <RiArrowRightLine size={16} />
+                  Подробнее
+                </button>
+
+                {/* Completed */}
+                {editEvent!.status !== "completed" && (
+                  <button
+                    onClick={() => handleStatusChange("completed")}
+                    disabled={isPending}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-600 py-2.5 text-[13px] font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-60 cursor-pointer"
+                  >
+                    <RiCheckLine size={16} />
+                    Выполнено
+                  </button>
+                )}
+
+                {/* Cancelled */}
+                {editEvent!.status !== "cancelled" && (
+                  <button
+                    onClick={() => handleStatusChange("cancelled")}
+                    disabled={isPending}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-300 py-2.5 text-[13px] font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60 cursor-pointer"
+                  >
+                    <RiCloseFill size={16} />
+                    Отменён
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={isPending || !title.trim()}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+            >
+              {isPending && (
+                <RiLoader4Line size={18} className="animate-spin" />
+              )}
+              {tc("create")}
+            </button>
+          )}
         </div>
       </div>
     </div>

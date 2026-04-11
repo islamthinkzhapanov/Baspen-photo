@@ -63,6 +63,12 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
 
 export const inviteStatusEnum = pgEnum("invite_status", ["active", "invited"]);
 
+export const eventStatusEnum = pgEnum("event_status", [
+  "planned",
+  "completed",
+  "cancelled",
+]);
+
 // --- Users ---
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -182,6 +188,7 @@ export const events = pgTable(
     eventTime: text("event_time"),
     eventEndTime: text("event_end_time"),
     coverUrl: text("cover_url"),
+    price: integer("price"),
     pricingMode: pricingModeEnum("pricing_mode")
       .notNull()
       .default("commission"),
@@ -209,6 +216,7 @@ export const events = pgTable(
       radiusKm: number;
     }>(),
     isPublished: boolean("is_published").notNull().default(false),
+    status: eventStatusEnum("event_status").notNull().default("planned"),
     photoCount: integer("photo_count").notNull().default(0),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),

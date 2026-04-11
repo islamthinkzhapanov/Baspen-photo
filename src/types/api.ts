@@ -65,6 +65,8 @@ export interface Event {
     radiusKm: number;
   } | null;
   isPublished: boolean;
+  status: "planned" | "completed" | "cancelled";
+  price: number | null;
   photoCount: number;
   createdAt: string;
   updatedAt: string;

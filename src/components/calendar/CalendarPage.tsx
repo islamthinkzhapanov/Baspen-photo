@@ -28,6 +28,8 @@ import {
 } from "@remixicon/react";
 import { useCalendarThreeDays } from "@/hooks/useCalendarEvents";
 import type { CalendarBreakEntry } from "@/hooks/useCalendarEvents";
+import { fetchJson } from "@/lib/fetch";
+import type { Event } from "@/types/api";
 import { ThreeDayView } from "./ThreeDayView";
 import { BreakSheet, type BreakSheetState } from "./BreakSheet";
 import { CreateProjectModal } from "@/components/event/CreateProjectModal";
@@ -172,12 +174,13 @@ export function CalendarPage() {
   // Date picker popover
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  // Create project modal
+  // Create/edit project modal
   const [createOpen, setCreateOpen] = useState(false);
   const [createDefaults, setCreateDefaults] = useState<{
     date?: Date;
     time?: string;
   }>({});
+  const [editEvent, setEditEvent] = useState<Event | null>(null);
 
   // Break sheet
   const [breakState, setBreakState] = useState<BreakSheetState>({ open: false });
@@ -200,12 +203,19 @@ export function CalendarPage() {
 
   function handleSlotClick(time: string, slotDate?: string) {
     const d = slotDate ?? date;
+    setEditEvent(null);
     setCreateDefaults({ date: parseISO(d), time });
     setCreateOpen(true);
   }
 
-  function handleEventClick(eventId: string) {
-    router.push(`/events/${eventId}?from=calendar`);
+  async function handleEventClick(eventId: string) {
+    try {
+      const event = await fetchJson<Event>(`/api/events/${eventId}`);
+      setEditEvent(event);
+      setCreateOpen(true);
+    } catch {
+      router.push(`/events/${eventId}?from=calendar`);
+    }
   }
 
   function handleBreakClick(breakId: string) {
@@ -228,6 +238,7 @@ export function CalendarPage() {
   }
 
   function handleNewProject() {
+    setEditEvent(null);
     setCreateDefaults({ date: parseISO(date) });
     setCreateOpen(true);
   }
@@ -379,9 +390,13 @@ export function CalendarPage() {
       {/* ─── Modals ────────────────────────────────────────────────────────── */}
       <CreateProjectModal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={() => {
+          setCreateOpen(false);
+          setEditEvent(null);
+        }}
         defaultDate={createDefaults.date}
         defaultTime={createDefaults.time}
+        editEvent={editEvent}
       />
 
       <BreakSheet

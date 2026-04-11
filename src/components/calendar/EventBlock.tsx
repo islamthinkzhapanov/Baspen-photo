@@ -26,20 +26,21 @@ export function EventBlock({
   isDragging,
   suppressPointerEvents,
 }: EventBlockProps) {
-  const isPast = (() => {
-    if (!event.date || !event.endTime) return false;
-    const now = new Date();
-    const [h, m] = event.endTime.split(":").map(Number);
-    const eventEnd = new Date(event.date + "T00:00:00");
-    eventEnd.setHours(h, m);
-    return eventEnd < now;
-  })();
+  const status = event.status ?? "planned";
 
-  const styleClasses = isPast
-    ? "bg-green-50 border-green-300 text-green-900 hover:bg-green-100"
-    : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100";
+  const styleClasses =
+    status === "completed"
+      ? "bg-green-50 border-green-300 text-green-900 hover:bg-green-100"
+      : status === "cancelled"
+        ? "bg-red-50 border-red-300 text-red-900 hover:bg-red-100"
+        : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100";
 
-  const dotClass = isPast ? "bg-green-500" : "bg-gray-900";
+  const dotClass =
+    status === "completed"
+      ? "bg-green-500"
+      : status === "cancelled"
+        ? "bg-red-500"
+        : "bg-gray-900";
 
   const isVeryCompact = height < 40;
 

@@ -32,6 +32,7 @@ export const GET = withHandler(async function GET(request: Request) {
       eventEndTime: events.eventEndTime,
       location: events.location,
       coverUrl: events.coverUrl,
+      status: events.status,
     })
     .from(eventMembers)
     .innerJoin(events, eq(eventMembers.eventId, events.id))
@@ -69,6 +70,7 @@ export const GET = withHandler(async function GET(request: Request) {
     endTime: e.eventEndTime ?? null,
     location: e.location,
     coverUrl: e.coverUrl,
+    status: e.status,
   }));
 
   return NextResponse.json({

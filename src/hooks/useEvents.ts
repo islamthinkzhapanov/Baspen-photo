@@ -48,6 +48,7 @@ export function useUpdateEvent(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["events"] });
       qc.invalidateQueries({ queryKey: ["events", id] });
+      qc.invalidateQueries({ queryKey: ["calendar-three-days"] });
     },
   });
 }

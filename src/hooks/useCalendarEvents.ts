@@ -12,6 +12,7 @@ export interface CalendarEvent {
   endTime: string | null;
   location: string | null;
   coverUrl: string | null;
+  status: "planned" | "completed" | "cancelled";
 }
 
 export interface CalendarBreakEntry {

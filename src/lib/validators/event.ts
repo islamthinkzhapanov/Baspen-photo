@@ -9,10 +9,12 @@ export const createEventSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers and hyphens"),
   description: z.string().max(2000).optional(),
   coverUrl: z.string().nullable().optional(),
+  price: z.number().min(0).optional(),
   isPublished: z.boolean().optional(),
   date: z.string().optional(),
   location: z.string().max(500).optional(),
   eventTime: z.string().max(10).optional(),
+  status: z.enum(["planned", "completed", "cancelled"]).optional(),
   pricingMode: z.enum(["exclusive", "commission"]).default("commission"),
   settings: z
     .object({
