@@ -875,7 +875,9 @@
     "create_new": "Создать новую...",
     "move_to_album": "В папку",
     "photos_moved": "Фото перемещены",
-    "delete_album_confirm": "Удалить эту папку? Фото останутся без папки."
+    "delete_album_confirm": "Удалить эту папку? Фото останутся без папки.",
+    "rename": "Переименовать",
+    "delete": "Удалить"
   },
   "profileCompletion": {
     "title": "Заполните контакты",

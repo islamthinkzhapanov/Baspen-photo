@@ -691,7 +691,10 @@
       "Bash(grep -l \"RiMapPin2Line\" node_modules/@remixicon/react/dist/*.mjs)",
       "Bash(grep -l \"RiClockwiseLine\" node_modules/@remixicon/react/dist/*.mjs)",
       "Bash(node -e \"const r = require\\('@remixicon/react'\\); console.log\\('RiMapPin2Line:', !!r.RiMapPin2Line\\); console.log\\('RiClockwiseLine:', !!r.RiClockwiseLine\\); console.log\\('RiTimeLine:', !!r.RiTimeLine\\); console.log\\('RiTime2Line:', !!r.RiTime2Line\\);\")",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(psql \"postgres://baspen:baspen_dev@localhost:5433/baspen\" -c \"SELECT id, email, \\\\\"passwordHash\\\\\" IS NOT NULL as has_password, length\\(\\\\\"passwordHash\\\\\"\\) as hash_len, \\\\\"deletedAt\\\\\" FROM users WHERE email = '200-procentov@mail.ru';\")",
+      "Bash(brew --prefix postgresql@*)",
+      "Read(//Applications/Postgres.app/Contents/**)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

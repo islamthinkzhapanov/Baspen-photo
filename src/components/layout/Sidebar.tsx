@@ -179,7 +179,7 @@ export function Sidebar() {
             </nav>
             <div className="border-t border-border py-1">
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors w-full cursor-pointer"
               >
                 <RiLogoutBoxRLine size={18} />

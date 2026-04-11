@@ -9,6 +9,7 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiFolderLine,
+  RiMoreLine,
 } from "@remixicon/react";
 import type { Album } from "@/hooks/useAlbums";
 
@@ -79,148 +80,162 @@ export function AlbumStrip({
     setEditName("");
   }
 
-  const chipBase =
-    "h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap";
-  const chipActive = "border-text bg-text text-white";
-  const chipInactive = "border-border hover:bg-bg-secondary text-text-secondary";
+  const tabBase =
+    "px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer whitespace-nowrap";
+  const tabActive = "bg-bg text-text font-medium shadow-sm";
+  const tabInactive = "text-text-secondary hover:text-text";
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-      {/* All photos */}
-      <button
-        onClick={() => onFilterChange(null)}
-        className={`${chipBase} ${activeFilter === null ? chipActive : chipInactive}`}
-      >
-        {t("all_photos")}
-      </button>
+    <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex bg-bg-secondary rounded-lg p-1 gap-0.5 items-center">
+        {/* All photos */}
+        <button
+          onClick={() => onFilterChange(null)}
+          className={`${tabBase} ${activeFilter === null ? tabActive : tabInactive}`}
+        >
+          {t("all_photos")}
+        </button>
 
-      {/* Unsorted */}
-      <button
-        onClick={() => onFilterChange("unsorted")}
-        className={`${chipBase} ${activeFilter === "unsorted" ? chipActive : chipInactive}`}
-      >
-        {t("unsorted")}
-      </button>
+        {/* Unsorted */}
+        <button
+          onClick={() => onFilterChange("unsorted")}
+          className={`${tabBase} ${activeFilter === "unsorted" ? tabActive : tabInactive}`}
+        >
+          {t("unsorted")}
+        </button>
 
-      {/* Album chips */}
-      {albums.map((album) => (
-        <div key={album.id} className="relative flex items-center gap-0.5" ref={activeMenuId === album.id ? menuRef : undefined}>
-          {editingId === album.id ? (
-            <div className="flex items-center gap-1">
-              <input
-                ref={editInputRef}
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleRename(album.id);
-                  if (e.key === "Escape") setEditingId(null);
-                }}
-                className="h-8 px-2 text-xs rounded-lg border border-primary bg-bg w-32 outline-none"
-              />
-              <button
-                onClick={() => handleRename(album.id)}
-                className="p-1 text-green-600 hover:bg-green-50 rounded cursor-pointer"
-              >
-                <RiCheckLine size={14} />
-              </button>
-              <button
-                onClick={() => setEditingId(null)}
-                className="p-1 text-text-secondary hover:bg-bg-secondary rounded cursor-pointer"
-              >
-                <RiCloseLine size={14} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                onFilterChange(album.id);
-                if (isOwner) {
-                  setActiveMenuId(activeMenuId === album.id ? null : album.id);
-                }
-              }}
-              className={`${chipBase} ${activeFilter === album.id ? chipActive : chipInactive}`}
-            >
-              <RiFolderLine size={14} />
-              {album.name}
-              <span className="text-[10px] opacity-60">({album.photoCount})</span>
-            </button>
-          )}
+        {/* Album tabs */}
+        {albums.map((album) => (
+          <div key={album.id} className="relative flex items-center" ref={activeMenuId === album.id ? menuRef : undefined}>
+            {editingId === album.id ? (
+              <div className="flex items-center gap-1">
+                <input
+                  ref={editInputRef}
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRename(album.id);
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                  className="h-7 px-2 text-xs rounded-md border border-primary bg-bg w-32 outline-none"
+                />
+                <button
+                  onClick={() => handleRename(album.id)}
+                  className="p-1 text-green-600 hover:bg-green-50 rounded cursor-pointer"
+                >
+                  <RiCheckLine size={14} />
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="p-1 text-text-secondary hover:bg-bg-secondary rounded cursor-pointer"
+                >
+                  <RiCloseLine size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <button
+                  onClick={() => onFilterChange(album.id)}
+                  className={`${tabBase} flex items-center gap-1.5 ${activeFilter === album.id ? tabActive : tabInactive}`}
+                >
+                  <RiFolderLine size={14} />
+                  {album.name}
+                  <span className="text-[10px] opacity-60">({album.photoCount})</span>
+                </button>
 
-          {/* Edit/Delete buttons - only for owners, visible on click */}
-          {isOwner && activeMenuId === album.id && editingId !== album.id && (
-            <div className="flex items-center gap-0.5 ml-0.5">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingId(album.id);
-                  setEditName(album.name);
-                  setActiveMenuId(null);
-                }}
-                className="p-1 text-text-secondary hover:text-text hover:bg-bg-secondary rounded cursor-pointer"
-              >
-                <RiEditLine size={12} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteAlbum(album.id);
-                  setActiveMenuId(null);
-                }}
-                className="p-1 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded cursor-pointer"
-              >
-                <RiDeleteBinLine size={12} />
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
+                {/* Three-dot menu for owners */}
+                {isOwner && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenuId(activeMenuId === album.id ? null : album.id);
+                    }}
+                    className="p-0.5 text-text-secondary hover:text-text rounded transition-colors cursor-pointer"
+                  >
+                    <RiMoreLine size={14} />
+                  </button>
+                )}
+              </div>
+            )}
 
-      {/* Create new album */}
-      {isOwner && (
-        <>
-          {creating ? (
-            <div className="flex items-center gap-1">
-              <input
-                ref={createInputRef}
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreate();
-                  if (e.key === "Escape") {
+            {/* Dropdown menu */}
+            {isOwner && activeMenuId === album.id && editingId !== album.id && (
+              <div className="absolute top-full left-0 mt-1 bg-bg border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingId(album.id);
+                    setEditName(album.name);
+                    setActiveMenuId(null);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-bg-secondary transition-colors w-full text-left cursor-pointer"
+                >
+                  <RiEditLine size={14} />
+                  {t("rename")}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteAlbum(album.id);
+                    setActiveMenuId(null);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                >
+                  <RiDeleteBinLine size={14} />
+                  {t("delete")}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Create new album */}
+        {isOwner && (
+          <>
+            {creating ? (
+              <div className="flex items-center gap-1 ml-0.5">
+                <input
+                  ref={createInputRef}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreate();
+                    if (e.key === "Escape") {
+                      setCreating(false);
+                      setNewName("");
+                    }
+                  }}
+                  placeholder={t("album_name_placeholder")}
+                  className="h-7 px-2 text-xs rounded-md border border-primary bg-bg w-36 outline-none"
+                />
+                <button
+                  onClick={handleCreate}
+                  className="p-1 text-green-600 hover:bg-green-50 rounded cursor-pointer"
+                >
+                  <RiCheckLine size={14} />
+                </button>
+                <button
+                  onClick={() => {
                     setCreating(false);
                     setNewName("");
-                  }
-                }}
-                placeholder={t("album_name_placeholder")}
-                className="h-8 px-2 text-xs rounded-lg border border-primary bg-bg w-36 outline-none"
-              />
+                  }}
+                  className="p-1 text-text-secondary hover:bg-bg-secondary rounded cursor-pointer"
+                >
+                  <RiCloseLine size={14} />
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={handleCreate}
-                className="p-1 text-green-600 hover:bg-green-50 rounded cursor-pointer"
+                onClick={() => setCreating(true)}
+                className={`${tabBase} ${tabInactive} flex items-center gap-1.5`}
               >
-                <RiCheckLine size={14} />
+                <RiAddLine size={14} />
+                {t("create_album")}
               </button>
-              <button
-                onClick={() => {
-                  setCreating(false);
-                  setNewName("");
-                }}
-                className="p-1 text-text-secondary hover:bg-bg-secondary rounded cursor-pointer"
-              >
-                <RiCloseLine size={14} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setCreating(true)}
-              className={`${chipBase} ${chipInactive} border-dashed`}
-            >
-              <RiAddLine size={14} />
-              {t("create_album")}
-            </button>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

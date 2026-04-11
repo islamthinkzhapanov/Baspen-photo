@@ -33,11 +33,11 @@ interface CreateProjectModalProps {
 
 /* ── Consistent height class for all Tremor inputs/selects ── */
 const inputClassName =
-  "!rounded-full [&>input]:!h-[42px] [&>input]:!text-[15px]";
+  "[&>input]:!h-[42px] [&>input]:!text-[15px]";
 const selectClassName =
-  "!rounded-full [&_button]:!rounded-full [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "[&_button]:!h-[42px] [&_button]:!text-[15px]";
 const datePickerClassName =
-  "!rounded-full !h-[42px] [&_button]:!rounded-full [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "!h-[42px] [&_button]:!h-[42px] [&_button]:!text-[15px]";
 
 /* ── Phone formatting (from ProfilePage) ── */
 function formatPhone(d: string) {

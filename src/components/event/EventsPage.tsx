@@ -154,11 +154,13 @@ export function EventsPage() {
             </button>
           ))}
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="sm:ml-auto inline-block">
-          <Button icon={() => <RiAddLine size={16} />} className="w-full sm:w-auto">
-            {t("create")}
-          </Button>
-        </button>
+        {eventsArr.length > 0 && (
+          <button onClick={() => setShowCreateModal(true)} className="sm:ml-auto inline-block">
+            <Button icon={() => <RiAddLine size={16} />} className="w-full sm:w-auto">
+              {t("create")}
+            </Button>
+          </button>
+        )}
       </div>
 
       {/* Table */}

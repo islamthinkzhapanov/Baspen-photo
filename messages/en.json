@@ -848,7 +848,9 @@
     "create_new": "Create new...",
     "move_to_album": "Move to folder",
     "photos_moved": "Photos moved",
-    "delete_album_confirm": "Delete this folder? Photos will become unsorted."
+    "delete_album_confirm": "Delete this folder? Photos will become unsorted.",
+    "rename": "Rename",
+    "delete": "Delete"
   },
   "profileCompletion": {
     "title": "Complete your profile",
