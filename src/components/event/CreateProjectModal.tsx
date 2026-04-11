@@ -41,9 +41,9 @@ interface CreateProjectModalProps {
 const inputClassName =
   "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 const selectClassName =
-  "!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const datePickerClassName =
-  "!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
+  "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const numberInputClassName =
   "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 

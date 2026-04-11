@@ -330,7 +330,9 @@
     "new_matches": "Жаңа сәйкестіктер: {count}",
     "new_photos_available": "Жаңа фотолар бар: {count}",
     "live_updates": "Нақты уақыт жаңартулары",
-    "all_photos": "Барлық фото"
+    "all_photos": "Барлық фото",
+    "retention_until": "Фотолар {date} дейін сақталады",
+    "photographer_label": "Фотограф"
   },
   "share": {
     "title": "Бөлісу",

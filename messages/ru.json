@@ -350,7 +350,9 @@
     "new_matches": "Новые совпадения: {count}",
     "new_photos_available": "Доступно новых фото: {count}",
     "live_updates": "Обновления в реальном времени",
-    "all_photos": "Все фото"
+    "all_photos": "Все фото",
+    "retention_until": "Фото хранятся до {date}",
+    "photographer_label": "Фотограф"
   },
   "share": {
     "title": "Поделиться",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { events, photos, albums } from "@/lib/db/schema";
+import { events, photos, albums, users } from "@/lib/db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 
 // GET /api/events/by-slug/[slug] — public event data
@@ -64,6 +64,17 @@ export async function GET(
     .where(and(eq(photos.eventId, event.id), eq(photos.status, "ready")))
     .orderBy(desc(photos.createdAt));
 
+  // Fetch owner info
+  const [owner] = await db
+    .select({
+      name: users.name,
+      image: users.image,
+      phone: users.phone,
+    })
+    .from(users)
+    .where(eq(users.id, event.ownerId))
+    .limit(1);
+
   return NextResponse.json({
     event: {
       id: event.id,
@@ -76,6 +87,9 @@ export async function GET(
       settings: event.settings,
       photoCount: event.photoCount,
       geofence: (event as Record<string, unknown>).geofence ?? null,
+      owner: owner
+        ? { name: owner.name, image: owner.image, phone: owner.phone }
+        : null,
     },
     albums: eventAlbums,
     photos: eventPhotos,

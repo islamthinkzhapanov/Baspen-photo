@@ -13,6 +13,7 @@ import {
   RiCheckLine,
   RiFolder3Line,
   RiContactsLine,
+  RiWhatsappFill,
 } from "@remixicon/react";
 import { useFaceSearch, type SearchPhoto } from "@/hooks/useSearch";
 import { useRealtimeMatches } from "@/hooks/useRealtimeMatches";
@@ -50,8 +51,14 @@ interface GalleryEventData {
       freeDownload?: boolean;
       bibSearchEnabled?: boolean;
       displayMode?: string;
+      retentionMonths?: number;
     } | null;
     photoCount: number;
+    owner?: {
+      name?: string | null;
+      image?: string | null;
+      phone?: string | null;
+    } | null;
   };
   albums: Album[];
   photos: GalleryPhoto[];
@@ -272,6 +279,25 @@ export function GalleryModePage({
       })
     : null;
 
+  // Compute retention expiry date
+  const retentionMonths = event.settings?.retentionMonths ?? 12;
+  const retentionExpiry = event.date
+    ? (() => {
+        const d = new Date(event.date!);
+        d.setMonth(d.getMonth() + retentionMonths);
+        return d.toLocaleDateString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      })()
+    : null;
+
+  const owner = event.owner;
+  const whatsappLink = owner?.phone
+    ? `https://wa.me/${owner.phone.replace(/[^0-9]/g, "")}`
+    : null;
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -298,11 +324,40 @@ export function GalleryModePage({
             <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight">
               {event.title}
             </h1>
-            {event.description && (
-              <p className="text-white/70 text-sm md:text-lg mt-2 md:mt-3 max-w-2xl">
-                {event.description}
-              </p>
-            )}
+            <div className="flex flex-wrap items-center gap-3 mt-2 md:mt-3">
+              {retentionExpiry && (
+                <span className="text-white/70 text-sm md:text-base">
+                  {t("retention_until", { date: retentionExpiry })}
+                </span>
+              )}
+              {retentionExpiry && owner?.name && (
+                <span className="text-white/40">/</span>
+              )}
+              {owner?.name && (
+                <div className="flex items-center gap-2">
+                  {owner.image && (
+                    <img
+                      src={owner.image}
+                      alt={owner.name}
+                      className="w-6 h-6 rounded-full object-cover border border-white/30"
+                    />
+                  )}
+                  <span className="text-white/70 text-sm md:text-base">
+                    {t("photographer_label")}: {owner.name}
+                  </span>
+                  {whatsappLink && (
+                    <a
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-400 hover:text-green-300 transition-colors"
+                    >
+                      <RiWhatsappFill size={18} />
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

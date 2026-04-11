@@ -347,7 +347,9 @@
     "new_matches": "{count} new matches",
     "new_photos_available": "{count} new photos available",
     "live_updates": "Live updates",
-    "all_photos": "All photos"
+    "all_photos": "All photos",
+    "retention_until": "Photos stored until {date}",
+    "photographer_label": "Photographer"
   },
   "share": {
     "title": "Share",

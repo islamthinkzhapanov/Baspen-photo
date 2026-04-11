@@ -510,6 +510,12 @@ html {
   padding-bottom: 0.5rem;
 }
 
+/* HeadlessUI v2 portals (Select dropdown, DatePicker calendar) must render above z-50 modals */
+[data-headlessui-portal] {
+  position: relative;
+  z-index: 100;
+}
+
 /* Badge — soft filled style, no outline, 30% bg opacity */
 .tremor-Badge-root {
   border: none !important;

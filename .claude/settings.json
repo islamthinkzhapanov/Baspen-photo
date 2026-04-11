@@ -662,7 +662,11 @@
       "Bash(bash /tmp/find_files.sh)",
       "Bash(bash /tmp/complete_list.sh)",
       "Bash(find src/components -name \"*.tsx\" -exec grep -l \"Table\\\\|Select\\\\|Dropdown\" {} \\\\;)",
-      "Bash(node -e \"const t = require\\('@tremor/react'\\); console.log\\('TextInput:', typeof t.TextInput\\); console.log\\('NumberInput:', typeof t.NumberInput\\); console.log\\('Select:', typeof t.Select\\); console.log\\('DatePicker:', typeof t.DatePicker\\);\")"
+      "Bash(node -e \"const t = require\\('@tremor/react'\\); console.log\\('TextInput:', typeof t.TextInput\\); console.log\\('NumberInput:', typeof t.NumberInput\\); console.log\\('Select:', typeof t.Select\\); console.log\\('DatePicker:', typeof t.DatePicker\\);\")",
+      "Bash(grep -l \"Select\\\\|Listbox\" node_modules/@tremor/react/dist/esm/*.js)",
+      "Bash(ls node_modules/@tremor/react/dist/*.css)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(node -e \"const r = require\\('@remixicon/react'\\); const keys = Object.keys\\(r\\).filter\\(k => k.toLowerCase\\(\\).includes\\('whatsapp'\\)\\); console.log\\(keys\\);\")"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
