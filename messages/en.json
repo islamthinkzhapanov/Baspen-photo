@@ -862,5 +862,23 @@
     "occupation_placeholder": "e.g. Photographer",
     "submit": "Get started",
     "save_error": "Failed to save profile"
+  },
+  "calendar": {
+    "today": "Today",
+    "day": "Day",
+    "week": "Week",
+    "createProject": "Create project",
+    "noEvents": "No events for this day",
+    "break": "Blocked time",
+    "addBreak": "Add break",
+    "editBreak": "Edit break",
+    "start": "Start",
+    "end": "End",
+    "reason": "Reason",
+    "reasonPlaceholder": "Lunch, rest, etc.",
+    "breakCreated": "Break created",
+    "breakUpdated": "Break updated",
+    "breakDeleted": "Break deleted",
+    "deleteBreakConfirm": "Delete this break?"
   }
 }

@@ -792,5 +792,23 @@
     "occupation_placeholder": "Мысалы: Фотограф",
     "submit": "Бастау",
     "save_error": "Профильді сақтау мүмкін болмады"
+  },
+  "calendar": {
+    "today": "Бүгін",
+    "day": "Күн",
+    "week": "Апта",
+    "createProject": "Жоба жасау",
+    "noEvents": "Бұл күнге оқиғалар жоқ",
+    "break": "Жабық уақыт",
+    "addBreak": "Үзіліс қосу",
+    "editBreak": "Үзілісті өзгерту",
+    "start": "Басталуы",
+    "end": "Аяқталуы",
+    "reason": "Себебі",
+    "reasonPlaceholder": "Түскі ас, демалыс, т.б.",
+    "breakCreated": "Үзіліс жасалды",
+    "breakUpdated": "Үзіліс жаңартылды",
+    "breakDeleted": "Үзіліс жойылды",
+    "deleteBreakConfirm": "Бұл үзілісті жою керек пе?"
   }
 }

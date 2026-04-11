@@ -694,7 +694,12 @@
       "Bash(npx tsx:*)",
       "Bash(psql \"postgres://baspen:baspen_dev@localhost:5433/baspen\" -c \"SELECT id, email, \\\\\"passwordHash\\\\\" IS NOT NULL as has_password, length\\(\\\\\"passwordHash\\\\\"\\) as hash_len, \\\\\"deletedAt\\\\\" FROM users WHERE email = '200-procentov@mail.ru';\")",
       "Bash(brew --prefix postgresql@*)",
-      "Read(//Applications/Postgres.app/Contents/**)"
+      "Read(//Applications/Postgres.app/Contents/**)",
+      "Bash(grep -E \"\\\\.tsx?$\")",
+      "Bash(node -e \"const f=require\\('/Users/mobibrand/Documents/Baspen photo/messages/ru.json'\\); console.log\\(Object.keys\\(f\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"const f=require\\('/Users/mobibrand/Documents/Baspen photo/messages/en.json'\\); console.log\\(Object.keys\\(f\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"const f=require\\('/Users/mobibrand/Documents/Baspen photo/messages/kz.json'\\); console.log\\(Object.keys\\(f\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(find \"/Users/mobibrand/Documents/Baspen photo/src/components\" -name \"*.tsx\" -exec grep -l \"DatePicker\\\\|date-fns\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
@@ -713,7 +718,10 @@
       "/Users/mobibrand/Documents/Baspen photo/src/app/[locale]/order",
       "/Users/mobibrand/Documents/Baspen photo/.github",
       "/Users/mobibrand/Documents/Baspen photo/.claude",
-      "/Users/mobibrand/Documents/Baspen photo/messages"
+      "/Users/mobibrand/Documents/Baspen photo/messages",
+      "/Users/mobibrand/Documents/Syntony-crm/crm/src/components/layout",
+      "/Users/mobibrand/Documents/Syntony-crm/crm/messages",
+      "/Users/mobibrand/Documents/Baspen photo/src/app/api/breaks"
     ]
   }
 }

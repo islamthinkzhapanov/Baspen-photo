@@ -29,6 +29,8 @@ import {
 interface CreateProjectModalProps {
   open: boolean;
   onClose: () => void;
+  defaultDate?: Date;
+  defaultTime?: string;
 }
 
 /* ── Consistent height class for all Tremor inputs/selects ── */
@@ -57,7 +59,7 @@ function extractDigits(phone: string): string {
 }
 
 /* ── Main component ── */
-export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
+export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: CreateProjectModalProps) {
   const t = useTranslations("events");
   const tc = useTranslations("common");
   const tp = useTranslations("profile");
@@ -109,14 +111,15 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
       setTab("basic");
       setTitle("");
       setRetentionMonths(12);
-      setEventDate(undefined);
+      setEventDate(defaultDate ?? undefined);
+      setEventTime(defaultTime ?? "");
       setLocation("");
       setFaceSearchEnabled(true);
       setBibSearchEnabled(false);
       setCardEnabled(true);
       setProfileLoaded(false);
     }
-  }, [open]);
+  }, [open, defaultDate, defaultTime]);
 
   // Escape key
   useEffect(() => {

@@ -180,6 +180,7 @@ export const events = pgTable(
     date: timestamp("date", { mode: "date" }),
     location: text("location"),
     eventTime: text("event_time"),
+    eventEndTime: text("event_end_time"),
     coverUrl: text("cover_url"),
     pricingMode: pricingModeEnum("pricing_mode")
       .notNull()
@@ -588,6 +589,26 @@ export const apiKeys = pgTable(
   ]
 );
 
+// --- Photographer Breaks (calendar closed time) ---
+export const photographerBreaks = pgTable(
+  "photographer_breaks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: timestamp("date", { mode: "date" }).notNull(),
+    startTime: text("start_time").notNull(),
+    endTime: text("end_time").notNull(),
+    reason: text("reason"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("photographer_breaks_owner_idx").on(t.ownerId),
+    index("photographer_breaks_date_idx").on(t.date),
+  ]
+);
+
 // --- Relations ---
 export const usersRelations = relations(users, ({ many }) => ({
   events: many(events),
@@ -595,6 +616,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   photos: many(photos),
   subscriptions: many(userSubscriptions),
   inviteTokens: many(inviteTokens),
+  photographerBreaks: many(photographerBreaks),
 }));
 
 export const inviteTokensRelations = relations(inviteTokens, ({ one }) => ({
@@ -755,3 +777,13 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   user: one(users, { fields: [apiKeys.userId], references: [users.id] }),
   event: one(events, { fields: [apiKeys.eventId], references: [events.id] }),
 }));
+
+export const photographerBreaksRelations = relations(
+  photographerBreaks,
+  ({ one }) => ({
+    owner: one(users, {
+      fields: [photographerBreaks.ownerId],
+      references: [users.id],
+    }),
+  })
+);

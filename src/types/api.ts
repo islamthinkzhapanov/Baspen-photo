@@ -35,6 +35,8 @@ export interface Event {
   title: string;
   description: string | null;
   date: string | null;
+  eventTime: string | null;
+  eventEndTime: string | null;
   location: string | null;
   coverUrl: string | null;
   cover?: string | null;

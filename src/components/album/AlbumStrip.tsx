@@ -9,7 +9,7 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiFolderLine,
-  RiMoreLine,
+  RiMore2Line,
 } from "@remixicon/react";
 import type { Album } from "@/hooks/useAlbums";
 
@@ -143,8 +143,8 @@ export function AlbumStrip({
                   <span className="text-[10px] opacity-60">({album.photoCount})</span>
                 </button>
 
-                {/* Three-dot menu for owners */}
-                {isOwner && (
+                {/* Three-dot menu for owners — only on active tab */}
+                {isOwner && activeFilter === album.id && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -152,7 +152,7 @@ export function AlbumStrip({
                     }}
                     className="p-0.5 text-text-secondary hover:text-text rounded transition-colors cursor-pointer"
                   >
-                    <RiMoreLine size={14} />
+                    <RiMore2Line size={14} />
                   </button>
                 )}
               </div>

@@ -889,5 +889,23 @@
     "occupation_placeholder": "Например: Фотограф",
     "submit": "Начать",
     "save_error": "Не удалось сохранить профиль"
+  },
+  "calendar": {
+    "today": "Сегодня",
+    "day": "День",
+    "week": "Неделя",
+    "createProject": "Создать проект",
+    "noEvents": "Нет событий на этот день",
+    "break": "Закрытое время",
+    "addBreak": "Добавить перерыв",
+    "editBreak": "Редактировать перерыв",
+    "start": "Начало",
+    "end": "Конец",
+    "reason": "Причина",
+    "reasonPlaceholder": "Обед, отдых и т.д.",
+    "breakCreated": "Перерыв создан",
+    "breakUpdated": "Перерыв обновлён",
+    "breakDeleted": "Перерыв удалён",
+    "deleteBreakConfirm": "Удалить этот перерыв?"
   }
 }
