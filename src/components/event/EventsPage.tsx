@@ -11,6 +11,9 @@ import {
   RiMore2Line,
   RiEditLine,
   RiDeleteBinLine,
+  RiFolderOpenLine,
+  RiImageLine,
+  RiMoneyDollarCircleLine,
 } from "@remixicon/react";
 import { useState, useRef, useEffect } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -47,6 +50,7 @@ type Event = {
 
 export function EventsPage() {
   const t = useTranslations("events");
+  const td = useTranslations("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -69,6 +73,18 @@ export function EventsPage() {
   }, [menuOpenId]);
 
   const { data: events = [] } = useEvents();
+
+  const eventsArr = events as (Event & { revenue?: number })[];
+  const totalPhotos = eventsArr.reduce((sum, e) => sum + (e.photoCount || 0), 0);
+  const totalSearches = eventsArr.reduce((sum, e) => sum + (e.searches || 0), 0);
+  const totalRevenue = eventsArr.reduce((sum, e) => sum + (e.revenue || 0), 0);
+
+  const stats = [
+    { key: "active_projects" as const, value: eventsArr.length, icon: RiFolderOpenLine },
+    { key: "total_photos" as const, value: totalPhotos.toLocaleString("ru-RU"), icon: RiImageLine },
+    { key: "searches" as const, value: totalSearches.toLocaleString("ru-RU"), icon: RiSearchLine },
+    { key: "revenue" as const, value: `${totalRevenue.toLocaleString("ru-RU")} ₸`, icon: RiMoneyDollarCircleLine },
+  ];
 
   const filtered = (events as Event[]).filter((event) => {
     if (
@@ -96,6 +112,22 @@ export function EventsPage() {
       <div>
         <h1 className="text-2xl font-bold font-display">{t("title")}</h1>
         <p className="text-sm text-text-secondary mt-1">{t("subtitle")}</p>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.key} className="p-4 flex flex-col gap-2">
+              <p className="text-xs text-text-secondary flex items-center gap-1.5">
+                <Icon size={14} className="text-text-secondary" />
+                {td(stat.key)}
+              </p>
+              <p className="text-3xl font-medium">{stat.value}</p>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Search + Filters */}

@@ -192,7 +192,11 @@
     "events_photographer": "My Assignments",
     "more": "More",
     "profile": "Profile",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "calendar": "Calendar",
+    "clients": "Client Base",
+    "services": "Services",
+    "staff": "Staff"
   },
   "events": {
     "title": "My Projects",

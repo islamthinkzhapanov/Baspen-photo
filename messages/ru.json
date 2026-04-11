@@ -195,7 +195,11 @@
     "events_photographer": "Мои съёмки",
     "more": "Ещё",
     "profile": "Профиль",
-    "notifications": "Уведомления"
+    "notifications": "Уведомления",
+    "calendar": "Календарь",
+    "clients": "База клиентов",
+    "services": "Услуги",
+    "staff": "Сотрудники"
   },
   "events": {
     "title": "Мои проекты",

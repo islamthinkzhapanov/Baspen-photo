@@ -81,7 +81,7 @@ export function AlbumStrip({
 
   const chipBase =
     "h-8 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap";
-  const chipActive = "border-primary bg-primary/10 text-primary";
+  const chipActive = "border-text bg-text text-white";
   const chipInactive = "border-border hover:bg-bg-secondary text-text-secondary";
 
   return (

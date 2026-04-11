@@ -7,7 +7,6 @@ import {
   RiBankCardLine,
   RiSettings3Line,
   RiGraduationCapLine,
-  RiBarChartBoxLine,
   RiStackLine,
   RiShieldLine,
   RiSideBarLine,
@@ -15,15 +14,22 @@ import {
   RiUserLine,
   RiNotification3Line,
   RiArrowDownSLine,
+  RiCalendarLine,
+  RiGroupLine,
+  RiBriefcaseLine,
+  RiTeamLine,
 } from "@remixicon/react";
 import { useSidebar } from "./SidebarContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 
-const navItems: readonly { key: string; href: string; icon: typeof RiBarChartBoxLine }[] = [
-  { key: "dashboard", href: "/dashboard", icon: RiBarChartBoxLine },
+const navItems: readonly { key: string; href: string; icon: typeof RiFolderOpenLine }[] = [
   { key: "events", href: "/events", icon: RiFolderOpenLine },
+  { key: "calendar", href: "/calendar", icon: RiCalendarLine },
+  { key: "clients", href: "/clients", icon: RiGroupLine },
+  { key: "services", href: "/services", icon: RiBriefcaseLine },
+  { key: "staff", href: "/staff", icon: RiTeamLine },
   { key: "payments", href: "/payments", icon: RiBankCardLine },
   { key: "billing", href: "/billing", icon: RiStackLine },
   { key: "learning", href: "/learning", icon: RiGraduationCapLine },
@@ -118,8 +124,20 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* Settings link above profile */}
-      <div className="px-3 mb-1">
+      {/* Notifications + Settings links above profile */}
+      <div className="px-3 mb-1 space-y-1">
+        <Link
+          href="/notifications"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname.startsWith("/notifications")
+              ? "text-primary"
+              : "text-text-secondary hover:bg-bg hover:text-text"
+          } ${collapsed ? "justify-center" : ""}`}
+          title={collapsed ? t("notifications") : undefined}
+        >
+          <RiNotification3Line size={20} />
+          {!collapsed && t("notifications")}
+        </Link>
         <Link
           href="/settings"
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -150,14 +168,6 @@ export function Sidebar() {
               )}
             </div>
             <nav className="py-1">
-              <Link
-                href="/notifications"
-                onClick={() => setPopoverOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text transition-colors"
-              >
-                <RiNotification3Line size={18} />
-                {t("notifications")}
-              </Link>
               <Link
                 href="/profile"
                 onClick={() => setPopoverOpen(false)}

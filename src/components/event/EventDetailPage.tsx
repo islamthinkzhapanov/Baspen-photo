@@ -400,10 +400,10 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   };
 
   const allStats = [
-    { key: "photos", label: t("photos"), value: event.photoCount || 0, icon: statIcons.photos, color: "text-primary" },
-    { key: "searches", label: ta("total_searches"), value: event.searches || 0, icon: statIcons.searches, color: "text-amber-600" },
-    { key: "downloads", label: ta("total_downloads"), value: event.downloads || 0, icon: statIcons.downloads, color: "text-emerald-600" },
-    { key: "revenue", label: ta("total_revenue"), value: `${(event.revenue || 0).toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-violet-600", ownerOnly: true },
+    { key: "photos", label: t("photos"), value: event.photoCount || 0, icon: statIcons.photos, color: "text-text-secondary" },
+    { key: "searches", label: ta("total_searches"), value: event.searches || 0, icon: statIcons.searches, color: "text-text-secondary" },
+    { key: "downloads", label: ta("total_downloads"), value: event.downloads || 0, icon: statIcons.downloads, color: "text-text-secondary" },
+    { key: "revenue", label: ta("total_revenue"), value: `${(event.revenue || 0).toLocaleString("ru-RU")} ₸`, icon: statIcons.revenue, color: "text-text-secondary", ownerOnly: true },
   ];
 
   const stats = isPhotographer
@@ -536,7 +536,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               variant="secondary"
               size="sm"
               icon={RiEyeLine}
-              className="text-xs sm:text-sm text-amber-600 border-amber-300 hover:bg-amber-50 hover:text-amber-600"
+              className="text-xs sm:text-sm"
               onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
             >
               {t("preview")}
@@ -1283,7 +1283,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 variant="secondary"
                 size="sm"
                 icon={RiEyeLine}
-                className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                className=""
                 onClick={() => window.open(`${publicUrl}?preview=true`, "_blank")}
               >
                 {t("preview")}

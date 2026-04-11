@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
-  RiBarChartBoxLine,
   RiFolderOpenLine,
   RiBankCardLine,
   RiGraduationCapLine,
@@ -12,20 +11,29 @@ import {
   RiSettings3Line,
   RiShieldLine,
   RiUserLine,
+  RiCalendarLine,
+  RiGroupLine,
+  RiBriefcaseLine,
+  RiTeamLine,
+  RiNotification3Line,
 } from "@remixicon/react";
 import { useState } from "react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { MoreSheet } from "./MoreSheet";
 
 const primaryTabs = [
-  { key: "dashboard", href: "/dashboard", icon: RiBarChartBoxLine },
   { key: "events", href: "/events", icon: RiFolderOpenLine },
   { key: "payments", href: "/payments", icon: RiBankCardLine },
   { key: "learning", href: "/learning", icon: RiGraduationCapLine },
 ] as const;
 
 const overflowItems = [
+  { key: "calendar", href: "/calendar", icon: RiCalendarLine },
+  { key: "clients", href: "/clients", icon: RiGroupLine },
+  { key: "services", href: "/services", icon: RiBriefcaseLine },
+  { key: "staff", href: "/staff", icon: RiTeamLine },
   { key: "billing", href: "/billing", icon: RiStackLine },
+  { key: "notifications", href: "/notifications", icon: RiNotification3Line },
   { key: "settings", href: "/settings", icon: RiSettings3Line },
   { key: "profile", href: "/profile", icon: RiUserLine },
 ] as const;
