@@ -701,7 +701,9 @@
       "Bash(node -e \"const f=require\\('/Users/mobibrand/Documents/Baspen photo/messages/kz.json'\\); console.log\\(Object.keys\\(f\\).join\\('\\\\n'\\)\\)\")",
       "Bash(find \"/Users/mobibrand/Documents/Baspen photo/src/components\" -name \"*.tsx\" -exec grep -l \"DatePicker\\\\|date-fns\" {} \\\\;)",
       "Bash(curl -s \"http://localhost:3000/api/calendar/day?date=2026-04-12\")",
-      "Bash(grep -r \"export function\" /Users/mobibrand/Documents/Syntony-crm/crm/src/components/calendar/*.tsx)"
+      "Bash(grep -r \"export function\" /Users/mobibrand/Documents/Syntony-crm/crm/src/components/calendar/*.tsx)",
+      "Bash(grep -r \"calendar/day\" /Users/mobibrand/Documents/Syntony-crm/crm/next.config*)",
+      "Bash(grep -r \"rewrites\\\\|proxy\\\\|calendar\" /Users/mobibrand/Documents/Syntony-crm/crm/next.config*)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",
@@ -723,7 +725,9 @@
       "/Users/mobibrand/Documents/Baspen photo/messages",
       "/Users/mobibrand/Documents/Syntony-crm/crm/src/components/layout",
       "/Users/mobibrand/Documents/Syntony-crm/crm/messages",
-      "/Users/mobibrand/Documents/Baspen photo/src/app/api/breaks"
+      "/Users/mobibrand/Documents/Baspen photo/src/app/api/breaks",
+      "/Users/mobibrand/Documents/Syntony-crm/crm/src/components/calendar",
+      "/Users/mobibrand/Documents/Syntony-crm/crm/src/hooks"
     ]
   }
 }

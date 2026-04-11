@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { format, addDays } from "date-fns";
 import { fetchJson } from "@/lib/fetch";
 
 export interface CalendarEvent {
@@ -81,8 +82,8 @@ export function useCalendarThreeDays(startDate: string) {
       const d = new Date(startDate + "T00:00:00");
       const dates = [
         startDate,
-        new Date(d.getTime() + 86400000).toISOString().slice(0, 10),
-        new Date(d.getTime() + 172800000).toISOString().slice(0, 10),
+        format(addDays(d, 1), "yyyy-MM-dd"),
+        format(addDays(d, 2), "yyyy-MM-dd"),
       ];
 
       const results = await Promise.all(
