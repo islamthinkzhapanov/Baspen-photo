@@ -26,19 +26,24 @@ export const GET = withHandler(async function GET(
 
   const page = Math.max(1, Number(request.nextUrl.searchParams.get("page")) || 1);
   const limit = Math.min(500, Math.max(1, Number(request.nextUrl.searchParams.get("limit")) || 100));
+  const status = request.nextUrl.searchParams.get("status") as "uploading" | "processing" | "ready" | "failed" | null;
+
+  const whereClause = status
+    ? and(eq(photos.eventId, id), eq(photos.status, status))
+    : eq(photos.eventId, id);
 
   const [eventPhotos, countResult] = await Promise.all([
     db
       .select()
       .from(photos)
-      .where(eq(photos.eventId, id))
+      .where(whereClause)
       .orderBy(desc(photos.createdAt))
       .limit(limit)
       .offset((page - 1) * limit),
     db
       .select({ count: sql<number>`count(*)` })
       .from(photos)
-      .where(eq(photos.eventId, id)),
+      .where(whereClause),
   ]);
 
   const total = Number(countResult[0]?.count ?? 0);

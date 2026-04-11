@@ -226,6 +226,8 @@
     "free_download": "Тегін жүктеу",
     "bib_search": "Нөмір бойынша іздеу",
     "bib_search_hint": "Спорттық іс-шаралар үшін",
+    "face_search": "Бет бойынша іздеу",
+    "face_search_hint": "Қатысушылар селфи арқылы фотосуреттерін табады",
     "display_mode": "Көрсету режимі",
     "display_mode_search": "Бет / нөмір бойынша іздеу",
     "display_mode_search_desc": "Қонақ тек іздеу терезесін көреді",

@@ -465,7 +465,7 @@ export function PublicEventPage({
         <div className="flex flex-col gap-[14px] w-full max-w-[400px] px-6">
           <button
             onClick={() => setShowCamera(true)}
-            className="flex items-center justify-center gap-2 w-full py-4 px-[14px] bg-[#005ff9] text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-4 px-[14px] bg-primary text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-primary-hover transition-colors"
             style={{ fontFamily: "'SF Pro Display', 'Inter', system-ui, sans-serif", fontWeight: 510 }}
           >
             <img src="/icon-face.svg" alt="" className="w-[18px] h-[18px]" />
@@ -551,7 +551,7 @@ export function PublicEventPage({
 
               <button
                 onClick={handleNumberSearch}
-                className="w-full py-4 bg-[#005ff9] text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-[#0050d4] transition-colors"
+                className="w-full py-4 bg-primary text-white rounded-[6px] text-[15px] tracking-[-0.3px] hover:bg-primary-hover transition-colors"
                 style={{ fontWeight: 510 }}
               >
                 {t("search_by_number")}

@@ -105,9 +105,9 @@ export function PhotoLightbox({
         }}
       >
         <div className="w-full h-full flex items-center justify-center relative">
-          {(photo.watermarked_path || photo.thumbnail_path) ? (
+          {photo.thumbnail_path ? (
             <ProtectedImage
-              src={photo.watermarked_path || photo.thumbnail_path || undefined}
+              src={photo.thumbnail_path || undefined}
               alt=""
               wrapperClassName="w-full h-full relative"
               className="w-full h-full object-contain"

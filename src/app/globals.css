@@ -43,8 +43,8 @@
 }
 
 @theme inline {
-  --color-primary: #005FF9;
-  --color-primary-hover: #0050d4;
+  --color-primary: #000000;
+  --color-primary-hover: #222222;
   --color-success: #0DC268;
   --color-text: #2C2D2E;
   --color-text-secondary: #6B7280;
@@ -325,12 +325,12 @@
 
   /* ── Tremor theme tokens ──────────────────────────────────────────── */
   /* Brand */
-  --color-tremor-brand: #005FF9;
-  --color-tremor-brand-emphasis: #0050d4;
-  --color-tremor-brand-muted: #dbeafe;
+  --color-tremor-brand: #000000;
+  --color-tremor-brand-emphasis: #222222;
+  --color-tremor-brand-muted: #e5e5e5;
   --color-tremor-brand-inverted: #ffffff;
-  --color-tremor-brand-faint: #eff6ff;
-  --color-tremor-brand-subtle: #bfdbfe;
+  --color-tremor-brand-faint: #f5f5f5;
+  --color-tremor-brand-subtle: #d4d4d4;
 
   /* Background */
   --color-tremor-background: #ffffff;
@@ -445,12 +445,12 @@ html {
    Tailwind v4 doesn't define them, so we map them here.                */
 :root {
   /* Brand */
-  --tremor-brand: #005FF9;
-  --tremor-brand-emphasis: #0050d4;
-  --tremor-brand-muted: #dbeafe;
+  --tremor-brand: #000000;
+  --tremor-brand-emphasis: #222222;
+  --tremor-brand-muted: #e5e5e5;
   --tremor-brand-inverted: #ffffff;
-  --tremor-brand-faint: #eff6ff;
-  --tremor-brand-subtle: #bfdbfe;
+  --tremor-brand-faint: #f5f5f5;
+  --tremor-brand-subtle: #d4d4d4;
 
   /* Background */
   --tremor-background: #ffffff;

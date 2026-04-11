@@ -240,6 +240,8 @@
     "free_download": "Free download",
     "bib_search": "Number search",
     "bib_search_hint": "For sports events",
+    "face_search": "Face search",
+    "face_search_hint": "Participants find their photos by selfie",
     "display_mode": "Display mode",
     "display_mode_search": "Face / number search",
     "display_mode_search_desc": "Visitor sees only the search screen",

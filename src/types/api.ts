@@ -53,6 +53,7 @@ export interface Event {
     packageDiscount?: number;
     commissionPercent?: number;
     bibSearchEnabled?: boolean;
+    faceSearchEnabled?: boolean;
     displayMode?: "search" | "gallery";
     retentionMonths?: number;
   } | null;

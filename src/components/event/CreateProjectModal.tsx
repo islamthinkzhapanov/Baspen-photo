@@ -9,7 +9,6 @@ import {
   Select,
   SelectItem,
   TextInput,
-  NumberInput,
 } from "@tremor/react";
 import { ru } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
@@ -17,19 +16,13 @@ import { useCreateEvent } from "@/hooks/useEvents";
 import {
   RiCloseLine,
   RiMapPinLine,
-  RiDownloadLine,
   RiHashtag,
-  RiShoppingCartLine,
-  RiDropLine,
   RiCameraLine,
-  RiGridLine,
   RiLoader4Line,
   RiUserLine,
   RiSmartphoneLine,
   RiBriefcaseLine,
   RiTimeLine,
-  RiPriceTag3Line,
-  RiPercentLine,
 } from "@remixicon/react";
 
 interface CreateProjectModalProps {
@@ -44,8 +37,6 @@ const selectClassName =
   "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
 const datePickerClassName =
   "!rounded-xl [&_button]:!rounded-xl [&_button]:!h-[42px] [&_button]:!text-[15px]";
-const numberInputClassName =
-  "!rounded-xl [&>input]:!h-[42px] [&>input]:!text-[15px]";
 
 /* ── Phone formatting (from ProfilePage) ── */
 function formatPhone(d: string) {
@@ -80,15 +71,8 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
   const [retentionMonths, setRetentionMonths] = useState(12);
   const [eventDate, setEventDate] = useState<Date | undefined>();
   const [location, setLocation] = useState("");
-  const [displayMode, setDisplayMode] = useState<"search" | "gallery">(
-    "search"
-  );
-  const [freeDownload, setFreeDownload] = useState(true);
+  const [faceSearchEnabled, setFaceSearchEnabled] = useState(true);
   const [bibSearchEnabled, setBibSearchEnabled] = useState(false);
-  const [photoSalesEnabled, setPhotoSalesEnabled] = useState(false);
-  const [watermarkEnabled, setWatermarkEnabled] = useState(true);
-  const [pricePerPhoto, setPricePerPhoto] = useState(0);
-  const [packageDiscount, setPackageDiscount] = useState(0);
 
   // Business card tab state
   const [cardEnabled, setCardEnabled] = useState(true);
@@ -125,13 +109,8 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
       setRetentionMonths(12);
       setEventDate(undefined);
       setLocation("");
-      setDisplayMode("search");
-      setFreeDownload(true);
+      setFaceSearchEnabled(true);
       setBibSearchEnabled(false);
-      setPhotoSalesEnabled(false);
-      setWatermarkEnabled(true);
-      setPricePerPhoto(0);
-      setPackageDiscount(0);
       setCardEnabled(true);
       setProfileLoaded(false);
     }
@@ -206,12 +185,13 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
         location: location || undefined,
         pricingMode: "commission" as const,
         settings: {
-          freeDownload,
-          watermarkEnabled: photoSalesEnabled ? watermarkEnabled : false,
-          pricePerPhoto: photoSalesEnabled ? pricePerPhoto : 0,
-          packageDiscount: photoSalesEnabled ? packageDiscount : 0,
+          freeDownload: true,
+          watermarkEnabled: false,
+          pricePerPhoto: 0,
+          packageDiscount: 0,
           bibSearchEnabled,
-          displayMode,
+          faceSearchEnabled,
+          displayMode: "gallery" as const,
           retentionMonths,
         },
       },
@@ -353,61 +333,21 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                 </div>
               </div>
 
-              {/* Display mode */}
-              <div>
-                <label className="block text-[13px] font-medium text-text mb-2">
-                  {t("display_mode")}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("search")}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-colors ${
-                      displayMode === "search"
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-white hover:border-primary/30"
-                    }`}
-                  >
-                    <RiCameraLine
-                      className={`w-5 h-5 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`}
-                    />
-                    <span
-                      className={`text-xs font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}
-                    >
-                      {t("display_mode_search")}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("gallery")}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-colors ${
-                      displayMode === "gallery"
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-white hover:border-primary/30"
-                    }`}
-                  >
-                    <RiGridLine
-                      className={`w-5 h-5 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`}
-                    />
-                    <span
-                      className={`text-xs font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}
-                    >
-                      {t("display_mode_gallery")}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               {/* Toggles */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
                   <div className="flex items-center gap-3">
-                    <RiDownloadLine className="w-4 h-4 text-text-secondary" />
-                    <span className="text-sm font-medium text-text">
-                      {t("free_download")}
-                    </span>
+                    <RiCameraLine className="w-4 h-4 text-text-secondary" />
+                    <div>
+                      <span className="text-sm font-medium text-text">
+                        {t("face_search")}
+                      </span>
+                      <p className="text-xs text-text-secondary">
+                        {t("face_search_hint")}
+                      </p>
+                    </div>
                   </div>
-                  <Switch checked={freeDownload} onChange={setFreeDownload} />
+                  <Switch checked={faceSearchEnabled} onChange={setFaceSearchEnabled} />
                 </div>
 
                 <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
@@ -427,63 +367,6 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
                     onChange={setBibSearchEnabled}
                   />
                 </div>
-
-                <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
-                  <div className="flex items-center gap-3">
-                    <RiShoppingCartLine className="w-4 h-4 text-text-secondary" />
-                    <span className="text-sm font-medium text-text">
-                      {t("photo_sales")}
-                    </span>
-                  </div>
-                  <Switch
-                    checked={photoSalesEnabled}
-                    onChange={setPhotoSalesEnabled}
-                  />
-                </div>
-
-                {photoSalesEnabled && (
-                  <div className="space-y-3 pl-3 border-l-2 border-primary/20">
-                    <div className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-bg-secondary">
-                      <div className="flex items-center gap-3">
-                        <RiDropLine className="w-4 h-4 text-text-secondary" />
-                        <span className="text-sm font-medium text-text">
-                          {t("watermark")}
-                        </span>
-                      </div>
-                      <Switch
-                        checked={watermarkEnabled}
-                        onChange={setWatermarkEnabled}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs text-text-secondary mb-1">
-                          {t("price_per_photo")}
-                        </label>
-                        <NumberInput
-                          icon={RiPriceTag3Line}
-                          min={0}
-                          value={pricePerPhoto}
-                          onValueChange={setPricePerPhoto}
-                          className={numberInputClassName}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-text-secondary mb-1">
-                          {t("package_discount")}
-                        </label>
-                        <NumberInput
-                          icon={RiPercentLine}
-                          min={0}
-                          max={100}
-                          value={packageDiscount}
-                          onValueChange={setPackageDiscount}
-                          className={numberInputClassName}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}

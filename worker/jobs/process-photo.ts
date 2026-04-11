@@ -62,8 +62,9 @@ export async function processPhoto(job: Job<PhotoJobData>) {
     sql`SELECT settings FROM events WHERE id = ${eventId}`
   );
   const settings = (eventRow as { settings: Record<string, unknown> } | undefined)?.settings;
+  // Watermark disabled — sales functionality temporarily removed
   const watermarkConfig: WatermarkConfig = {
-    enabled: (settings?.watermarkEnabled as boolean) !== false,
+    enabled: false,
     text: (settings?.watermarkText as string) || undefined,
     opacity: (settings?.watermarkOpacity as number) || undefined,
   };

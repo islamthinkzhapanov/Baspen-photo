@@ -50,6 +50,7 @@ interface GalleryEventData {
     settings?: {
       freeDownload?: boolean;
       bibSearchEnabled?: boolean;
+      faceSearchEnabled?: boolean;
       displayMode?: string;
       retentionMonths?: number;
       pricePerPhoto?: number;
@@ -101,9 +102,7 @@ export function GalleryModePage({
 
   const { event, albums, photos } = eventData;
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
-  const isFreeDownload = !!event.settings?.freeDownload;
-  const pricePerPhoto = event.settings?.pricePerPhoto ?? 500;
-  const packageDiscount = event.settings?.packageDiscount ?? 30;
+  const faceSearchEnabled = event.settings?.faceSearchEnabled !== false;
 
   // Album filter
   const [activeAlbumId, setActiveAlbumId] = useState<string | null>(null);
@@ -424,13 +423,15 @@ export function GalleryModePage({
                   Сбросить
                 </button>
               )}
-              <button
-                onClick={() => setShowCamera(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
-              >
-                <img src="/icon-face.svg" alt="" className="w-4 h-4 brightness-0 invert" />
-                {t("search_by_face")}
-              </button>
+              {faceSearchEnabled && (
+                <button
+                  onClick={() => setShowCamera(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
+                >
+                  <img src="/icon-face.svg" alt="" className="w-4 h-4 brightness-0 invert" />
+                  {t("search_by_face")}
+                </button>
+              )}
               {bibSearchEnabled && (
                 <button
                   onClick={() => setShowNumberSearch(true)}
@@ -454,7 +455,7 @@ export function GalleryModePage({
                         <RiCheckLine size={13} />
                       </span>
                     )}
-                    {isDownloadingSelected ? "Скачивание..." : <>Скачать выбранные: {likes.size}{!isFreeDownload && <span className="text-gray-400"> · {fmtPrice(likes.size * pricePerPhoto)}</span>}</>}
+                    {isDownloadingSelected ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
@@ -474,7 +475,7 @@ export function GalleryModePage({
                 ) : (
                   <RiDownloadLine size={16} />
                 )}
-                {isDownloadingAll ? "Упаковка фото..." : <>{t("download_all_album")}{!isFreeDownload && <span className="text-gray-400"> · {fmtPrice(Math.round(filteredPhotos.length * pricePerPhoto * (1 - packageDiscount / 100)))} <span className="text-green-600">(-{packageDiscount}%)</span></span>}</>}
+                {isDownloadingAll ? "Упаковка фото..." : <>{t("download_all_album")}</>}
               </button>
             </div>
           </div>
@@ -516,17 +517,6 @@ export function GalleryModePage({
         </div>
       )}
 
-      {/* Pricing info bar */}
-      {!isFreeDownload && !isSearching && searchPhotos.length > 0 && (
-        <div className="px-4 md:px-8 pt-4">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 text-sm text-gray-600">
-            <span>1 фото — <strong className="text-gray-900">{fmtPrice(pricePerPhoto)}</strong></span>
-            <span className="text-gray-300">|</span>
-            <span>Все фото — <strong className="text-green-600">скидка {packageDiscount}%</strong></span>
-          </div>
-        </div>
-      )}
-
       {/* Photo Grid */}
       {!isSearching && (
         <div className="px-4 md:px-8 py-8 pb-28 md:pb-8">
@@ -564,15 +554,17 @@ export function GalleryModePage({
               {t("files_tab")}
             </span>
           </button>
-          <button
-            onClick={() => setShowCamera(true)}
-            className="flex flex-col items-center gap-0.5 px-4 py-1"
-          >
-            <RiCameraLine size={22} className="text-text-secondary" />
-            <span className="text-[11px] font-medium text-text-secondary">
-              {t("search_by_face")}
-            </span>
-          </button>
+          {faceSearchEnabled && (
+            <button
+              onClick={() => setShowCamera(true)}
+              className="flex flex-col items-center gap-0.5 px-4 py-1"
+            >
+              <RiCameraLine size={22} className="text-text-secondary" />
+              <span className="text-[11px] font-medium text-text-secondary">
+                {t("search_by_face")}
+              </span>
+            </button>
+          )}
           <button
             onClick={() => setMobileTab("selected")}
             className="flex flex-col items-center gap-0.5 px-4 py-1 relative"
@@ -608,8 +600,8 @@ export function GalleryModePage({
           onNavigate={setLightbox}
           likes={likes}
           onToggleLike={toggleLike}
-          isFreeDownload={isFreeDownload}
-          pricePerPhoto={pricePerPhoto}
+          isFreeDownload={true}
+          pricePerPhoto={0}
         />
       )}
 

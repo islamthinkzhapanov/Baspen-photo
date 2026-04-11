@@ -102,7 +102,7 @@ export const GET = withHandler(async function GET(
       : undefined,
     eventLogo: event.branding?.logo,
     sponsors: sponsors.map((s) => ({ name: s.name, logoUrl: s.logoUrl })),
-    borderColor: event.branding?.primaryColor || "#005FF9",
+    borderColor: event.branding?.primaryColor || "#000000",
   });
 
   // Upload to S3

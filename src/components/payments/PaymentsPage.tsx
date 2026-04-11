@@ -13,13 +13,11 @@ import {
   RiMoneyDollarCircleLine,
   RiCloseCircleLine,
   RiRefundLine,
-  RiLoader4Line,
   RiMore2Line,
   RiEyeLine,
   RiDeleteBinLine,
 } from "@remixicon/react";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import {
   Card,
@@ -45,13 +43,91 @@ type Transaction = {
   method: string;
 };
 
-type PaymentsData = {
-  transactions: Transaction[];
-  stats: {
-    totalEarned: number;
-    pending: number;
-    pendingCount: number;
-  };
+// --- Demo data ---
+const demoTransactions: Transaction[] = [
+  {
+    id: "demo-1",
+    type: "income",
+    description: "Покупка 12 фото",
+    event: "Марафон Алматы 2026",
+    amount: 6000,
+    currency: "KZT",
+    status: "completed",
+    date: "2026-04-10T14:32:00Z",
+    method: "Kaspi Pay",
+  },
+  {
+    id: "demo-2",
+    type: "income",
+    description: "Покупка 5 фото",
+    event: "Свадьба Айгерим & Арман",
+    amount: 2500,
+    currency: "KZT",
+    status: "completed",
+    date: "2026-04-08T09:15:00Z",
+    method: "Kaspi Pay",
+  },
+  {
+    id: "demo-3",
+    type: "income",
+    description: "Пакет — все фото",
+    event: "Корпоратив BTS Group",
+    amount: 25000,
+    currency: "KZT",
+    status: "pending",
+    date: "2026-04-07T18:45:00Z",
+    method: "Stripe",
+  },
+  {
+    id: "demo-4",
+    type: "income",
+    description: "Покупка 3 фото",
+    event: "День рождения Данияр",
+    amount: 1500,
+    currency: "KZT",
+    status: "completed",
+    date: "2026-04-05T11:20:00Z",
+    method: "Ручной",
+  },
+  {
+    id: "demo-5",
+    type: "income",
+    description: "Покупка 8 фото",
+    event: "Выпускной НИШ",
+    amount: 4000,
+    currency: "KZT",
+    status: "refunded",
+    date: "2026-04-03T16:00:00Z",
+    method: "Kaspi Pay",
+  },
+  {
+    id: "demo-6",
+    type: "income",
+    description: "Пакет — все фото",
+    event: "Марафон Алматы 2026",
+    amount: 15000,
+    currency: "KZT",
+    status: "completed",
+    date: "2026-03-28T10:05:00Z",
+    method: "Stripe",
+  },
+  {
+    id: "demo-7",
+    type: "income",
+    description: "Покупка 2 фото",
+    event: "Свадьба Айгерим & Арман",
+    amount: 1000,
+    currency: "KZT",
+    status: "failed",
+    date: "2026-03-25T20:30:00Z",
+    method: "Kaspi Pay",
+  },
+];
+
+const demoStats = {
+  totalEarned: 50000,
+  pending: 25000,
+  pendingCount: 1,
 };
 
 function formatDate(iso: string, locale: string) {
@@ -81,17 +157,9 @@ export function PaymentsPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpenId]);
 
-  const { data, isLoading, error } = useQuery<PaymentsData>({
-    queryKey: ["payments"],
-    queryFn: async () => {
-      const res = await fetch("/api/payments");
-      if (!res.ok) throw new Error("Failed to fetch payments");
-      return res.json();
-    },
-  });
-
-  const transactions = data?.transactions ?? [];
-  const stats = data?.stats ?? { totalEarned: 0, pending: 0, pendingCount: 0 };
+  // Demo mode: use hardcoded data instead of API
+  const transactions = demoTransactions;
+  const stats = demoStats;
 
   const filtered = transactions.filter((tx) => {
     if (filter === "completed" && tx.status !== "completed") return false;
@@ -169,24 +237,6 @@ export function PaymentsPage() {
       color: "bg-violet-50 text-violet-600",
     },
   ];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <RiLoader4Line size={32} className="animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-sm text-red-500">
-          {t("error_loading")}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

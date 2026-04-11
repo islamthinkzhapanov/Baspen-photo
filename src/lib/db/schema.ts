@@ -197,6 +197,7 @@ export const events = pgTable(
       packageDiscount?: number;
       commissionPercent?: number;
       bibSearchEnabled?: boolean;
+      faceSearchEnabled?: boolean;
       displayMode?: "search" | "gallery";
       retentionMonths?: number;
     }>(),

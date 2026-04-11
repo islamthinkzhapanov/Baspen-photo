@@ -38,7 +38,7 @@ export async function generateShareFrame(
   const totalW = imgW + borderW * 2;
   const totalH = imgH + borderW * 2 + barHeight;
   const bgColor = config.backgroundColor || "#FFFFFF";
-  const borderColor = config.borderColor || "#005FF9";
+  const borderColor = config.borderColor || "#000000";
 
   // Build bottom bar SVG
   const sponsorLogos = (config.sponsors || []).slice(0, 4);

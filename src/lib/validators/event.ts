@@ -20,6 +20,7 @@ export const createEventSchema = z.object({
       pricePerPhoto: z.number().min(0).optional(),
       packageDiscount: z.number().min(0).max(100).optional(),
       bibSearchEnabled: z.boolean().optional(),
+      faceSearchEnabled: z.boolean().optional(),
       displayMode: z.enum(["search", "gallery"]).optional(),
       retentionMonths: z.number().min(1).max(12).optional(),
     })

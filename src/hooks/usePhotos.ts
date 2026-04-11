@@ -8,10 +8,11 @@ import {
 import { fetchJson } from "@/lib/fetch";
 import type { PhotosResponse } from "@/types/api";
 
-export function useEventPhotos(eventId: string, page = 1, limit = 100) {
+export function useEventPhotos(eventId: string, page = 1, limit = 100, status?: string) {
+  const statusParam = status ? `&status=${status}` : "";
   return useQuery<PhotosResponse>({
-    queryKey: ["events", eventId, "photos", page, limit],
-    queryFn: () => fetchJson(`/api/events/${eventId}/photos?page=${page}&limit=${limit}`),
+    queryKey: ["events", eventId, "photos", page, limit, status],
+    queryFn: () => fetchJson(`/api/events/${eventId}/photos?page=${page}&limit=${limit}${statusParam}`),
     enabled: !!eventId,
   });
 }

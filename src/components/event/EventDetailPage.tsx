@@ -29,8 +29,6 @@ import {
   RiCloseLine,
   RiHashtag,
   RiFolderLine,
-  RiCameraLine,
-  RiGridLine,
   RiUploadLine,
   RiMoreFill,
 } from "@remixicon/react";
@@ -42,7 +40,6 @@ import {
   Badge,
   Button,
   TextInput,
-  NumberInput,
   TabGroup,
   TabList,
   Tab,
@@ -186,14 +183,10 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const tAlb = useTranslations("albums");
   const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
-  const [freeDownloadToggle, setFreeDownloadToggle] = useState(false);
-  const [photoSalesToggle, setPhotoSalesToggle] = useState(false);
-  const [watermarkToggle, setWatermarkToggle] = useState(true);
+  const [faceSearchToggle, setFaceSearchToggle] = useState(true);
   const [bibSearchToggle, setBibSearchToggle] = useState(false);
-  const [displayMode, setDisplayMode] = useState<"search" | "gallery">("search");
+  const [displayMode, setDisplayMode] = useState<"search" | "gallery">("gallery");
   const [settingsTitle, setSettingsTitle] = useState<string | undefined>();
-  const [settingsPrice, setSettingsPrice] = useState<number | undefined>();
-  const [settingsDiscount, setSettingsDiscount] = useState<number | undefined>();
   const [settingsRetention, setSettingsRetention] = useState<number | undefined>();
   const [settingsDate, setSettingsDate] = useState<Date | undefined>();
   const [settingsLocation, setSettingsLocation] = useState<string | undefined>();
@@ -245,7 +238,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
   const { data: event } = useEvent(eventId);
   const { data: members = [] } = useEventMembers(eventId);
-  const { data: photosData } = useEventPhotos(eventId);
+  const { data: photosData } = useEventPhotos(eventId, currentPage, PHOTOS_PER_PAGE, "ready");
   const { data: analytics } = useEventAnalytics(eventId);
 
   // Initialize settings state from event data
@@ -253,13 +246,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
     if (event && !settingsInitialized) {
       setSettingsTitle(event.title);
       setSettingsRetention(event.settings?.retentionMonths ?? 12);
-      setFreeDownloadToggle(!!event.settings?.freeDownload);
-      setPhotoSalesToggle((event.settings?.pricePerPhoto ?? 0) > 0 || event.settings?.watermarkEnabled === true);
-      setWatermarkToggle(event.settings?.watermarkEnabled !== false);
-      setSettingsPrice(event.settings?.pricePerPhoto || 0);
-      setSettingsDiscount(event.settings?.packageDiscount || 0);
+      setFaceSearchToggle(event.settings?.faceSearchEnabled !== false);
       setBibSearchToggle(!!event.settings?.bibSearchEnabled);
-      setDisplayMode(event.settings?.displayMode ?? "search");
+      setDisplayMode(event.settings?.displayMode ?? "gallery");
       setSettingsDate(event.date ? new Date(event.date) : undefined);
       setSettingsLocation(event.location || "");
       setSettingsInitialized(true);
@@ -269,12 +258,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const settingsDirty = settingsInitialized && event ? (
     settingsTitle !== event.title ||
     settingsRetention !== (event.settings?.retentionMonths ?? 12) ||
-    freeDownloadToggle !== !!event.settings?.freeDownload ||
-    watermarkToggle !== (event.settings?.watermarkEnabled !== false) ||
-    settingsPrice !== (event.settings?.pricePerPhoto || 0) ||
-    settingsDiscount !== (event.settings?.packageDiscount || 0) ||
+    faceSearchToggle !== (event.settings?.faceSearchEnabled !== false) ||
     bibSearchToggle !== !!event.settings?.bibSearchEnabled ||
-    displayMode !== (event.settings?.displayMode ?? "search") ||
+    displayMode !== (event.settings?.displayMode ?? "gallery") ||
     settingsDate?.toISOString() !== (event.date ? new Date(event.date).toISOString() : undefined) ||
     settingsLocation !== (event.location || "")
   ) : false;
@@ -350,11 +336,12 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
         date: settingsDate ? settingsDate.toISOString() : undefined,
         location: settingsLocation || undefined,
         settings: {
-          freeDownload: freeDownloadToggle,
-          watermarkEnabled: photoSalesToggle ? watermarkToggle : false,
-          pricePerPhoto: photoSalesToggle ? settingsPrice : 0,
-          packageDiscount: photoSalesToggle ? settingsDiscount : 0,
+          freeDownload: true,
+          watermarkEnabled: false,
+          pricePerPhoto: 0,
+          packageDiscount: 0,
           bibSearchEnabled: bibSearchToggle,
+          faceSearchEnabled: faceSearchToggle,
           displayMode,
           retentionMonths: settingsRetention ?? 12,
         },
@@ -377,21 +364,19 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   }
 
   const photos: Photo[] = photosData?.photos || [];
-  const allReadyPhotos = photos.filter((p) => p.status === "ready");
+  const totalReady = photosData?.total ?? 0;
 
-  // Filter by album
+  // Filter by album (client-side within server page)
   const readyPhotos = activeAlbumFilter === null
-    ? allReadyPhotos
+    ? photos
     : activeAlbumFilter === "unsorted"
-      ? allReadyPhotos.filter((p) => !p.albumId)
-      : allReadyPhotos.filter((p) => p.albumId === activeAlbumFilter);
+      ? photos.filter((p) => !p.albumId)
+      : photos.filter((p) => p.albumId === activeAlbumFilter);
 
   const chartData = analytics?.chartData || [];
 
-  const pagePhotos = readyPhotos.slice(
-    (currentPage - 1) * PHOTOS_PER_PAGE,
-    currentPage * PHOTOS_PER_PAGE
-  );
+  // Photos already paginated server-side
+  const pagePhotos = readyPhotos;
 
   const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/e/${event.slug}`;
 
@@ -621,11 +606,11 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
               )}
 
               {/* Photo count + actions */}
-              {readyPhotos.length > 0 && (
+              {totalReady > 0 && (
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text">
                     <RiImageLine size={16} className="text-text-secondary" />
-                    {tp("uploaded_count", { count: readyPhotos.length.toLocaleString("ru-RU") })}
+                    {tp("uploaded_count", { count: totalReady.toLocaleString("ru-RU") })}
                   </span>
 
                   <div className="flex items-center gap-2">
@@ -816,7 +801,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
 
                   <Pagination
                     currentPage={currentPage}
-                    totalItems={readyPhotos.length}
+                    totalItems={totalReady}
                     perPage={PHOTOS_PER_PAGE}
                     onPageChange={setCurrentPage}
                   />
@@ -997,65 +982,15 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                 </Card>
 
                 <Card className="p-5 space-y-4">
-                  <h3 className="text-sm font-semibold">{t("display_mode")}</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setDisplayMode("search")}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
-                        displayMode === "search"
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-white hover:border-primary/30"
-                      }`}
-                    >
-                      <RiCameraLine className={`w-6 h-6 ${displayMode === "search" ? "text-primary" : "text-text-secondary"}`} />
-                      <span className={`text-sm font-medium ${displayMode === "search" ? "text-primary" : "text-text"}`}>
-                        {t("display_mode_search")}
-                      </span>
-                      <span className="text-xs text-text-secondary text-center">
-                        {t("display_mode_search_desc")}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDisplayMode("gallery")}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
-                        displayMode === "gallery"
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-white hover:border-primary/30"
-                      }`}
-                    >
-                      <RiGridLine className={`w-6 h-6 ${displayMode === "gallery" ? "text-primary" : "text-text-secondary"}`} />
-                      <span className={`text-sm font-medium ${displayMode === "gallery" ? "text-primary" : "text-text"}`}>
-                        {t("display_mode_gallery")}
-                      </span>
-                      <span className="text-xs text-text-secondary text-center">
-                        {t("display_mode_gallery_desc")}
-                      </span>
-                    </button>
-                  </div>
-                </Card>
-
-                <Card className="p-5 space-y-4">
                   <h3 className="text-sm font-semibold">Настройки</h3>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm">{t("free_download")}</p>
-                      <p className="text-xs text-text-secondary">Участники скачивают бесплатно</p>
+                      <p className="text-sm">{t("face_search")}</p>
+                      <p className="text-xs text-text-secondary">{t("face_search_hint")}</p>
                     </div>
                     <Switch
-                      checked={freeDownloadToggle}
-                      onChange={setFreeDownloadToggle}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm">{t("photo_sales")}</p>
-                      <p className="text-xs text-text-secondary">Продажа фотографий участникам</p>
-                    </div>
-                    <Switch
-                      checked={photoSalesToggle}
-                      onChange={setPhotoSalesToggle}
+                      checked={faceSearchToggle}
+                      onChange={setFaceSearchToggle}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -1068,30 +1003,6 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
                       onChange={setBibSearchToggle}
                     />
                   </div>
-                  {photoSalesToggle && (
-                    <div className="space-y-4 pl-3 border-l-2 border-primary/20">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm">{t("watermark")}</p>
-                          <p className="text-xs text-text-secondary">Водяной знак на превью</p>
-                        </div>
-                        <Switch
-                          checked={watermarkToggle}
-                          onChange={setWatermarkToggle}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-text-secondary block mb-1">{t("price_per_photo")} (₸)</label>
-                          <NumberInput value={settingsPrice ?? (event.settings?.pricePerPhoto || 0)} onValueChange={setSettingsPrice} className="w-40" />
-                        </div>
-                        <div>
-                          <label className="text-xs text-text-secondary block mb-1">{t("package_discount")}</label>
-                          <NumberInput value={settingsDiscount ?? (event.settings?.packageDiscount || 0)} onValueChange={setSettingsDiscount} className="w-40" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </Card>
 
                 {settingsDirty && (
@@ -1267,7 +1178,7 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
           <div className="bg-bg rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
             <h3 className="text-base font-semibold text-text mb-1">
               {confirmAction === "all"
-                ? tp("delete_all_confirm", { count: readyPhotos.length })
+                ? tp("delete_all_confirm", { count: totalReady })
                 : tp("delete_selected_confirm", { count: selectedIds.size })}
             </h3>
             <p className="text-sm text-text-secondary mb-5">
