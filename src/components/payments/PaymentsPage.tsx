@@ -16,6 +16,8 @@ import {
   RiDeleteBinLine,
 } from "@remixicon/react";
 import { useState, useCallback, useRef, useEffect } from "react";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import {
   Card,
@@ -128,14 +130,8 @@ const demoStats = {
   pendingCount: 1,
 };
 
-function formatDate(iso: string, locale: string) {
-  return new Date(iso).toLocaleDateString(locale, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatDate(iso: string) {
+  return format(new Date(iso), "d MMM yyyy, HH:mm", { locale: ru });
 }
 
 export function PaymentsPage() {
@@ -191,7 +187,7 @@ export function PaymentsPage() {
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((tx) => ({
       [t("col_transaction")]: tx.description,
-      [t("col_date")]: formatDate(tx.date, "ru-RU"),
+      [t("col_date")]: formatDate(tx.date),
       [t("col_project")]: tx.event,
       [t("col_method")]: tx.method,
       [t("col_amount")]: tx.amount,
@@ -243,7 +239,7 @@ export function PaymentsPage() {
         {statCards.map((stat) => (
             <Card key={stat.label} className="p-4 flex flex-col gap-2">
               <p className="text-xs text-text-secondary">{stat.label}</p>
-              <p className="text-3xl font-medium">{stat.value}</p>
+              <p className="text-3xl font-medium" suppressHydrationWarning>{stat.value}</p>
               {"extra" in stat && stat.extra}
             </Card>
           ))}
@@ -330,7 +326,7 @@ export function PaymentsPage() {
                         <div>
                           <p className="font-medium">{tx.description}</p>
                           <p className="text-sm text-text-secondary">
-                            {formatDate(tx.date, "ru-RU")}
+                            {formatDate(tx.date)}
                           </p>
                         </div>
                       </div>
@@ -350,7 +346,7 @@ export function PaymentsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="font-semibold tabular-nums text-sm text-success">
+                      <span className="font-semibold tabular-nums text-sm text-success" suppressHydrationWarning>
                         +{tx.amount.toLocaleString("ru-RU")} ₸
                       </span>
                     </TableCell>

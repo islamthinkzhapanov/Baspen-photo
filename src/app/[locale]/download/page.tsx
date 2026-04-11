@@ -68,9 +68,9 @@ function DownloadContent() {
             {t("subtitle", { count: data.photos.length })}
           </p>
           {data.expiresAt && (
-            <p className="text-xs text-text-secondary mt-2">
+            <p className="text-xs text-text-secondary mt-2" suppressHydrationWarning>
               {t("expires", {
-                date: new Date(data.expiresAt).toLocaleDateString(),
+                date: new Date(data.expiresAt).toLocaleDateString("ru-RU"),
               })}
             </p>
           )}

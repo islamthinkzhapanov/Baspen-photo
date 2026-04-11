@@ -59,7 +59,7 @@ export function DashboardPage() {
         {stats.map((stat) => (
             <Card key={stat.key} className="p-4 flex flex-col gap-2">
               <p className="text-xs text-text-secondary">{t(`dashboard.${stat.key}`)}</p>
-              <p className="text-3xl font-medium">{stat.value}</p>
+              <p className="text-3xl font-medium" suppressHydrationWarning>{stat.value}</p>
             </Card>
           ))}
       </div>

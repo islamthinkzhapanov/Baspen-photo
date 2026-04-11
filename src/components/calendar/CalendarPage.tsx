@@ -312,12 +312,12 @@ export function CalendarPage() {
           </button>
 
           {/* Mobile: short date */}
-          <h1 className="ml-1 text-xs font-semibold text-gray-900 capitalize sm:hidden truncate max-w-[120px]">
+          <h1 className="ml-1 text-xs font-semibold text-gray-900 capitalize sm:hidden truncate max-w-[120px]" suppressHydrationWarning>
             {dateLabelShort}
           </h1>
 
           {/* Desktop: full date */}
-          <h1 className="ml-2 text-sm font-semibold text-gray-900 capitalize hidden sm:block">
+          <h1 className="ml-2 text-sm font-semibold text-gray-900 capitalize hidden sm:block" suppressHydrationWarning>
             {dateLabel}
           </h1>
         </div>

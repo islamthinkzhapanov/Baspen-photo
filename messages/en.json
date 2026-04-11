@@ -880,5 +880,11 @@
     "breakUpdated": "Break updated",
     "breakDeleted": "Break deleted",
     "deleteBreakConfirm": "Delete this break?"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "All your notifications",
+    "empty_title": "No notifications yet",
+    "empty_desc": "Notifications about new orders, messages and events will appear here"
   }
 }
