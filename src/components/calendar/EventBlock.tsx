@@ -37,9 +37,9 @@ export function EventBlock({
 
   const styleClasses = isPast
     ? "bg-green-50 border-green-300 text-green-900 hover:bg-green-100"
-    : "bg-blue-50 border-blue-300 text-blue-900 hover:bg-blue-100";
+    : "bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100";
 
-  const dotClass = isPast ? "bg-green-500" : "bg-blue-400";
+  const dotClass = isPast ? "bg-green-500" : "bg-gray-900";
 
   const isVeryCompact = height < 40;
 

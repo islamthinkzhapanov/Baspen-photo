@@ -102,7 +102,7 @@ export function WeekView({
                 <span
                   className={cn(
                     "text-[10px] sm:text-xs font-medium uppercase tracking-wide",
-                    isToday ? "text-blue-600" : "text-gray-500",
+                    isToday ? "text-gray-900 font-semibold" : "text-gray-500",
                   )}
                 >
                   {dayName}
@@ -111,7 +111,7 @@ export function WeekView({
                   className={cn(
                     "text-sm sm:text-base font-semibold leading-tight",
                     isToday
-                      ? "text-blue-600"
+                      ? "text-gray-900"
                       : isWeekend
                         ? "text-gray-400"
                         : "text-gray-900",
@@ -165,7 +165,7 @@ export function WeekView({
                 {timeSlots.map((slot) => (
                   <div
                     key={slot}
-                    className="absolute left-0 right-0 border-b border-gray-100 hover:bg-blue-50/30 transition-colors cursor-pointer"
+                    className="absolute left-0 right-0 border-b border-gray-100 hover:bg-green-200 transition-colors cursor-pointer"
                     style={{ top: toTop(slot), height: ROW_HEIGHT }}
                     onClick={() => onSlotClick(slot, day.date)}
                   />
@@ -178,7 +178,7 @@ export function WeekView({
 
                 {/* Today highlight */}
                 {isToday && (
-                  <div className="absolute inset-0 bg-blue-50/20 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gray-50/40 pointer-events-none" />
                 )}
 
                 {/* Breaks */}

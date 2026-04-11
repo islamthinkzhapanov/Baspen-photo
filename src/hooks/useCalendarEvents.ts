@@ -62,3 +62,45 @@ export function useCalendarWeek(date: string) {
     staleTime: 60_000,
   });
 }
+
+export interface ThreeDayData {
+  workStart: string;
+  workEnd: string;
+  calendarStep: number;
+  days: {
+    date: string;
+    events: CalendarEvent[];
+    breaks: CalendarBreakEntry[];
+  }[];
+}
+
+export function useCalendarThreeDays(startDate: string) {
+  return useQuery<ThreeDayData>({
+    queryKey: ["calendar-three-days", startDate],
+    queryFn: async () => {
+      const d = new Date(startDate + "T00:00:00");
+      const dates = [
+        startDate,
+        new Date(d.getTime() + 86400000).toISOString().slice(0, 10),
+        new Date(d.getTime() + 172800000).toISOString().slice(0, 10),
+      ];
+
+      const results = await Promise.all(
+        dates.map((dt) => fetchJson<CalendarDayData>(`/api/calendar/day?date=${dt}`))
+      );
+
+      return {
+        workStart: results[0].workStart,
+        workEnd: results[0].workEnd,
+        calendarStep: results[0].calendarStep,
+        days: results.map((r) => ({
+          date: r.date,
+          events: r.events,
+          breaks: r.breaks,
+        })),
+      };
+    },
+    enabled: !!startDate,
+    staleTime: 60_000,
+  });
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -8,12 +8,14 @@ import {
   format,
   addDays,
   subDays,
-  addWeeks,
-  subWeeks,
   parseISO,
   isToday as dateIsToday,
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
   startOfWeek,
   endOfWeek,
+  eachDayOfInterval,
 } from "date-fns";
 import { ru } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -22,19 +24,130 @@ import {
   RiArrowRightSLine,
   RiAddLine,
   RiLoader4Line,
+  RiCalendarLine,
 } from "@remixicon/react";
-import { useCalendarDay, useCalendarWeek } from "@/hooks/useCalendarEvents";
+import { useCalendarThreeDays } from "@/hooks/useCalendarEvents";
 import type { CalendarBreakEntry } from "@/hooks/useCalendarEvents";
-import { DayView } from "./DayView";
-import { WeekView } from "./WeekView";
+import { ThreeDayView } from "./ThreeDayView";
 import { BreakSheet, type BreakSheetState } from "./BreakSheet";
 import { CreateProjectModal } from "@/components/event/CreateProjectModal";
-
-type CalendarView = "day" | "week";
 
 function todayStr(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
+
+/* ─── Mini calendar popover ───────────────────────────────────────────────── */
+
+function MiniCalendar({
+  selected,
+  onSelect,
+  onClose,
+}: {
+  selected: Date;
+  onSelect: (d: Date) => void;
+  onClose: () => void;
+}) {
+  const [month, setMonth] = useState(startOfMonth(selected));
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  const monthStart = startOfMonth(month);
+  const monthEnd = endOfMonth(month);
+  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const allDays = eachDayOfInterval({ start: calStart, end: calEnd });
+
+  const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
+  return (
+    <div
+      ref={ref}
+      className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-3 w-[280px]"
+    >
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+          className="p-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        >
+          <RiArrowLeftSLine className="w-4 h-4" />
+        </button>
+        <span className="text-sm font-semibold text-gray-900 capitalize">
+          {format(month, "LLLL yyyy", { locale: ru })}
+        </span>
+        <button
+          type="button"
+          onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+          className="p-1 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        >
+          <RiArrowRightSLine className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Day names */}
+      <div className="grid grid-cols-7 mb-1">
+        {dayNames.map((dn) => (
+          <div key={dn} className="text-center text-[11px] font-medium text-gray-400 py-1">
+            {dn}
+          </div>
+        ))}
+      </div>
+
+      {/* Days grid */}
+      <div className="grid grid-cols-7">
+        {allDays.map((day) => {
+          const isCurrentMonth = day.getMonth() === month.getMonth();
+          const isSelected = isSameDay(day, selected);
+          const isToday = dateIsToday(day);
+
+          return (
+            <button
+              key={day.toISOString()}
+              type="button"
+              onClick={() => {
+                onSelect(day);
+                onClose();
+              }}
+              className={cn(
+                "w-9 h-9 rounded-lg text-sm flex items-center justify-center transition-colors",
+                !isCurrentMonth && "text-gray-300",
+                isCurrentMonth && !isSelected && "text-gray-700 hover:bg-gray-100",
+                isSelected && "bg-gray-900 text-white font-medium",
+                isToday && !isSelected && "font-semibold text-gray-900 ring-1 ring-gray-900",
+              )}
+            >
+              {format(day, "d")}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Today shortcut */}
+      <button
+        type="button"
+        onClick={() => {
+          onSelect(new Date());
+          onClose();
+        }}
+        className="mt-2 w-full py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        Сегодня
+      </button>
+    </div>
+  );
+}
+
+/* ─── Main CalendarPage ───────────────────────────────────────────────────── */
 
 export function CalendarPage() {
   const searchParams = useSearchParams();
@@ -52,14 +165,12 @@ export function CalendarPage() {
     if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) setDate(d);
   }, [searchParams]);
 
-  const navigateTo = useCallback(
-    (newDate: string) => {
-      setDate(newDate);
-    },
-    [],
-  );
+  const navigateTo = useCallback((newDate: string) => {
+    setDate(newDate);
+  }, []);
 
-  const [view, setView] = useState<CalendarView>("day");
+  // Date picker popover
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Create project modal
   const [createOpen, setCreateOpen] = useState(false);
@@ -73,29 +184,16 @@ export function CalendarPage() {
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  const dayQuery = useCalendarDay(view === "day" ? date : "");
-  const weekQuery = useCalendarWeek(view === "week" ? date : "");
+  const threeDayQuery = useCalendarThreeDays(date);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
   function toPrev() {
-    navigateTo(
-      view === "day"
-        ? format(subDays(parseISO(date), 1), "yyyy-MM-dd")
-        : format(subWeeks(parseISO(date), 1), "yyyy-MM-dd"),
-    );
+    navigateTo(format(subDays(parseISO(date), 3), "yyyy-MM-dd"));
   }
 
   function toNext() {
-    navigateTo(
-      view === "day"
-        ? format(addDays(parseISO(date), 1), "yyyy-MM-dd")
-        : format(addWeeks(parseISO(date), 1), "yyyy-MM-dd"),
-    );
-  }
-
-  function toToday() {
-    navigateTo(todayStr());
+    navigateTo(format(addDays(parseISO(date), 3), "yyyy-MM-dd"));
   }
 
   // ── Click handlers ─────────────────────────────────────────────────────────
@@ -111,21 +209,16 @@ export function CalendarPage() {
   }
 
   function handleBreakClick(breakId: string) {
-    // Find break in current data
+    if (!threeDayQuery.data) return;
     let found: CalendarBreakEntry | undefined;
     let breakDate = date;
 
-    if (view === "day" && dayQuery.data) {
-      found = dayQuery.data.breaks.find((b) => b.id === breakId);
-      breakDate = dayQuery.data.date;
-    } else if (view === "week" && weekQuery.data) {
-      for (const day of weekQuery.data.days) {
-        const b = day.breaks.find((br) => br.id === breakId);
-        if (b) {
-          found = b;
-          breakDate = day.date;
-          break;
-        }
+    for (const day of threeDayQuery.data.days) {
+      const b = day.breaks.find((br) => br.id === breakId);
+      if (b) {
+        found = b;
+        breakDate = day.date;
+        break;
       }
     }
 
@@ -139,25 +232,17 @@ export function CalendarPage() {
     setCreateOpen(true);
   }
 
-  function handleAddBreak() {
-    setBreakState({ open: true, mode: "create", date });
-  }
-
   // ── Date labels ────────────────────────────────────────────────────────────
 
   const dateLabel = (() => {
     try {
       const d = parseISO(date);
-      if (view === "day") {
-        return format(d, "EEEE, d MMMM yyyy", { locale: ru });
-      }
-      const wStart = startOfWeek(d, { weekStartsOn: 1 });
-      const wEnd = endOfWeek(d, { weekStartsOn: 1 });
-      const sameMonth = wStart.getMonth() === wEnd.getMonth();
+      const end = addDays(d, 2);
+      const sameMonth = d.getMonth() === end.getMonth();
       if (sameMonth) {
-        return `${format(wStart, "d")} – ${format(wEnd, "d MMMM yyyy", { locale: ru })}`;
+        return `${format(d, "d")} – ${format(end, "d MMMM yyyy", { locale: ru })}`;
       }
-      return `${format(wStart, "d MMM", { locale: ru })} – ${format(wEnd, "d MMM yyyy", { locale: ru })}`;
+      return `${format(d, "d MMM", { locale: ru })} – ${format(end, "d MMM yyyy", { locale: ru })}`;
     } catch {
       return date;
     }
@@ -166,12 +251,8 @@ export function CalendarPage() {
   const dateLabelShort = (() => {
     try {
       const d = parseISO(date);
-      if (view === "day") {
-        return format(d, "d MMM, EEE", { locale: ru });
-      }
-      const wStart = startOfWeek(d, { weekStartsOn: 1 });
-      const wEnd = endOfWeek(d, { weekStartsOn: 1 });
-      return `${format(wStart, "d MMM", { locale: ru })} – ${format(wEnd, "d MMM", { locale: ru })}`;
+      const end = addDays(d, 2);
+      return `${format(d, "d MMM", { locale: ru })} – ${format(end, "d MMM", { locale: ru })}`;
     } catch {
       return date;
     }
@@ -181,18 +262,17 @@ export function CalendarPage() {
 
   // ── Derived ────────────────────────────────────────────────────────────────
 
-  const isLoading = view === "day" ? dayQuery.isLoading : weekQuery.isLoading;
-  const isError = view === "day" ? dayQuery.isError : weekQuery.isError;
-  const dayData = dayQuery.data;
-  const weekData = weekQuery.data;
-  const calendarStep = (view === "day" ? dayData?.calendarStep : weekData?.calendarStep) ?? 30;
+  const isLoading = threeDayQuery.isLoading;
+  const isError = threeDayQuery.isError;
+  const data = threeDayQuery.data;
+  const calendarStep = data?.calendarStep ?? 30;
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] -m-6 bg-white">
       {/* ─── Toolbar ───────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-200 bg-white shrink-0 sm:gap-3 sm:px-6 sm:py-3">
         {/* Left: navigation */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 relative">
           <button
             type="button"
             onClick={toPrev}
@@ -203,16 +283,25 @@ export function CalendarPage() {
 
           <button
             type="button"
-            onClick={toToday}
+            onClick={() => setDatePickerOpen(!datePickerOpen)}
             className={cn(
-              "px-2 py-1 rounded-lg text-xs font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm",
+              "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm",
               isTodayDate
-                ? "bg-blue-50 text-blue-700"
+                ? "bg-gray-100 text-gray-900"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-800",
             )}
           >
+            <RiCalendarLine className="w-3.5 h-3.5" />
             {t("today")}
           </button>
+
+          {datePickerOpen && (
+            <MiniCalendar
+              selected={parseISO(date)}
+              onSelect={(d) => navigateTo(format(d, "yyyy-MM-dd"))}
+              onClose={() => setDatePickerOpen(false)}
+            />
+          )}
 
           <button
             type="button"
@@ -233,50 +322,12 @@ export function CalendarPage() {
           </h1>
         </div>
 
-        {/* Right: view switcher + actions */}
+        {/* Right: actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* View switcher */}
-          <div className="flex rounded-lg bg-gray-100 p-0.5">
-            <button
-              type="button"
-              onClick={() => setView("day")}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-xs font-medium transition-colors sm:px-3 sm:text-sm",
-                view === "day"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700",
-              )}
-            >
-              {t("day")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("week")}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-xs font-medium transition-colors sm:px-3 sm:text-sm",
-                view === "week"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700",
-              )}
-            >
-              {t("week")}
-            </button>
-          </div>
-
-          {/* Add break */}
-          <button
-            type="button"
-            onClick={handleAddBreak}
-            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            {t("addBreak")}
-          </button>
-
-          {/* New project */}
           <button
             type="button"
             onClick={handleNewProject}
-            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
           >
             <RiAddLine className="w-4 h-4" />
             <span className="hidden sm:inline">{t("createProject")}</span>
@@ -288,7 +339,7 @@ export function CalendarPage() {
       <div className="flex-1 overflow-hidden flex flex-col">
         {isLoading && (
           <div className="flex items-center justify-center flex-1">
-            <RiLoader4Line className="w-6 h-6 text-blue-500 animate-spin" />
+            <RiLoader4Line className="w-6 h-6 text-gray-900 animate-spin" />
           </div>
         )}
 
@@ -298,29 +349,13 @@ export function CalendarPage() {
           </div>
         )}
 
-        {/* Day View */}
-        {view === "day" && dayData && !isLoading && (
-          <DayView
-            workStart={dayData.workStart}
-            workEnd={dayData.workEnd}
-            calendarStep={dayData.calendarStep}
-            events={dayData.events}
-            breaks={dayData.breaks}
-            onSlotClick={(time) => handleSlotClick(time)}
-            onEventClick={handleEventClick}
-            onBreakClick={handleBreakClick}
-            isToday={isTodayDate}
-          />
-        )}
-
-        {/* Week View */}
-        {view === "week" && weekData && !isLoading && (
-          <WeekView
-            workStart={weekData.workStart}
-            workEnd={weekData.workEnd}
-            calendarStep={weekData.calendarStep}
-            days={weekData.days}
-            onSlotClick={(time, slotDate) => handleSlotClick(time, slotDate)}
+        {data && !isLoading && (
+          <ThreeDayView
+            days={data.days}
+            workStart={data.workStart}
+            workEnd={data.workEnd}
+            calendarStep={data.calendarStep}
+            onSlotClick={(time: string, slotDate: string) => handleSlotClick(time, slotDate)}
             onEventClick={handleEventClick}
             onBreakClick={handleBreakClick}
           />
@@ -333,8 +368,8 @@ export function CalendarPage() {
         onClick={handleNewProject}
         className={cn(
           "fixed bottom-6 right-6 z-30 flex items-center justify-center",
-          "w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg",
-          "hover:bg-blue-700 active:scale-95 transition-all",
+          "w-14 h-14 rounded-full bg-gray-900 text-white shadow-lg",
+          "hover:bg-gray-800 active:scale-95 transition-all",
           "sm:hidden",
         )}
       >

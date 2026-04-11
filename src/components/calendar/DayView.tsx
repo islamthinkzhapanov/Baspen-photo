@@ -197,8 +197,8 @@ export function DayView({
                   top: ((nowMin - workStartMin) / calendarStep) * rowHeight,
                 }}
               >
-                <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1" />
-                <div className="flex-1 h-px bg-blue-400" />
+                <div className="w-2 h-2 rounded-full bg-gray-900 -ml-1" />
+                <div className="flex-1 h-px bg-gray-900" />
               </div>
             )}
 
