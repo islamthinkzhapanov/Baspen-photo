@@ -52,6 +52,8 @@ interface GalleryEventData {
       bibSearchEnabled?: boolean;
       displayMode?: string;
       retentionMonths?: number;
+      pricePerPhoto?: number;
+      packageDiscount?: number;
     } | null;
     photoCount: number;
     owner?: {
@@ -79,6 +81,10 @@ function toSearchPhoto(p: GalleryPhoto): SearchPhoto {
   };
 }
 
+function fmtPrice(amount: number): string {
+  return amount.toLocaleString("ru-RU") + " ₸";
+}
+
 type MobileTab = "files" | "download" | "selected" | "contacts";
 
 export function GalleryModePage({
@@ -96,6 +102,8 @@ export function GalleryModePage({
   const { event, albums, photos } = eventData;
   const bibSearchEnabled = !!event.settings?.bibSearchEnabled;
   const isFreeDownload = !!event.settings?.freeDownload;
+  const pricePerPhoto = event.settings?.pricePerPhoto ?? 500;
+  const packageDiscount = event.settings?.packageDiscount ?? 30;
 
   // Album filter
   const [activeAlbumId, setActiveAlbumId] = useState<string | null>(null);
@@ -446,7 +454,7 @@ export function GalleryModePage({
                         <RiCheckLine size={13} />
                       </span>
                     )}
-                    {isDownloadingSelected ? "Скачивание..." : <>Скачать выбранные: {likes.size}</>}
+                    {isDownloadingSelected ? "Скачивание..." : <>Скачать выбранные: {likes.size}{!isFreeDownload && <span className="text-gray-400"> · {fmtPrice(likes.size * pricePerPhoto)}</span>}</>}
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
@@ -466,7 +474,7 @@ export function GalleryModePage({
                 ) : (
                   <RiDownloadLine size={16} />
                 )}
-                {isDownloadingAll ? "Упаковка фото..." : t("download_all_album")}
+                {isDownloadingAll ? "Упаковка фото..." : <>{t("download_all_album")}{!isFreeDownload && <span className="text-gray-400"> · {fmtPrice(Math.round(filteredPhotos.length * pricePerPhoto * (1 - packageDiscount / 100)))} <span className="text-green-600">(-{packageDiscount}%)</span></span>}</>}
               </button>
             </div>
           </div>
@@ -505,6 +513,17 @@ export function GalleryModePage({
           <h2 className="text-sm font-medium text-gray-700">
             Найдено {matchedPhotoIds.size} фото по вашему запросу
           </h2>
+        </div>
+      )}
+
+      {/* Pricing info bar */}
+      {!isFreeDownload && !isSearching && searchPhotos.length > 0 && (
+        <div className="px-4 md:px-8 pt-4">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-50 text-sm text-gray-600">
+            <span>1 фото — <strong className="text-gray-900">{fmtPrice(pricePerPhoto)}</strong></span>
+            <span className="text-gray-300">|</span>
+            <span>Все фото — <strong className="text-green-600">скидка {packageDiscount}%</strong></span>
+          </div>
         </div>
       )}
 
@@ -590,6 +609,7 @@ export function GalleryModePage({
           likes={likes}
           onToggleLike={toggleLike}
           isFreeDownload={isFreeDownload}
+          pricePerPhoto={pricePerPhoto}
         />
       )}
 

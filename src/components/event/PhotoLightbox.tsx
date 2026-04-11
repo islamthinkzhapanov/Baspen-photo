@@ -24,6 +24,7 @@ interface PhotoLightboxProps {
   likes: Set<string>;
   onToggleLike: (id: string) => void;
   isFreeDownload: boolean;
+  pricePerPhoto?: number;
 }
 
 export function PhotoLightbox({
@@ -34,6 +35,7 @@ export function PhotoLightbox({
   likes,
   onToggleLike,
   isFreeDownload,
+  pricePerPhoto,
 }: PhotoLightboxProps) {
   const t = useTranslations("public");
   const [downloading, setDownloading] = useState(false);
@@ -107,6 +109,7 @@ export function PhotoLightbox({
             <ProtectedImage
               src={photo.watermarked_path || photo.thumbnail_path || undefined}
               alt=""
+              wrapperClassName="w-full h-full relative"
               className="w-full h-full object-contain"
             />
           ) : (
@@ -164,7 +167,7 @@ export function PhotoLightbox({
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white hover:bg-primary-hover text-sm font-medium transition-colors"
           >
             {downloading ? <RiLoader4Line size={16} className="animate-spin" /> : <RiDownloadLine size={16} />}
-            {t("download")}
+            {t("download")}{!isFreeDownload && pricePerPhoto ? ` · ${pricePerPhoto.toLocaleString("ru-RU")} ₸` : ""}
           </button>
         </div>
       </div>

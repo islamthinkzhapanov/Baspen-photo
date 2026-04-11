@@ -156,6 +156,7 @@ export function PhotoDetailClient({ photoId }: { photoId: string }) {
         <ProtectedImage
           src={imageUrl}
           alt=""
+          wrapperClassName="relative"
           className="max-h-[80vh] max-w-full object-contain rounded-lg"
         />
       </div>

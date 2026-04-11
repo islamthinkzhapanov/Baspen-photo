@@ -47,7 +47,8 @@ export const PhotoMasonryGrid = memo(function PhotoMasonryGrid({
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  wrapperClassName="absolute inset-0 w-full h-full"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">

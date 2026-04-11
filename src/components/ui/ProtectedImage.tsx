@@ -4,6 +4,7 @@ interface ProtectedImageProps {
   src: string | undefined;
   alt?: string;
   className?: string;
+  wrapperClassName?: string;
   style?: React.CSSProperties;
   loading?: "lazy" | "eager";
   decoding?: "async" | "auto";
@@ -20,6 +21,7 @@ export function ProtectedImage({
   src,
   alt = "",
   className,
+  wrapperClassName,
   style,
   loading,
   decoding,
@@ -27,7 +29,7 @@ export function ProtectedImage({
   onClick,
 }: ProtectedImageProps) {
   return (
-    <div className="protected-image relative" style={style} onClick={onClick}>
+    <div className={`protected-image ${wrapperClassName || "relative"}`} style={style} onClick={onClick}>
       <img
         src={src}
         alt={alt}
