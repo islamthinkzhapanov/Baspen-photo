@@ -32,6 +32,7 @@ import {
   RiUploadLine,
   RiMoreFill,
 } from "@remixicon/react";
+import { useSearchParams } from "next/navigation";
 import { useRef, useState, useCallback, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import QRCode from "qrcode";
 import { Lightbox } from "@/components/gallery/Lightbox";
@@ -181,6 +182,9 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
   const ta = useTranslations("analytics");
   const tp = useTranslations("photographer");
   const tAlb = useTranslations("albums");
+  const tNav = useTranslations("nav");
+  const searchParams = useSearchParams();
+  const fromCalendar = searchParams.get("from") === "calendar";
   const { isEventPhotographer: isPhotographer } = useEventRole(eventId);
   const [copied, setCopied] = useState(false);
   const [faceSearchToggle, setFaceSearchToggle] = useState(true);
@@ -475,10 +479,10 @@ export function EventDetailPage({ eventId }: { eventId: string }) {
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm mb-6">
         <Link
-          href="/events"
+          href={fromCalendar ? "/calendar" : "/events"}
           className="text-text-secondary hover:text-text transition-colors"
         >
-          {t("title")}
+          {fromCalendar ? tNav("calendar") : t("title")}
         </Link>
         <span className="text-text-secondary">/</span>
         <span className="text-text font-medium truncate max-w-[300px]">{event.title}</span>

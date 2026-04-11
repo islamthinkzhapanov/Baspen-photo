@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -63,7 +62,6 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
   const t = useTranslations("events");
   const tc = useTranslations("common");
   const tp = useTranslations("profile");
-  const router = useRouter();
   const createMutation = useCreateEvent();
 
   type Tab = "basic" | "card";
@@ -202,10 +200,9 @@ export function CreateProjectModal({ open, onClose, defaultDate, defaultTime }: 
         },
       },
       {
-        onSuccess: (result: { id: string }) => {
+        onSuccess: () => {
           toast.success(tc("success"));
           onClose();
-          router.push(`/events/${result.id}`);
         },
         onError: (err: Error) => {
           toast.error(err.message);

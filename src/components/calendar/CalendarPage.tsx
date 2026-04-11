@@ -205,7 +205,7 @@ export function CalendarPage() {
   }
 
   function handleEventClick(eventId: string) {
-    router.push(`/events/${eventId}`);
+    router.push(`/events/${eventId}?from=calendar`);
   }
 
   function handleBreakClick(breakId: string) {

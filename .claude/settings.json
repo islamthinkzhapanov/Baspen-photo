@@ -705,7 +705,10 @@
       "Bash(grep -r \"calendar/day\" /Users/mobibrand/Documents/Syntony-crm/crm/next.config*)",
       "Bash(grep -r \"rewrites\\\\|proxy\\\\|calendar\" /Users/mobibrand/Documents/Syntony-crm/crm/next.config*)",
       "Bash(find \"/Users/mobibrand/Documents/Baspen photo/src\" -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec grep -l \"getTime\\\\|new Date\\\\|toLocaleDateString\\\\|toLocaleString\\\\|format.*date\\\\|dayjs\\\\|moment\" {} \\\\;)",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Bash(grep -r \"useUploadClientPhoto\\\\|useClients\" /Users/mobibrand/Documents/Syntony-crm/crm/src/hooks/*.ts)",
+      "Bash(find /Users/mobibrand/Documents/Syntony-crm/crm/src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec grep -l \"project\" {} \\\\;)",
+      "Bash(find /Users/mobibrand/Documents/Syntony-crm/crm/src/app/api -name \"route.ts\" -exec grep -l \"appointments\\\\|calendar\\\\|clients\" {} \\\\;)"
     ],
     "additionalDirectories": [
       "/Users/mobibrand/Documents/Baspen photo",

@@ -29,7 +29,10 @@ export function useCreateEvent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["events"] });
+      qc.invalidateQueries({ queryKey: ["calendar-three-days"] });
+    },
   });
 }
 
